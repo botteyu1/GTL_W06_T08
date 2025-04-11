@@ -401,9 +401,9 @@ struct FSceneLightBuffer
     FDirectionalLight DirectionalLight;
 
     FPointLight PointLight[MAX_POINT_LIGHT];
-    int NumPointLights;
+    FSpotLight alignas(16) SpotLight[MAX_SPOT_LIGHT];
     
-    FSpotLight SpotLight[MAX_SPOT_LIGHT];
+    int NumPointLights;
     int NumSpotLights;
 
     float Pad0, Pad1;

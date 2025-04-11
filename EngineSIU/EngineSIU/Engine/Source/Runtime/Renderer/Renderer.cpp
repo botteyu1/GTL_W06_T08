@@ -145,7 +145,10 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
         FogRenderPass->RenderFog(ActiveViewport, DepthBufferDebugPass->GetDepthSRV());
     }
     //LineRenderPass->Render(ActiveViewport);
-    GizmoRenderPass->Render(ActiveViewport);
-    EditorRenderPass->Render(ActiveViewport);
+    if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
+    {
+        GizmoRenderPass->Render(ActiveViewport);
+        EditorRenderPass->Render(ActiveViewport);
+    }
     ClearRenderArr();
 }
