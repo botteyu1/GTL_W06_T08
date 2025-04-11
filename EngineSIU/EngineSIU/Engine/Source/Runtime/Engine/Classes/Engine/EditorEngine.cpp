@@ -122,6 +122,10 @@ void UEditorEngine::EndPIE()
     }
     // 다시 EditorWorld로 돌아옴.
     ActiveWorld = EditorWorld;
+
+    // TODO?
+    //SelectActor();
+    //SelectComponent();
 }
 
 FWorldContext& UEditorEngine::GetEditorWorldContext(/*bool bEnsureIsGWorld*/)

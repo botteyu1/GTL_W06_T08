@@ -1,10 +1,10 @@
 #include "HeightFogActor.h"
 
-#include "Components/HeightFogComponent.h"
+#include "Components/ExponentialHeightFogComponent.h"
 
 AHeightFogActor::AHeightFogActor()
 {
-    HeightFogComponent = AddComponent<UHeightFogComponent>();
+    HeightFogComponent = AddComponent<UExponentialHeightFogComponent>();
 
     
 }

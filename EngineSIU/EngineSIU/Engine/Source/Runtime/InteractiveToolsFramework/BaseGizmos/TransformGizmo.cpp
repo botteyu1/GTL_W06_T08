@@ -92,13 +92,28 @@ void ATransformGizmo::Tick(float DeltaTime)
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
     if (!Engine)
         return;
-    if (const AActor* PickedActor = Engine->GetSelectedActor())
+
+    USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+    AActor* SelectedActor = Engine->GetSelectedActor();
+
+    USceneComponent* TargetComponent = nullptr;
+    
+    if (SelectedComponent != nullptr)
     {
-        SetActorLocation(PickedActor->GetActorLocation());
+        TargetComponent = SelectedComponent;
+    }
+    else if (SelectedActor != nullptr)
+    {
+        TargetComponent = SelectedActor->GetRootComponent();
+    }
+    
+    if (TargetComponent)
+    {
+        SetActorLocation(TargetComponent->GetWorldLocation());
         if (Engine->GetEditorPlayer()->GetCoordiMode() == CoordiMode::CDM_LOCAL)
         {
             // TODO: 임시로 RootComponent의 정보로 사용
-            SetActorRotation(PickedActor->GetActorRotation());
+            SetActorRotation(TargetComponent->GetWorldRotation());
         }
         else if (Engine->GetEditorPlayer()->GetCoordiMode() == CoordiMode::CDM_WORLD)
             SetActorRotation(FVector(0.0f, 0.0f, 0.0f));
