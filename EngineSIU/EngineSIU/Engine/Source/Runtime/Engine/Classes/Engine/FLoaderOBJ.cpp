@@ -280,6 +280,13 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
             OutFStaticMesh.Materials[MaterialIndex].SpecularScalar = x;
         }
 
+        if (Token == "sharpness")
+        {
+            float x;
+            LineStream >> x;
+            OutFStaticMesh.Materials[MaterialIndex].Sharpness = x;
+        }
+
         if (Token == "Ni")
         {
             float x;
@@ -685,6 +692,7 @@ bool FManagerOBJ::SaveStaticMeshToBinary(const FWString& FilePath, const OBJ::FS
         File.write(reinterpret_cast<const char*>(&Material.Emissive), sizeof(Material.Emissive));
         File.write(reinterpret_cast<const char*>(&Material.SpecularScalar), sizeof(Material.SpecularScalar));
         File.write(reinterpret_cast<const char*>(&Material.DensityScalar), sizeof(Material.DensityScalar));
+        File.write(reinterpret_cast<const char*>(&Material.Sharpness), sizeof(Material.Sharpness));
         File.write(reinterpret_cast<const char*>(&Material.TransparencyScalar), sizeof(Material.TransparencyScalar));
         File.write(reinterpret_cast<const char*>(&Material.IlluminanceModel), sizeof(Material.IlluminanceModel));
 
@@ -760,6 +768,7 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
         File.read(reinterpret_cast<char*>(&Material.Emissive), sizeof(Material.Emissive));
         File.read(reinterpret_cast<char*>(&Material.SpecularScalar), sizeof(Material.SpecularScalar));
         File.read(reinterpret_cast<char*>(&Material.DensityScalar), sizeof(Material.DensityScalar));
+        File.read(reinterpret_cast<char*>(&Material.Sharpness), sizeof(Material.Sharpness));
         File.read(reinterpret_cast<char*>(&Material.TransparencyScalar), sizeof(Material.TransparencyScalar));
         File.read(reinterpret_cast<char*>(&Material.IlluminanceModel), sizeof(Material.IlluminanceModel));
 

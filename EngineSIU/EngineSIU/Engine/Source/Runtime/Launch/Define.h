@@ -88,6 +88,8 @@ namespace ETextureFlag
         Emissive = (1U << 4),
         Roughness = (1U << 5),
         Normal = (1U << 6),
+        // Displacement = (1U << 7),
+        // StencilDecal = (1U << 8),
     };
 }
 
@@ -109,35 +111,16 @@ struct FObjMaterialInfo
     FVector Specular;  // Ks : Specular (Vector) 
     FVector Ambient;   // Ka : Ambient (Vector)
     FVector Emissive;  // Ke : Emissive (Vector)
-
-    float SpecularScalar; // Ns : Specular Power (Float)
+    
+    float SpecularScalar; // Ns : Specular Power (Float)             Specular Exponent,  Shininess
+    float Sharpness;  // 선명도
+    // float roughness = clamp(1.0f - (Ns / 1000.0f), 0.0f, 1.0f);   or   float roughness = sqrt(2.0f / (Ns + 2.0f));
     float DensityScalar;  // Ni : Optical Density (Float)
     float TransparencyScalar; // d or Tr  : Transparency of surface (Float)
 
     uint32 IlluminanceModel; // illum: illumination Model between 0 and 10. (UINT)
 
     TMap<ETextureFlag::Type, PerTextureData> TextureData;
-    // /* Texture */
-    // FString DiffuseTextureName;  // map_Kd : Diffuse texture
-    // FWString DiffuseTexturePath;
-    //
-    // FString AmbientTextureName;  // map_Ka : Ambient texture
-    // FWString AmbientTexturePath;
-    //
-    // FString SpecularTextureName; // map_Ks : Specular texture
-    // FWString SpecularTexturePath;
-    //
-    // FString AlphaTextureName;    // map_d : Alpha texture
-    // FWString AlphaTexturePath;
-    //
-    // FString EmissiveTextureName;    // map_Ke : Emissive texture
-    // FWString EmissiveTexturePath;
-    //
-    // FString RoughnessTextureName;    // map_Ns : Roughness texture
-    // FWString RoughnessTexturePath;
-    //
-    // FString NormalTextureName;    // map_Bump : Roughness texture
-    // FWString NormalTexturePath;
 };
 
 // Cooked Data
@@ -352,6 +335,12 @@ struct FMaterialConstants {
 
     FVector EmmisiveColor;
     uint32 TextureFlag;
+
+    float Sharpness;
+    float Illum;
+
+    float pad1;
+    float pad2;
 };
 
 struct FPerObjectConstantBuffer {
