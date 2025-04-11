@@ -126,7 +126,7 @@ void FFogRenderPass::CreateSceneSrv()
 
 void FFogRenderPass::PrepareRender()
 {
-    for (const auto iter : TObjectRange<UHeightFogComponent>())
+    for (const auto iter : TObjectRange<UExponentialHeightFogComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
         {
@@ -258,7 +258,7 @@ void FFogRenderPass::UpdateScreenConstant(const D3D11_VIEWPORT& viewport)
     BufferManager->BindConstantBuffer(TEXT("FScreenConstants"), 0, EShaderStage::Pixel);
 }
 
-void FFogRenderPass::UpdateFogConstant(const std::shared_ptr<FEditorViewportClient>& ActiveViewport, UHeightFogComponent* Fog)
+void FFogRenderPass::UpdateFogConstant(const std::shared_ptr<FEditorViewportClient>& ActiveViewport, UExponentialHeightFogComponent* Fog)
 {
     FMatrix View = ActiveViewport->View;
     FMatrix Projection = ActiveViewport->GetProjectionMatrix();
