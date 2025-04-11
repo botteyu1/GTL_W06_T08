@@ -1,4 +1,4 @@
-﻿#include "LightComponentBase.h"
+#include "LightComponentBase.h"
 
 ULightComponentBase::ULightComponentBase()
 {
@@ -7,17 +7,3 @@ ULightComponentBase::ULightComponentBase()
     bVisible = true;
 }
 
-float ULightComponentBase::GetIntensity() const
-{
-    return Intensity;
-}
-
-FColor ULightComponentBase::GetLightColor() const
-{
-    return LightColor;
-}
-
-bool ULightComponentBase::IsVisible() const
-{
-    return bVisible;
-}

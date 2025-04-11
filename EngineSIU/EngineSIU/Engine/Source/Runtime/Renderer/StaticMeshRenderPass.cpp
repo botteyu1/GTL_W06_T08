@@ -129,7 +129,7 @@ void FStaticMeshRenderPass::PrepareRenderState() const
 
     TArray<FString> PSBufferKeys = {
                                   TEXT("FCameraConstantBuffer"),
-                                  TEXT("FLightBuffer"),
+                                  TEXT("FSceneLightBuffer"),
                                   TEXT("FMaterialConstants"),
                                   TEXT("FLitUnlitConstants"),
                                   TEXT("FSubMeshConstants"),

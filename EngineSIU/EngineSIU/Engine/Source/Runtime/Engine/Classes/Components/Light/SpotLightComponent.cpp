@@ -22,16 +22,6 @@ void USpotLightComponent::TickComponent(float DeltaTime)
     LightData.Position = GetWorldLocation();
 }
 
-FVector USpotLightComponent::GetDirection() const
-{
-    return LightData.Direction;
-}
-
-void USpotLightComponent::SetDirection(const FVector& dir)
-{
-    LightData.Direction = dir;
-}
-
 void* USpotLightComponent::GetLightDefinition()
 {
     return &LightData;

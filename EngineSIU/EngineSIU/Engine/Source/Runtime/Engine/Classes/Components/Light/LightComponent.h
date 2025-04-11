@@ -15,22 +15,6 @@ public:
     virtual void TickComponent(float DeltaTime) override;
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
     void InitializeLight();
-    
-    void SetDiffuseColor(FLinearColor NewColor);
-    void SetSpecularColor(FLinearColor NewColor);
-    void SetAttenuation(float Attenuation);
-    void SetAttenuationRadius(float AttenuationRadius);
-    void SetIntensity(float Intensity);
-    void SetFalloff(float fallOff);
-
-    FLinearColor GetDiffuseColor();
-    FLinearColor GetSpecularColor();
-    float GetAttenuation();
-    float GetAttenuationRadius();
-    float GetFalloff();
-
-    FVector GetColor() const;
-    void SetColor(FLinearColor NewColor);
 
     template<typename T>
     T& GetLightData() { return *static_cast<T*>(GetLightDefinition()); }

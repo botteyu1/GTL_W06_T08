@@ -114,36 +114,40 @@ void PropertyEditorPanel::Render()
                       [&]() { return lightObj->GetAmbientColor(); },
                       [&](FVector4 c) { lightObj->SetAmbientColor(c); });
                   */
-                DrawColorProperty("Base Color",
-                    [&]() { return lightObj->GetDiffuseColor(); },
-                    [&](FLinearColor c) { lightObj->SetDiffuseColor(c); });
-
-                DrawColorProperty("Specular Color",
-                    [&]() { return lightObj->GetSpecularColor(); },
-                    [&](FLinearColor c) { lightObj->SetSpecularColor(c); });
+                DrawColorProperty("Light Color",
+                    [&]() { return lightObj->GetLightColor(); },
+                    [&](FLinearColor c) { lightObj->SetLightColor(c); });
 
                 float Intensity = lightObj->GetIntensity();
                 if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 10000.0f, "%1.f"))
                     lightObj->SetIntensity(Intensity);
 
-                 /*  
-                float falloff = lightObj->GetFalloff();
-                if (ImGui::SliderFloat("Falloff", &falloff, 0.1f, 10.0f, "%.2f")) {
-                    lightObj->SetFalloff(falloff);
+                if (UPointLightComponent* PointObj = Cast<UPointLightComponent>(lightObj))
+                {
+                    float Radius = PointObj->GetAttenuationRadius();
+                    if (ImGui::SliderFloat("Radius", &Radius, 0.1f, 1000.0f, "%.2f")) {
+                        PointObj->SetAttenuationRadius(Radius);
+                    }
+                    float FallOff = PointObj->GetFalloff();
+                    if (ImGui::SliderFloat("FallOff", &FallOff, 0.1f, 10.0f, "%.2f")) {
+                        PointObj->SetFalloff(FallOff);
+                    }
                 }
 
-                TODO : For SpotLight
-                */
+                if (USpotLightComponent* SpotObj = Cast<USpotLightComponent>(lightObj))
+                {
 
-                float attenuation = lightObj->GetAttenuation();
-                if (ImGui::SliderFloat("Attenuation", &attenuation, 0.01f, 10000.f, "%.1f")) {
-                    lightObj->SetAttenuation(attenuation);
                 }
 
-                float AttenuationRadius = lightObj->GetAttenuationRadius();
-                if (ImGui::SliderFloat("Attenuation Radius", &AttenuationRadius, 0.01f, 10000.f, "%.1f")) {
-                    lightObj->SetAttenuationRadius(AttenuationRadius);
-                }
+                //float attenuation = lightObj->GetAttenuation();
+                //if (ImGui::SliderFloat("Attenuation", &attenuation, 0.01f, 10000.f, "%.1f")) {
+                //    lightObj->SetAttenuation(attenuation);
+                //}
+
+                //float AttenuationRadius = lightObj->GetAttenuationRadius();
+                //if (ImGui::SliderFloat("Attenuation Radius", &AttenuationRadius, 0.01f, 10000.f, "%.1f")) {
+                //    lightObj->SetAttenuationRadius(AttenuationRadius);
+                //}
 
                 ImGui::TreePop();
             }

@@ -10,19 +10,21 @@ class ULightComponentBase : public USceneComponent
 public:
     ULightComponentBase();
 
-public:
-    virtual float GetIntensity() const;
-    
-    FColor GetLightColor() const;
-    
-    bool IsVisible() const;
+public:   
+    float GetIntensity() const { return Intensity; }
+    FLinearColor GetLightColor() const { return LightColor; }
+    bool IsVisible() const { return bVisible; }
+
+    void SetIntensity(float InIntesity) { Intensity = InIntesity; }
+    void SetLightColor(FLinearColor InColor) { LightColor = InColor; }
+    void SetVisible(bool bValue) { bVisible = bValue; }
     
 protected:
     /** Power of light */
     float Intensity;
 
     /** Color of light */
-    FColor LightColor;
+    FLinearColor LightColor;
 
     /** Can be visible */
     bool bVisible;

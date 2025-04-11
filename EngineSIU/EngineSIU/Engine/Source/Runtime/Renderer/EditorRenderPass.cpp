@@ -550,6 +550,7 @@ void FEditorRenderPass::PrepareComponents()
 {
     Resources.Components.StaticMesh.Empty();
     Resources.Components.PointLight.Empty();
+    Resources.Components.SpotLight.Empty();
     Resources.Components.Fog.Empty();
     // gizmo 제외하고 넣기
 
@@ -1089,7 +1090,7 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
         FConstantBufferDebugIcon b;
         b.Position = PointLightComp->GetWorldLocation();
         b.Scale = IconScale;
-        b.Color = FLinearColor::FromColor(PointLightComp->GetLightColor());
+        b.Color = PointLightComp->GetLightColor();
         UdpateConstantbufferIcon(b);
         UpdateTextureIcon(IconType::PointLight);
         DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
@@ -1100,7 +1101,7 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
         FConstantBufferDebugIcon b;
         b.Position = SpotLightComp->GetWorldLocation();
         b.Scale = IconScale;
-        b.Color = FLinearColor::FromColor(SpotLightComp->GetLightColor());
+        b.Color = SpotLightComp->GetLightColor();
         UdpateConstantbufferIcon(b);
         UpdateTextureIcon(IconType::SpotLight);
         DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
