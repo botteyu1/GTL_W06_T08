@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <cassert>
 #include "MathUtility.h"
 #include "Serialization/Archive.h"
@@ -57,7 +57,24 @@ public:
 // 3D 벡터
 struct FVector
 {
-    float X, Y, Z;
+    union
+    {
+        float X;
+        float x;
+    };
+
+    union
+    {
+        float Y;
+        float y;
+    };
+
+    union
+    {
+        float Z;
+        float z;
+    };
+
 
     FVector() : X(0), Y(0), Z(0) {}
     FVector(float X, float Y, float Z) : X(X), Y(Y), Z(Z) {}

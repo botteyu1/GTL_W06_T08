@@ -126,16 +126,14 @@ void FGizmoRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& View
 {
     if (GEngine->ActiveWorld->WorldType != EWorldType::Editor)
         return;
-    
-    PrepareRenderState();
-    Graphics->DeviceContext->ClearDepthStencilView(Graphics->DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-    Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
+
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
     if (!Engine)
     {
         UE_LOG(LogLevel::Error, TEXT("Gizmo RenderPass : Render : Engine is not valid."));
         return;
     }
+
     ControlMode Mode = Engine->GetEditorPlayer()->GetControlMode();
     UWorld* ActiveWorld = GEngine->ActiveWorld;
     if (!ActiveWorld)
@@ -143,18 +141,19 @@ void FGizmoRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& View
         UE_LOG(LogLevel::Error, TEXT("Gizmo RenderPass : Render : ActiveWorld is not valid."));
         return;
     }
+    
+    PrepareRenderState();
+    //Graphics->DeviceContext->ClearDepthStencilView(Graphics->DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilStateTestWriteDisable, 0);
+    Graphics->DeviceContext->RSSetState(FEngineLoop::GraphicDevice.RasterizerStateSOLID);
 
     if (Mode == CM_TRANSLATION)
     {
         for (UStaticMeshComponent* StaticMeshComp : Viewport->GetGizmoActor()->GetArrowArr())
         {
             UGizmoBaseComponent* GizmoComp = Cast<UGizmoBaseComponent>(StaticMeshComp);
-            Graphics->DeviceContext->RSSetState(FEngineLoop::GraphicDevice.RasterizerStateSOLID);
 
             RenderGizmoComponent(GizmoComp, Viewport, ActiveWorld);
-
-            Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
-            Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
         }
     }
     else if (Mode == CM_SCALE)
@@ -163,12 +162,7 @@ void FGizmoRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& View
         {
             UGizmoBaseComponent* GizmoComp = Cast<UGizmoBaseComponent>(StaticMeshComp);
 
-            Graphics->DeviceContext->RSSetState(FEngineLoop::GraphicDevice.RasterizerStateSOLID);
-
             RenderGizmoComponent(GizmoComp, Viewport, ActiveWorld);
-
-            Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
-            Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
         }
     }
     else if (Mode == CM_ROTATION)
@@ -176,15 +170,13 @@ void FGizmoRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& View
         for (UStaticMeshComponent* StaticMeshComp : Viewport->GetGizmoActor()->GetDiscArr())
         {
             UGizmoBaseComponent* GizmoComp = Cast<UGizmoBaseComponent>(StaticMeshComp);
-            Graphics->DeviceContext->RSSetState(FEngineLoop::GraphicDevice.RasterizerStateSOLID);
-            Graphics->DeviceContext->RSSetState(FEngineLoop::GraphicDevice.RasterizerStateSOLID);
 
             RenderGizmoComponent(GizmoComp, Viewport, ActiveWorld);
 
-            Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
-            Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
         }
     }
+    Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
+    Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilStateTestWriteEnable, 0);
 }
 
 void FGizmoRenderPass::RenderGizmoComponent(UGizmoBaseComponent* GizmoComp, const std::shared_ptr<FEditorViewportClient>& Viewport, const UWorld* World)

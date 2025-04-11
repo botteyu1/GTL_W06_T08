@@ -35,7 +35,7 @@ protected:
     FLight Light;
 
 public:
-    FBoundingBox GetBoundingBox() const {return AABB;}
+    FBoundingBox GetLocalBoundingBox() const {return AABB;}
     
     float GetIntensity() const {return Light.Intensity;}
     

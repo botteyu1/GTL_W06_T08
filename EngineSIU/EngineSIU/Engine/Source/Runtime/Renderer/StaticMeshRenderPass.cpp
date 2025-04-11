@@ -230,7 +230,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
 
         if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
         {
-            FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(Comp->GetBoundingBox(), Comp->GetWorldLocation(), Model);
+            FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(Comp->GetLocalBoundingBox(), Comp->GetWorldLocation(), Model);
         }
     }
 }

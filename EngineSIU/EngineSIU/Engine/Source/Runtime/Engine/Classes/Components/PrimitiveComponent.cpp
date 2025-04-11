@@ -7,8 +7,6 @@ UObject* UPrimitiveComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 
-    NewComponent->AABB = AABB;
-
     return NewComponent;
 }
 

@@ -75,7 +75,7 @@ void UStaticMeshComponent::GetUsedMaterials(TArray<UMaterial*>& Out) const
 
 int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
-    if (!AABB.Intersect(rayOrigin, rayDirection, pfNearHitDistance)) return 0;
+    if (!LocalBoundingBox.Intersect(rayOrigin, rayDirection, pfNearHitDistance)) return 0;
     int nIntersections = 0;
     if (staticMesh == nullptr) return 0;
 
@@ -121,3 +121,29 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
     }
     return nIntersections;
 }
+
+void UStaticMeshComponent::UpdateAABB()
+{
+    if (!bIsChangedForAABB)
+    {
+        return;
+    }
+
+    FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+    FVector max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+    for (const FStaticMeshVertex& Vertex : staticMesh->GetRenderData()->Vertices)
+    {
+        FVector VertexWorld = FVector(Vertex.X, Vertex.Y, Vertex.Z);
+        VertexWorld = GetWorldMatrix().TransformPosition(VertexWorld);
+        min.x = std::min(min.x, VertexWorld.x);
+        min.y = std::min(min.y, VertexWorld.y);
+        min.z = std::min(min.z, VertexWorld.z);
+        max.x = std::max(max.x, VertexWorld.x);
+        max.y = std::max(max.y, VertexWorld.y);
+        max.z = std::max(max.z, VertexWorld.z);
+    }
+    WorldBoundingBox.max = max;
+    WorldBoundingBox.min = min;
+    bIsChangedForAABB = false;
+}
+

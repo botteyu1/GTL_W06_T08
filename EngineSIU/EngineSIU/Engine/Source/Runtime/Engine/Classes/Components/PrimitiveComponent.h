@@ -18,9 +18,6 @@ public:
         const FVector& v0, const FVector& v1, const FVector& v2, float& hitDistance
     ) const;
 
-
-    FBoundingBox AABB;
-
 private:
     FString m_Type;
 
@@ -32,6 +29,6 @@ public:
         m_Type = _Type;
         //staticMesh = FEngineLoop::resourceMgr.GetMesh(m_Type);
     }
-    FBoundingBox GetBoundingBox() const { return AABB; }
+
 };
 
