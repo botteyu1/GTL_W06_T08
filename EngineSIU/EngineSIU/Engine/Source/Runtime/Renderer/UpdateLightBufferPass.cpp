@@ -1,6 +1,9 @@
 #include "Define.h"
 #include "UObject/Casts.h"
 #include "UpdateLightBufferPass.h"
+
+#include "Components/Light/AmbientLightComponent.h"
+#include "Components/Light/DirectionalLightComponent.h"
 #include "D3D11RHI/DXDBufferManager.h"
 #include "D3D11RHI/GraphicDevice.h"
 #include "D3D11RHI/DXDShaderManager.h"
@@ -47,26 +50,65 @@ void FUpdateLightBufferPass::PrepareRender()
             {
                 SpotLights.Add(SpotLight);
             }
+            else if (UDirectionalLightComponent* DL = Cast<UDirectionalLightComponent>(iter))
+            {
+                this->DirectionalLight = DL;
+            }
+            else if (UAmbientLightComponent* AL = Cast<UAmbientLightComponent>(iter))
+            {
+                this->AmbientLight = AL;
+            }
         }
     }
 }
 
 void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    FLightBuffer LightBufferData = {};
+    // FLightBuffer LightBufferData = {};
+    FSceneLightBuffer SceneLightBufferData = {};
     int LightCount = 0;
 
-    LightBufferData.GlobalAmbientLight = FVector4(0.1f, 0.1f, 0.1f, 1.f);
+    // LightBufferData.GlobalAmbientLight = FVector4(0.1f, 0.1f, 0.1f, 1.f);
+    if (this->AmbientLight)
+    {
+        SceneLightBufferData.AmbientLight = this->AmbientLight->GetLightData<FAmbientLight>();
+    }
+    else
+    {
+        FAmbientLight TempLight;
+        TempLight.bVisible = true;
+        TempLight.Color = FVector(0.1f, 0.1f, 0.1f);
+        TempLight.Intensity = 1.0f;
+        
+        SceneLightBufferData.AmbientLight = TempLight; 
+    }
+
+    if (this->DirectionalLight)
+    {
+        SceneLightBufferData.DirectionalLight = this->DirectionalLight->GetLightData<FDirectionalLight>();
+    }
+    
+    
     for (auto Light : PointLights)
     {
-        if (LightCount < MAX_LIGHTS)
-        {
-            LightBufferData.gLights[LightCount] = Light->GetLightInfo();
-            LightBufferData.gLights[LightCount].Position = Light->GetWorldLocation();
+        // if (LightCount < MAX_LIGHTS)
+        // {
+        //     LightBufferData.gLights[LightCount] = Light->GetLightInfo();
+        //     LightBufferData.gLights[LightCount].Position = Light->GetWorldLocation();
+        //
+        //     LightCount++;
+        // }
 
+        if (LightCount < MAX_POINT_LIGHT)
+        {
+            SceneLightBufferData.PointLight[LightCount] = Light->GetLightData<FPointLight>();
             LightCount++;
         }
     }
+    SceneLightBufferData.NumPointLights = LightCount;
+    
+    // Reset count
+    LightCount = 0;
 
     for (auto Light : SpotLights)
     {
@@ -78,17 +120,21 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
             //FEngineLoop::PrimitiveDrawBatch.AddConeToBatch(Light->GetWorldLocation(), 100, Light->GetRange(), 140, {1,1,1,1}, Model);
 
             //FEngineLoop::PrimitiveDrawBatch.AddOBBToBatch(Light->GetBoundingBox(), Light->GetWorldLocation(), Model);
-            LightBufferData.gLights[LightCount] = Light->GetLightInfo();
-            LightBufferData.gLights[LightCount].Position = Light->GetWorldLocation();
-            LightBufferData.gLights[LightCount].Direction = Light->GetForwardVector();
-            LightBufferData.gLights[LightCount].Type = ELightType::SPOT_LIGHT;
+            // LightBufferData.gLights[LightCount] = Light->GetLightInfo();
+            // LightBufferData.gLights[LightCount].Position = Light->GetWorldLocation();
+            // LightBufferData.gLights[LightCount].Direction = Light->GetForwardVector();
+            // LightBufferData.gLights[LightCount].Type = ELightType::SPOT_LIGHT;
 
+            SceneLightBufferData.SpotLight[LightCount] = Light->GetLightData<FSpotLight>();
             LightCount++;
         }
     }
-    LightBufferData.nLights = LightCount;
+    SceneLightBufferData.NumSpotLights = LightCount;
+    
+    // LightBufferData.nLights = LightCount;
 
-    BufferManager->UpdateConstantBuffer(TEXT("FLightBuffer"), LightBufferData);
+    // BufferManager->UpdateConstantBuffer(TEXT("FLightBuffer"), LightBufferData);
+    BufferManager->UpdateConstantBuffer(TEXT("FSceneLightBuffer"), SceneLightBufferData);
 }
 
 void FUpdateLightBufferPass::ClearRenderArr()

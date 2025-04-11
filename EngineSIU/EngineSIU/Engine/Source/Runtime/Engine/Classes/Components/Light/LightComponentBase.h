@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Components/SceneComponent.h"
-
 #include "Math/Color.h"
 
 class ULightComponentBase : public USceneComponent
@@ -12,13 +11,20 @@ public:
     ULightComponentBase();
 
 public:
-    float GetIntensity();
-    FColor GetLightColor();
+    virtual float GetIntensity() const;
+    
+    FColor GetLightColor() const;
+    
     bool IsVisible() const;
     
 protected:
+    /** Power of light */
     float Intensity;
+
+    /** Color of light */
     FColor LightColor;
+
+    /** Can be visible */
     bool bVisible;
 
 };

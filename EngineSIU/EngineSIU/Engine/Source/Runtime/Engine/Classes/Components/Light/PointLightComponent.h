@@ -9,10 +9,13 @@ public:
     UPointLightComponent();
     virtual ~UPointLightComponent() override;
 
-private:
-    float AttenuationRadius;
-    float LightFalloffExponent;
+    void TickComponent(float DeltaTime) override;
     
+protected:
+    void* GetLightDefinition() override;
+    
+private:
+    FPointLight LightData;
 };
 
 

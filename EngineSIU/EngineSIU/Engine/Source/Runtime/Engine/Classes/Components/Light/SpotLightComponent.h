@@ -3,22 +3,21 @@
 
 class USpotLightComponent :public ULightComponent
 {
-
     DECLARE_CLASS(USpotLightComponent, ULightComponent)
+    
 public:
     USpotLightComponent();
-    ~USpotLightComponent();
-    FVector GetDirection();
+    ~USpotLightComponent() override;
+
+    void TickComponent(float DeltaTime) override;
+    
+    FVector GetDirection() const;
     void SetDirection(const FVector& dir);
 
-    float GetInnerConeAngle() const { return InnerConeAngle; }
-    float GetOuterConeAngle() const { return OuterConeAngle; }
-
-    void SetInnerConeAngle(float InAngle) { InnerConeAngle = InAngle; }
-    void SetOuterConeAngle(float InAngle) { OuterConeAngle = InAngle; }
-
+protected:
+    void* GetLightDefinition() override;
+    
 private:
-    float InnerConeAngle;
-    float OuterConeAngle;
+    FSpotLight LightData;
 };
 
