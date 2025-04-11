@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Components/SceneComponent.h"
 
@@ -20,5 +20,5 @@ protected:
     float Intensity;
     FColor LightColor;
     bool bVisible;
-    
+
 };

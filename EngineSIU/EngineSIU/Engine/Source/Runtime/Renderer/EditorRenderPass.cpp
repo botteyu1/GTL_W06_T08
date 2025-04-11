@@ -7,7 +7,7 @@
 #include "D3D11RHI/GraphicDevice.h"
 #include "Engine/Classes/Actors/Player.h"
 #include "Renderer.h"
-#include "Engine/Classes/Components/LightComponent.h"
+#include "Engine/Classes/Components/Light/PointLightComponent.h"
 #include "Engine/Classes/Components/HeightFogComponent.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "Engine/FLoaderOBJ.h"
@@ -849,12 +849,12 @@ void FEditorRenderPass::RenderPointlightInstanced()
     TArray<FConstantBufferDebugSphere> BufferAll;
     for (ULightComponentBase* LightComp : Resources.Components.Light)
     {        
-        if (ULightComponentBase* PointLightComp = Cast<ULightComponentBase>(LightComp))
+        if (UPointLightComponent* PointLightComp = Cast<UPointLightComponent>(LightComp))
         {
             FConstantBufferDebugSphere b;
             b.Position = PointLightComp->GetWorldLocation();
             b.Radius = PointLightComp->GetAttenuationRadius();
-            b.Color = PointLightComp->GetDiffuseColor();
+            b.Color = PointLightComp->GetLightColor();
             BufferAll.Add(b);
         }
     }
