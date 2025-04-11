@@ -19,6 +19,8 @@
 #include "UserInterface/Console.h"
 #include <Math/Color.h>
 
+#include "Container/Map.h"
+
 struct FStaticMeshVertex
 {
     float X, Y, Z;    // Position
@@ -74,13 +76,35 @@ struct FObjInfo
     TArray<FMaterialSubset> MaterialSubsets;
 };
 
+// TODO: 좀 더 좋은 위치 혹은 좋은 이름이 있으면 변경
+namespace ETextureFlag
+{
+    enum Type : uint32 {
+        None = 0,
+        Diffuse = (1U << 0),
+        Ambient = (1U << 1),
+        Specular = (1U << 2),
+        Alpha = (1U << 3),
+        Emissive = (1U << 4),
+        Roughness = (1U << 5),
+        Normal = (1U << 6),
+    };
+}
+
+struct PerTextureData
+{
+    FString Name;
+    FWString Path;
+};
+
 struct FObjMaterialInfo
 {
     FString MaterialName;  // newmtl : Material Name.
 
-    bool bHasTexture = false;  // Has Texture?
     bool bTransparent = false; // Has alpha channel?
 
+    uint32 TextureFlag = ETextureFlag::Type::None;
+    
     FVector Diffuse;  // Kd : Diffuse (Vector4)
     FVector Specular;  // Ks : Specular (Vector) 
     FVector Ambient;   // Ka : Ambient (Vector)
@@ -92,21 +116,28 @@ struct FObjMaterialInfo
 
     uint32 IlluminanceModel; // illum: illumination Model between 0 and 10. (UINT)
 
-    /* Texture */
-    FString DiffuseTextureName;  // map_Kd : Diffuse texture
-    FWString DiffuseTexturePath;
-
-    FString AmbientTextureName;  // map_Ka : Ambient texture
-    FWString AmbientTexturePath;
-
-    FString SpecularTextureName; // map_Ks : Specular texture
-    FWString SpecularTexturePath;
-
-    FString BumpTextureName;     // map_Bump : Bump texture
-    FWString BumpTexturePath;
-
-    FString AlphaTextureName;    // map_d : Alpha texture
-    FWString AlphaTexturePath;
+    TMap<ETextureFlag::Type, PerTextureData> TextureData;
+    // /* Texture */
+    // FString DiffuseTextureName;  // map_Kd : Diffuse texture
+    // FWString DiffuseTexturePath;
+    //
+    // FString AmbientTextureName;  // map_Ka : Ambient texture
+    // FWString AmbientTexturePath;
+    //
+    // FString SpecularTextureName; // map_Ks : Specular texture
+    // FWString SpecularTexturePath;
+    //
+    // FString AlphaTextureName;    // map_d : Alpha texture
+    // FWString AlphaTexturePath;
+    //
+    // FString EmissiveTextureName;    // map_Ke : Emissive texture
+    // FWString EmissiveTexturePath;
+    //
+    // FString RoughnessTextureName;    // map_Ns : Roughness texture
+    // FWString RoughnessTexturePath;
+    //
+    // FString NormalTextureName;    // map_Bump : Roughness texture
+    // FWString NormalTexturePath;
 };
 
 // Cooked Data
@@ -320,8 +351,7 @@ struct FMaterialConstants {
     float SpecularScalar;
 
     FVector EmmisiveColor;
-    float MaterialPad0;
-
+    uint32 TextureFlag;
 };
 
 struct FPerObjectConstantBuffer {
