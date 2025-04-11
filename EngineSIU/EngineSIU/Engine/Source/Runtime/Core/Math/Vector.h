@@ -57,23 +57,11 @@ public:
 // 3D 벡터
 struct FVector
 {
-    union
-    {
         float X;
-        float x;
-    };
 
-    union
-    {
         float Y;
-        float y;
-    };
 
-    union
-    {
         float Z;
-        float z;
-    };
 
 
     FVector() : X(0), Y(0), Z(0) {}

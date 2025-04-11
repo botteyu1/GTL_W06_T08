@@ -130,12 +130,12 @@ void UStaticMeshComponent::UpdateAABB()
     {
         FVector VertexWorld = FVector(Vertex.X, Vertex.Y, Vertex.Z);
         VertexWorld = GetWorldMatrix().TransformPosition(VertexWorld);
-        min.x = std::min(min.x, VertexWorld.x);
-        min.y = std::min(min.y, VertexWorld.y);
-        min.z = std::min(min.z, VertexWorld.z);
-        max.x = std::max(max.x, VertexWorld.x);
-        max.y = std::max(max.y, VertexWorld.y);
-        max.z = std::max(max.z, VertexWorld.z);
+        min.X = std::min(min.X, VertexWorld.X);
+        min.Y = std::min(min.Y, VertexWorld.Y);
+        min.Z = std::min(min.Z, VertexWorld.Z);
+        max.X = std::max(max.X, VertexWorld.X);
+        max.Y = std::max(max.Y, VertexWorld.Y);
+        max.Z = std::max(max.Z, VertexWorld.Z);
     }
     WorldBoundingBox.max = max;
     WorldBoundingBox.min = min;

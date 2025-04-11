@@ -216,6 +216,7 @@ float4 Lighting(float3 vPosition, float3 vNormal)
         if (gPoint[i].bVisible)
         {
             cColor += CalculatePointLight(i, vPosition, vNormal);
+
         }
     }
 
