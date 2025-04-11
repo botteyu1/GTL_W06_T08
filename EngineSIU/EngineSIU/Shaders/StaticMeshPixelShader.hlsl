@@ -1,6 +1,13 @@
 // staticMeshPixelShader.hlsl
 
-Texture2D Textures : register(t0);
+Texture2D DiffuseTexture : register(t0);
+Texture2D AmbientTexture : register(t1);
+Texture2D SpecularTexture : register(t2);
+Texture2D AlphaTexture : register(t3);
+Texture2D EmissiveTexture : register(t4);
+Texture2D RoughnessTexture : register(t5);
+Texture2D NormalTexture : register(t6);
+
 SamplerState Sampler : register(s0);
 
 cbuffer MatrixConstants : register(b0)
@@ -31,8 +38,9 @@ struct FMaterial
     float SpecularScalar;
     
     float3 EmissiveColor;
-    float MaterialPad0;
+    uint TextureFlag;
 };
+
 cbuffer MaterialConstants : register(b3)
 {
     FMaterial Material;
@@ -67,6 +75,7 @@ struct PS_INPUT
     float normalFlag : TEXCOORD1; // 노멀 유효 플래그
     float2 texcoord : TEXCOORD2; // UV 좌표
     int materialIndex : MATERIAL_INDEX; // 머티리얼 인덱스
+    float3x3 TBN : TBN;
 };
 
 struct PS_OUTPUT
@@ -75,25 +84,93 @@ struct PS_OUTPUT
     float4 UUID : SV_Target1;
 };
 
+float LinearToSRGB(float val)
+{
+    float low  = 12.92 * val;
+    float high = 1.055 * pow(val, 1.0 / 2.4) - 0.055;
+    // linear가 임계값보다 큰지 판별 후 선형 보간
+    float t = step(0.0031308, val); // linear >= 0.0031308이면 t = 1, 아니면 t = 0
+    return lerp(low, high, t);
+}
+
+float3 LinearToSRGB(float3 color)
+{
+    color.r = LinearToSRGB(color.r);
+    color.g = LinearToSRGB(color.g);
+    color.b = LinearToSRGB(color.b);
+    return color;
+}
 
 PS_OUTPUT mainPS(PS_INPUT input)
 {
     PS_OUTPUT output;
     output.UUID = UUID;
 
-    // 1) 알베도 샘플링
-    float3 albedo = Textures.Sample(Sampler, input.texcoord).rgb;
-    // 2) 머티리얼 디퓨즈
-    float3 matDiffuse = Material.DiffuseColor.rgb;
-    // 3) 라이트 계산
+    float3 Normal = normalize(input.normal);
+    float3 DiffuseColor = float3(1, 1, 1);
+    float3 AmbientColor = float3(0, 0, 0);
+    float3 SpecularColor = float3(0, 0, 0);
+    float3 AlphaColor = float3(0, 0, 0);
+    float3 EmissiveColor = float3(0, 0, 0);
+    float3 RoughnessColor = float3(0, 0, 0);
+    //float3 NormalColor = float3(0, 0, 0);
 
-    bool hasTexture = any(albedo != float3(0, 0, 0));
+
+    float2 UV = input.texcoord + UVOffset; 
+
+    // Diffuse
+    if (Material.TextureFlag & (1 << 0))
+    {
+        DiffuseColor = DiffuseTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Ambient
+    if (Material.TextureFlag & (1 << 1))
+    {
+        AmbientColor = AmbientTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Specular
+    if (Material.TextureFlag & (1 << 2))
+    {
+        SpecularColor = SpecularTexture.Sample(Sampler, UV).rgb;
+    }
     
-    float3 baseColor = hasTexture ? albedo : matDiffuse;
+    // Alpha
+    if (Material.TextureFlag & (1 << 3))
+    {
+        AlphaColor = AlphaTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Emissive
+    if (Material.TextureFlag & (1 << 4))
+    {
+        EmissiveColor = EmissiveTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Roughness
+    if (Material.TextureFlag & (1 << 5))
+    {
+        RoughnessColor = RoughnessTexture.Sample(Sampler, UV).rgb;
+    }
+    
+    // Normal (Bump)
+    if (Material.TextureFlag & (1 << 6))
+    {
+        float3 SampledNormal = NormalTexture.Sample(Sampler, UV).rgb;
+        SampledNormal = LinearToSRGB(SampledNormal);
+        Normal = normalize(2.f * SampledNormal - 1.f);
+        Normal = normalize(mul(mul(Normal, input.TBN), (float3x3) MInverseTranspose));
+    }
+    
+    // 임시로 밖에 둠.
+    DiffuseColor *= Material.DiffuseColor.rgb;
+    
+    float3 baseColor = DiffuseColor;
 
     if (IsLit)
     {
-        float3 lightRgb = Lighting(input.worldPos, input.normal).rgb;
+        float3 lightRgb = Lighting(input.worldPos, Normal).rgb;
         float3 litColor = baseColor * lightRgb;
         output.color = float4(litColor, 1);
     }
