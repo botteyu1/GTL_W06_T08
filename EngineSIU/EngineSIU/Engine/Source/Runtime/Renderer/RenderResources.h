@@ -80,17 +80,6 @@ struct FRenderResourcesDebug
         TArray<class UHeightFogComponent*> Fog;
     } Components;
 
-    struct FShaderResourceContainer
-    {
-        FShaderResource Gizmo;
-        FShaderResource AxisLine;
-        FShaderResource AABB;
-        FShaderResource Sphere;
-        FShaderResource Grid;
-        FShaderResource Cone;
-        FShaderResource Icon;
-        FShaderResource Arrow;
-    } Shaders;
 
     struct FConstantBuffers
     {
