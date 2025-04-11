@@ -2,14 +2,17 @@
 
 ULightComponentBase::ULightComponentBase()
 {
+    Intensity = 1.0f;
+    LightColor = FColor::White;
+    bVisible = true;
 }
 
-float ULightComponentBase::GetIntensity()
+float ULightComponentBase::GetIntensity() const
 {
     return Intensity;
 }
 
-FColor ULightComponentBase::GetLightColor()
+FColor ULightComponentBase::GetLightColor() const
 {
     return LightColor;
 }

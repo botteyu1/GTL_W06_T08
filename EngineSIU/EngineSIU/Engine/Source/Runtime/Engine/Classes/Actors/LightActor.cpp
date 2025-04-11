@@ -1,7 +1,7 @@
 #include "LightActor.h"
 #include "Components/Light/PointLightComponent.h"
 #include "Components/BillboardComponent.h"
-ALight::ALight()
+APointLight::APointLight()
 {
     PointLightComponent = AddComponent<UPointLightComponent>();
     BillboardComponent = AddComponent<UBillboardComponent>();
@@ -14,6 +14,6 @@ ALight::ALight()
 
 }
 
-ALight::~ALight()
+APointLight::~APointLight()
 {
 }

@@ -7,4 +7,12 @@ class UDirectionalLightComponent : public ULightComponent
 public:
     UDirectionalLightComponent();
     ~UDirectionalLightComponent() override = default;
+
+    void TickComponent(float DeltaTime) override;
+    
+protected:
+    void* GetLightDefinition() override;
+
+private:
+    FDirectionalLight LightData;
 };

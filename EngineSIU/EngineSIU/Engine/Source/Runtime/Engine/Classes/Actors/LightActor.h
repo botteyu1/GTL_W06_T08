@@ -4,12 +4,12 @@
 class UPointLightComponent;
 class UBillboardComponent;
 
-class ALight :public AActor
+class APointLight :public AActor
 {
-    DECLARE_CLASS(ALight, AActor)
+    DECLARE_CLASS(APointLight, AActor)
 public:
-    ALight();
-    virtual ~ALight();
+    APointLight();
+    ~APointLight() override;
 protected:
   
     UPROPERTY

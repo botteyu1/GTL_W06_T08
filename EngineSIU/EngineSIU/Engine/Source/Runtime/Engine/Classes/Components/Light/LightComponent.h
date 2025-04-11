@@ -28,15 +28,18 @@ public:
     float GetAttenuation();
     float GetAttenuationRadius();
     float GetFalloff();
-    FLight GetLightInfo() const { return Light; };
+
+    FVector GetColor() const;
+    void SetColor(FLinearColor NewColor);
+
+    template<typename T>
+    T& GetLightData() { return *static_cast<T*>(GetLightDefinition()); }
+
 protected:
-
     FBoundingBox AABB;
-    FLight Light;
-
+    
+    /** Need to override in derived class */
+    virtual void* GetLightDefinition() { return nullptr; }
 public:
     FBoundingBox GetBoundingBox() const {return AABB;}
-    
-    float GetIntensity() const {return Light.Intensity;}
-    
 };

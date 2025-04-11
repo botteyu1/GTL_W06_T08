@@ -304,10 +304,15 @@ struct FPrimitiveCounts
 };
 
 #define MAX_LIGHTS 16
+
+#define MAX_POINT_LIGHT 8
+#define MAX_SPOT_LIGHT 8
+
 enum ELightType {
     POINT_LIGHT = 1,
     SPOT_LIGHT = 2,
     DIRECTIONAL_LIGHT = 3,
+    AMBIENT_LIGHT = 4,
 };
 
 struct FLight
@@ -330,6 +335,74 @@ struct FLight
     float Intensity = 1000.f;    // m_fIntensity: 광원 강도
     float AttRadius = 100.f;    // m_fAttRadius: 감쇠 반경
     FVector LightPad;
+};
+
+struct FAmbientLight
+{
+    FVector Color;
+    float Intensity;
+
+    int bVisible;
+    FVector Pad0;
+};
+
+struct FDirectionalLight
+{
+    FVector Color;
+    float Intensity;
+
+    FVector Direction;
+    float Pad0;
+
+    int bVisible;
+    FVector Pad1;
+};
+
+struct FPointLight
+{
+    FVector Color;
+    float Intensity;
+
+    FVector Position;
+    float AttenuationRadius;
+
+    float Falloff;
+    FVector Pad1;
+
+    int bVisible;
+    FVector Pad2;
+};
+
+struct FSpotLight
+{
+    FVector Color;
+    float Intensity;
+
+    float AttenuationRadius;
+    float InnerConeAngle;
+    float OuterConeAngle;
+    float Falloff;
+
+    FVector Direction;
+    float Pad0;
+
+    FVector Position;
+    int bVisible;
+};
+
+struct FSceneLightBuffer
+{
+    FAmbientLight AmbientLight;
+
+    FDirectionalLight DirectionalLight;
+
+    FPointLight PointLight[MAX_POINT_LIGHT];
+    int NumPointLights;
+    
+    FSpotLight SpotLight[MAX_SPOT_LIGHT];
+    int NumSpotLights;
+
+    float Pad0, Pad1;
 };
 
 struct FLightBuffer
