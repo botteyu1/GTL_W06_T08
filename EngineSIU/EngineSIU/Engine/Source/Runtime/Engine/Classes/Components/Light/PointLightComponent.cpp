@@ -15,8 +15,6 @@ UPointLightComponent::~UPointLightComponent() = default;
 void UPointLightComponent::TickComponent(float DeltaTime)
 {
     ULightComponent::TickComponent(DeltaTime);
-
-    LightData.Position = GetWorldLocation();
 }
 
 void* UPointLightComponent::GetLightDefinition()

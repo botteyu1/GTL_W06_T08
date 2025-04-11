@@ -64,11 +64,9 @@ void FUpdateLightBufferPass::PrepareRender()
 
 void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    // FLightBuffer LightBufferData = {};
     FSceneLightBuffer SceneLightBufferData = {};
     int LightCount = 0;
-
-    // LightBufferData.GlobalAmbientLight = FVector4(0.1f, 0.1f, 0.1f, 1.f);
+    
     if (this->AmbientLight)
     {
         SceneLightBufferData.AmbientLight = this->AmbientLight->GetLightData<FAmbientLight>();
@@ -91,17 +89,14 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     
     for (auto Light : PointLights)
     {
-        // if (LightCount < MAX_LIGHTS)
-        // {
-        //     LightBufferData.gLights[LightCount] = Light->GetLightInfo();
-        //     LightBufferData.gLights[LightCount].Position = Light->GetWorldLocation();
-        //
-        //     LightCount++;
-        // }
-
         if (LightCount < MAX_POINT_LIGHT)
         {
             SceneLightBufferData.PointLight[LightCount] = Light->GetLightData<FPointLight>();
+            SceneLightBufferData.PointLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
+            SceneLightBufferData.PointLight[LightCount].Position = Light->GetWorldLocation();
+            SceneLightBufferData.PointLight[LightCount].Intensity = Light->GetIntensity();
+            SceneLightBufferData.PointLight[LightCount].bVisible = Light->IsVisible() ? 1 : 0;
+            
             LightCount++;
         }
     }
@@ -114,26 +109,17 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     {
         if (LightCount < MAX_LIGHTS)
         {
-            //// 월드 변환 행렬 계산 (스케일 1로 가정)
-            //FMatrix Model = JungleMath::CreateModelMatrix(Light->GetWorldLocation(), Light->GetWorldRotation(), { 1, 1, 1 });
-
-            //FEngineLoop::PrimitiveDrawBatch.AddConeToBatch(Light->GetWorldLocation(), 100, Light->GetRange(), 140, {1,1,1,1}, Model);
-
-            //FEngineLoop::PrimitiveDrawBatch.AddOBBToBatch(Light->GetBoundingBox(), Light->GetWorldLocation(), Model);
-            // LightBufferData.gLights[LightCount] = Light->GetLightInfo();
-            // LightBufferData.gLights[LightCount].Position = Light->GetWorldLocation();
-            // LightBufferData.gLights[LightCount].Direction = Light->GetForwardVector();
-            // LightBufferData.gLights[LightCount].Type = ELightType::SPOT_LIGHT;
-
             SceneLightBufferData.SpotLight[LightCount] = Light->GetLightData<FSpotLight>();
+            SceneLightBufferData.SpotLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
+            SceneLightBufferData.SpotLight[LightCount].Position = Light->GetWorldLocation();
+            SceneLightBufferData.SpotLight[LightCount].Intensity = Light->GetIntensity();
+            SceneLightBufferData.SpotLight[LightCount].bVisible = Light->IsVisible() ? 1 : 0;
+            
             LightCount++;
         }
     }
     SceneLightBufferData.NumSpotLights = LightCount;
     
-    // LightBufferData.nLights = LightCount;
-
-    // BufferManager->UpdateConstantBuffer(TEXT("FLightBuffer"), LightBufferData);
     BufferManager->UpdateConstantBuffer(TEXT("FSceneLightBuffer"), SceneLightBufferData);
 }
 
