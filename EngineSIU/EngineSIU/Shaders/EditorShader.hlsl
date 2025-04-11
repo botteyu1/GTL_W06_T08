@@ -192,7 +192,8 @@ PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint instanceID : SV_InstanceID)
     PS_INPUT output;
     
     float3 pos = DataCone[instanceID].ApexPosiiton;
-    float3 scale = float3(DataCone[instanceID].Radius.xx, DataCone[instanceID].Height);
+    float ConeRadiusScale = DataCone[instanceID].Radius * tan(DataCone[instanceID].Angle); // cone의 밑면
+    float3 scale = float3(ConeRadiusScale.xx, DataCone[instanceID].Radius);
     float3x3 rot = CreateRotationMatrixFromZ(DataCone[instanceID].Direction);
     
     float3 localPos3 = input.position.xyz;
@@ -205,13 +206,13 @@ PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint instanceID : SV_InstanceID)
     localPos = mul(localPos, ViewMatrix);
     localPos = mul(localPos, ProjMatrix);
     output.position = localPos;
-    
+    output.color = DataCone[instanceID].Color;
     return output;
 }
 
 float4 conePS(PS_INPUT input) : SV_Target
 {
-    return float4(0.777f, 1.0f, 1.0f, 1.0f); // 하늘색
+    return input.color;
 }
 
 /////////////////////////////////////////////
@@ -237,7 +238,7 @@ float3 ComputeGridPosition(uint instanceID, uint vertexID)
 {
     int halfCount = GridCount / 2;
     float centerOffset = halfCount * 0.5; // grid 중심이 원점에 오도록
-
+    
     float3 startPos;
     float3 endPos;
     
@@ -281,7 +282,7 @@ PS_INPUT_GRID gridVS(VS_INPUT_GRID input)
     PS_INPUT_GRID output;
     float3 pos = ComputeGridPosition(input.instanceID, input.vertexID);
     
-    float4 color = float4(1, 1, 1, 1);
+    float4 color = float4(0.3, 0.3, 0.3, 1);
     output.WorldPosition = float4(pos, 1.f);
     output.Position = mul(output.WorldPosition, ViewMatrix);
     output.Position = mul(output.Position, ProjMatrix);
@@ -345,24 +346,26 @@ PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID)
 
         // 변환
     float4 viewPos = mul(float4(worldPos, 1.0), ViewMatrix);
-        output.Position = mul(viewPos, ProjMatrix);
+    output.Position = mul(viewPos, ProjMatrix);
 
-        output.TexCoord =
-    QuadTexCoord[ vertexID];
-        return
-    output;
+    output.TexCoord = QuadTexCoord[vertexID];
+    return output;
 }
 
 
 // 픽셀 셰이더
 float4 iconPS(PS_INPUT_ICON input) : SV_Target
 {
-    float4 col = gTexture.Sample(gSampler, input.TexCoord);
+    float4 iconTexture = gTexture.Sample(gSampler, input.TexCoord);
+    float4 color = IconColor/2;
+    color.w = 1.f;
+    
+    float4 OutColor = iconTexture * color;
     float threshold = 0.01; // 필요한 경우 임계값을 조정
-    if (col.a < threshold)
+    if (OutColor.a < threshold)
         clip(-1); // 픽셀 버리기
     
-    return col;
+    return OutColor;
 }
 
 

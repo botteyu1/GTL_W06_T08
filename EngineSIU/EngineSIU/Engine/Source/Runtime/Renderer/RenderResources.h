@@ -75,7 +75,8 @@ struct FRenderResourcesDebug
     struct FWorldComponentContainer
     {
         TArray<class UStaticMeshComponent*> StaticMesh;
-        TArray<class ULightComponentBase*> Light;
+        TArray<class UPointLightComponent*> PointLight;
+        TArray<class USpotLightComponent*> SpotLight;
         TArray<class UHeightFogComponent*> Fog;
     } Components;
 

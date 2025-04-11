@@ -124,11 +124,6 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
 
 void UStaticMeshComponent::UpdateAABB()
 {
-    if (!bIsChangedForAABB)
-    {
-        return;
-    }
-
     FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
     FVector max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
     for (const FStaticMeshVertex& Vertex : staticMesh->GetRenderData()->Vertices)
@@ -144,6 +139,5 @@ void UStaticMeshComponent::UpdateAABB()
     }
     WorldBoundingBox.max = max;
     WorldBoundingBox.min = min;
-    bIsChangedForAABB = false;
 }
 

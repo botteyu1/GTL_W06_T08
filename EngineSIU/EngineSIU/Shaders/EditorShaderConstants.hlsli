@@ -39,14 +39,15 @@ struct ConeData
     float3 ApexPosiiton;
     float Radius;
     float3 Direction;
-    float Height;
+    float Angle;
+    float4 Color;
 };
 cbuffer ConstantBufferDebugCone : register(b13)
 {
     ConeData DataCone[8];
 }
 
-cbuffer ConstantBufferDebugGrid : register(b1)
+cbuffer ConstantBufferDebugGrid : register(b13)
 {
     float GridSpacing;
     int GridCount; // 총 grid 라인 수
@@ -57,6 +58,7 @@ cbuffer ConstantBufferDebugIcon : register(b13)
 {
     float3 IconPosition;
     float IconScale;
+    float4 IconColor;
 }
 
 cbuffer ConstantBufferDebugArrow : register(b13)

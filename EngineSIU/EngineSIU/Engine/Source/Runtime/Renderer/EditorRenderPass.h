@@ -12,21 +12,28 @@ class FGraphicsDevice;
 class UWorld;
 class FEditorViewportClient;
 class FRenderer;
+class FDXDBufferManager;
+class FDXDShaderManager;
+
 
 class FEditorRenderPass
 {
 public:
-    void Initialize(FRenderer* InRenderer);
+    void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager);
     void Render(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void SetGridParameter(float Spacing, uint32 GridCount);
     void Release();
 
 private:
-    FRenderer* Renderer;
+    ID3D11DeviceContext* DeviceContext;
+    FGraphicsDevice* Graphics;
+    FDXDBufferManager* BufferManager;
+    FDXDShaderManager* ShaderManager;
+
     FRenderResourcesDebug Resources;
 
     void CreateShaders();
-    void PrepareShader(FShaderResource ShaderResource) const;
+    //void Preparehader(FShaderResource ShaderResource) const;
     void ReleaseShaders();
 
     void CreateBuffers();
@@ -59,9 +66,9 @@ private:
     void UdpateConstantbufferPointlightInstanced(TArray<FConstantBufferDebugSphere> Buffer);
 
     // Cone
-    //void RenderSpotlightInstanced(const UWorld* World);
-    //void PrepareConstantbufferSpotlight();
-    //void UdpateConstantbufferSpotlightInstanced(TArray<FConstantBufferDebugCone> Buffer);
+    void RenderSpotlightInstanced();
+    void PrepareConstantbufferSpotlight();
+    void UdpateConstantbufferSpotlightInstanced(TArray<FConstantBufferDebugCone> Buffer);
 
     // Grid
     void RenderGrid(std::shared_ptr<FEditorViewportClient> ActiveViewport);
@@ -75,14 +82,26 @@ private:
     void UpdateTextureIcon(IconType type);
 
     // Arrow
-    //void RenderArrows(const UWorld* World);
-    //void PrepareConstantbufferArrow();
-    //void UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer);
+    void RenderArrows(const UWorld* World);
+    void PrepareConstantbufferArrow();
+    void UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer);
 
     const uint32 ConstantBufferSizeAABB = 8;
     const uint32 ConstantBufferSizeSphere = 8;
     const uint32 ConstantBufferSizeCone = 8;
 
     FConstantBufferDebugGrid CurrentGridSettings;
+
+    const std::wstring ShaderPath = L"Shaders/EditorShader.hlsl";
+    const std::wstring ShaderNameAxis = L"EditorRenderAxis";
+    const std::wstring ShaderNameAABB = L"EditorRenderAABB";
+    const std::wstring ShaderNameGrid = L"EditorRenderGrid";
+    const std::wstring ShaderNameIcon = L"EditorRenderIcon";
+    const std::wstring ShaderNameSphere = L"EditorRenderSphere";
+    const std::wstring ShaderNameCone = L"EditorRenderCone";
+    const std::wstring ShaderNameArrow = L"EditorRenderArrow";
+    const std::wstring VertexBufferNameBox = L"BoxFrameOnly";
+    const std::wstring VertexBufferNameCone = L"ConeFrameOnly";
+
 };
 

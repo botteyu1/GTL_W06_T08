@@ -178,7 +178,8 @@ struct alignas(16) FConstantBufferDebugCone
     alignas(16) FVector ApexPosiiton;
     float Radius;
     FVector Direction;
-    float Height;
+    float Angle;
+    FLinearColor Color;
 };
 
 /// <summary>
@@ -199,6 +200,7 @@ struct alignas(16) FConstantBufferDebugIcon
 {
     alignas(16) FVector Position;
     float Scale;
+    FLinearColor Color;
 };
 
 /// <summary>

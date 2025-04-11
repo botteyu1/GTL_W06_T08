@@ -43,5 +43,4 @@ protected:
     UPROPERTY(FBoundingBox, LocalBoundingBox);
     UPROPERTY(FBoundingBox, WorldBoundingBox);
 
-    bool bIsChangedForAABB : 1 = true;
 };
