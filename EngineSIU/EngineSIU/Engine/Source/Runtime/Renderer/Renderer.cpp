@@ -12,6 +12,7 @@
 #include "LineRenderPass.h"
 #include "DepthBufferDebugPass.h"
 #include "FogRenderPass.h"
+#include "EditorRenderPass.h"
 #include <UObject/UObjectIterator.h>
 #include <UObject/Casts.h>
 #include "GameFrameWork/Actor.h"
@@ -32,6 +33,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     LineRenderPass = new FLineRenderPass();
     DepthBufferDebugPass = new FDepthBufferDebugPass();
     FogRenderPass = new FFogRenderPass();
+    EditorRenderPass = new FEditorRenderPass();
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     BillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -40,6 +42,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     LineRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     DepthBufferDebugPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    EditorRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 
     CreateConstantBuffers();
 }
@@ -81,8 +84,8 @@ void FRenderer::CreateConstantBuffers()
     UINT textureBufferSize = sizeof(FTextureConstants);
     BufferManager->CreateBufferGeneric<FTextureConstants>("FTextureConstants", nullptr, textureBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
-    UINT lightingBufferSize = sizeof(FLightBuffer);
-    BufferManager->CreateBufferGeneric<FLightBuffer>("FLightBuffer", nullptr, lightingBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+    UINT lightingBufferSize = sizeof(FSceneLightBuffer);
+    BufferManager->CreateBufferGeneric<FSceneLightBuffer>("FSceneLightBuffer", nullptr, lightingBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT litUnlitBufferSize = sizeof(FLitUnlitConstants);
     BufferManager->CreateBufferGeneric<FLitUnlitConstants>("FLitUnlitConstants", nullptr, litUnlitBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
@@ -125,8 +128,8 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
 
     ChangeViewMode(ActiveViewport->GetViewMode());
 
-    StaticMeshRenderPass->Render(ActiveViewport);
     UpdateLightBufferPass->Render(ActiveViewport);
+    StaticMeshRenderPass->Render(ActiveViewport);
     BillboardRenderPass->Render(ActiveViewport);
     
 
@@ -141,8 +144,11 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
         
         FogRenderPass->RenderFog(ActiveViewport, DepthBufferDebugPass->GetDepthSRV());
     }
-    LineRenderPass->Render(ActiveViewport);
-    GizmoRenderPass->Render(ActiveViewport);
-
+    //LineRenderPass->Render(ActiveViewport);
+    if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
+    {
+        GizmoRenderPass->Render(ActiveViewport);
+        EditorRenderPass->Render(ActiveViewport);
+    }
     ClearRenderArr();
 }

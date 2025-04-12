@@ -18,15 +18,15 @@ public:
 
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
-    virtual int CheckRayIntersection(FVector& InRayOrigin, FVector& InRayDirection, float& pfNearHitDistance);
+    virtual int CheckRayIntersection(FVector& InRayOrigin, FVector& InRayDirection, float& pfNearHitDistance) const;
     
-    virtual FVector GetForwardVector();
-    virtual FVector GetRightVector();
-    virtual FVector GetUpVector();
+    FVector GetForwardVector() const;
+    FVector GetRightVector() const;
+    FVector GetUpVector() const;
     
     void AddLocation(FVector InAddValue);
     void AddRotation(FVector InAddValue);
-    void AddScale(FVector InAddValue);
+    virtual void AddScale(FVector InAddValue); // pointlightcomponent를 위해 virtual
 
     USceneComponent* GetAttachParent() const { return AttachParent; }
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
@@ -34,9 +34,9 @@ public:
     void AttachToComponent(USceneComponent* InParent);
 
 public:
-    void SetRelativeLocation(FVector InNewLocation) { RelativeLocation = InNewLocation; }
-    void SetRelativeRotation(FRotator InNewRotation) { RelativeRotation = InNewRotation; }
-    void SetRelativeScale3D(FVector NewScale) { RelativeScale3D = NewScale; }
+    virtual void SetRelativeLocation(FVector InNewLocation) { RelativeLocation = InNewLocation; }
+    virtual void SetRelativeRotation(FRotator InNewRotation) { RelativeRotation = InNewRotation; }
+    virtual void SetRelativeScale3D(FVector NewScale) { RelativeScale3D = NewScale; }
     
     FVector GetRelativeLocation() const { return RelativeLocation; }
     FRotator GetRelativeRotation() const { return RelativeRotation; }
@@ -73,4 +73,5 @@ protected:
 
     UPROPERTY
     (TArray<USceneComponent*>, AttachChildren);
+
 };

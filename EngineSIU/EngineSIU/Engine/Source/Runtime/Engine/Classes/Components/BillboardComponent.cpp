@@ -73,7 +73,7 @@ void UBillboardComponent::TickComponent(float DeltaTime)
     Super::TickComponent(DeltaTime);
 }
 
-int UBillboardComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
+int UBillboardComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) const
 {
     TArray<FVector> Vertices =
     {

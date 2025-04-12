@@ -2,9 +2,9 @@
 #include "PrimitiveComponent.h"
 #include <Math/Color.h>
 
-class UHeightFogComponent : public UPrimitiveComponent
+class UExponentialHeightFogComponent : public UPrimitiveComponent
 {
-    DECLARE_CLASS(UHeightFogComponent, UPrimitiveComponent)
+    DECLARE_CLASS(UExponentialHeightFogComponent, UPrimitiveComponent)
 private:
     float FogDensity;
     float FogHeightFalloff;
@@ -14,7 +14,7 @@ private:
     FLinearColor FogInscatteringColor;
 
 public:
-    UHeightFogComponent(float Density = 0.5f, float HeightFalloff = 0.05f, float StartDist = 15.0f, float CutoffDist = 0.0f, float MaxOpacity = 0.75f);
+    UExponentialHeightFogComponent(float Density = 0.5f, float HeightFalloff = 0.05f, float StartDist = 15.0f, float CutoffDist = 0.0f, float MaxOpacity = 0.75f);
 
     float GetFogDensity() { return FogDensity; }
     float GetFogHeightFalloff() { return FogHeightFalloff; }

@@ -2,7 +2,7 @@
 
 #include "GameFramework/Actor.h"
 
-class UHeightFogComponent;
+class UExponentialHeightFogComponent;
 
 class AHeightFogActor : public AActor
 {
@@ -11,5 +11,5 @@ class AHeightFogActor : public AActor
 public:
     AHeightFogActor();
 
-    UHeightFogComponent* HeightFogComponent;
+    UExponentialHeightFogComponent* HeightFogComponent;
 };

@@ -127,12 +127,26 @@ void FEditorViewportClient::Input()
     if (GetAsyncKeyState('F') & 0x8000)
     {
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        if (AActor* PickedActor = Engine->GetSelectedActor())
+        USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+        AActor* SelectedActor = Engine->GetSelectedActor();
+
+        USceneComponent* TargetComponent = nullptr;
+    
+        if (SelectedComponent != nullptr)
+        {
+            TargetComponent = SelectedComponent;
+        }
+        else if (SelectedActor != nullptr)
+        {
+            TargetComponent = SelectedActor->GetRootComponent();
+        }
+        
+        if (TargetComponent)
         {
             FViewportCameraTransform& ViewTransform = ViewTransformPerspective;
             ViewTransform.SetLocation(
                 // TODO: 10.0f 대신, 정점의 min, max의 거리를 구해서 하면 좋을 듯
-                PickedActor->GetActorLocation() - (ViewTransform.GetForwardVector() * 10.0f)
+                TargetComponent->GetWorldLocation() - (ViewTransform.GetForwardVector() * 10.0f)
             );
         }
     }

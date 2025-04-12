@@ -26,6 +26,10 @@
 #include "Engine/EditorEngine.h"
 #include <Actors/HeightFogActor.h>
 
+#include "Actors/AmbientLightActor.h"
+#include "Actors/DirectionalLightActor.h"
+#include "Actors/SpotLightActor.h"
+
 void ControlEditorPanel::Render()
 {
     /* Pre Setup */
@@ -277,6 +281,9 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Cube",      .obj= OBJ_CUBE },
             { .label= "Sphere",    .obj= OBJ_SPHERE },
             { .label= "PointLight", .obj= OBJ_PointLight },
+            {.label = "SpotLight", .obj= OBJ_SpotLight },
+            {.label = "DirectionalLight", .obj= OBJ_DirectionalLight },
+            {.label = "AmbientLight", .obj= OBJ_AmbientLight },
             { .label= "Particle",  .obj= OBJ_PARTICLE },
             { .label= "Text",      .obj= OBJ_Text },
             { .label= "Fireball",  .obj = OBJ_Fireball},
@@ -309,8 +316,27 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 }
                 case OBJ_PointLight:
                 {
-                    ALight* LightActor = World->SpawnActor<ALight>();
+                    APointLight* LightActor = World->SpawnActor<APointLight>();
                     LightActor->SetActorLabel(TEXT("OBJ_PointLight"));
+                    break;
+                }
+                case OBJ_SpotLight:
+                {
+                    ASpotLight* LightActor = World->SpawnActor<ASpotLight>();
+                    LightActor->SetActorLabel(TEXT("OBJ_SpotLight"));
+                    break;
+                }
+                case OBJ_DirectionalLight:
+                {
+                    ADirectionalLight* LightActor = World->SpawnActor<ADirectionalLight>();
+                    LightActor->SetActorLabel(TEXT("OBJ_DirectionalLight"));
+                    break;
+                        
+                }
+                case OBJ_AmbientLight:
+                {
+                    AAmbientLight* LightActor = World->SpawnActor<AAmbientLight>();
+                    LightActor->SetActorLabel(TEXT("OBJ_AmbientLight"));
                     break;
                 }
                 case OBJ_PARTICLE:
@@ -349,7 +375,6 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     SpawnedActor->SetActorLabel(TEXT("OBJ_HeightFog"));
                     break;
                 }
-                case OBJ_SpotLight:
                 case OBJ_TRIANGLE:
                 case OBJ_CAMERA:
                 case OBJ_PLAYER:
@@ -360,7 +385,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 if (SpawnedActor)
                 {
                     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-                    Engine->SelectActor(Engine->GetSelectedActor());
+                    Engine->DeselectComponent(Engine->GetSelectedComponent());
+                    Engine->SelectActor(SpawnedActor);
                 }
             }
         }

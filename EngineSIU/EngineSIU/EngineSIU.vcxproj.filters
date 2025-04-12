@@ -781,6 +781,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\Light\LightComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\Light\PointLightComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\Light\SpotLightComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\EditorRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU.natvis" />
@@ -849,5 +850,8 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\Light\LightComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\Light\PointLightComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\Light\SpotLightComponent.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\EditorRenderer.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\ShaderConstants.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderResources.h" />
   </ItemGroup>
 </Project>

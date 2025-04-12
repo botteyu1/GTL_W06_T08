@@ -1,20 +1,9 @@
-﻿#include "LightComponentBase.h"
+#include "LightComponentBase.h"
 
 ULightComponentBase::ULightComponentBase()
 {
+    Intensity = 1.0f;
+    LightColor = FColor::White;
+    bVisible = true;
 }
 
-float ULightComponentBase::GetIntensity()
-{
-    return Intensity;
-}
-
-FColor ULightComponentBase::GetLightColor()
-{
-    return LightColor;
-}
-
-bool ULightComponentBase::IsVisible() const
-{
-    return bVisible;
-}

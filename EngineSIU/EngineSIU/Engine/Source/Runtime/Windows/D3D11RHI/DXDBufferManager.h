@@ -23,9 +23,21 @@ struct QuadVertex
 
 class FDXDBufferManager
 {
-public:
+private:
     QuadVertex Q;
 
+    ID3D11Device* DXDevice = nullptr;
+    ID3D11DeviceContext* DXDeviceContext = nullptr;
+
+    TMap<FString, FVertexInfo> VertexBufferPool;
+    TMap<FString, FIndexInfo> IndexBufferPool;
+    TMap<FString, ID3D11Buffer*> ConstantBufferPool;
+
+    TMap<FWString, FBufferInfo> TextAtlasBufferPool;
+    TMap<FWString, FVertexInfo> TextAtlasVertexBufferPool;
+    TMap<FWString, FIndexInfo> TextAtlasIndexBufferPool;
+
+public:
     FDXDBufferManager() = default;
     void Initialize(ID3D11Device* DXDevice, ID3D11DeviceContext* DXDeviceContext);
 
@@ -87,17 +99,7 @@ public:
 private:
     // 16바이트 정렬
     inline UINT Align16(UINT size) { return (size + 15) & ~15; }
-private:
-    ID3D11Device* DXDevice = nullptr;
-    ID3D11DeviceContext* DXDeviceContext = nullptr;
 
-    TMap<FString, FVertexInfo> VertexBufferPool;
-    TMap<FString, FIndexInfo> IndexBufferPool;
-    TMap<FString, ID3D11Buffer*> ConstantBufferPool;
-
-    TMap<FWString, FBufferInfo> TextAtlasBufferPool;
-    TMap<FWString, FVertexInfo> TextAtlasVertexBufferPool;
-    TMap<FWString, FIndexInfo> TextAtlasIndexBufferPool;
 };
 
 // 템플릿 함수 구현부

@@ -21,7 +21,7 @@ public:
         FVector& rayOrigin,
         FVector& rayDirection,
         float& pfNearHitDistance
-    ) override;
+    ) const override;
 
     virtual void SetTexture(const FWString& _fileName);
     void SetUUIDParent(USceneComponent* _parent);

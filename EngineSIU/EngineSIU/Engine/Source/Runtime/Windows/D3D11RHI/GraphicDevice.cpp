@@ -1,6 +1,6 @@
 #include "GraphicDevice.h"
 #include <cwchar>
-#include <Components/HeightFogComponent.h>
+#include <Components/ExponentialHeightFogComponent.h>
 #include <UObject/UObjectIterator.h>
 #include <Engine/Engine.h>
 #include "PropertyEditor/ShowFlags.h"
@@ -133,7 +133,7 @@ void FGraphicsDevice::CreateDepthStencilState()
     dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
     //// DepthStencil 상태 생성
-    HRESULT hr = Device->CreateDepthStencilState(&dsDesc, &DepthStencilState);
+    HRESULT hr = Device->CreateDepthStencilState(&dsDesc, &DepthStencilStateTestWriteEnable);
     if (FAILED(hr))
     {
         // 오류 처리
@@ -144,7 +144,7 @@ void FGraphicsDevice::CreateDepthStencilState()
     depthStencilDesc.DepthEnable = FALSE;                         // 깊이 테스트 유지
     depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // 깊이 버퍼에 쓰지 않음
     depthStencilDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;         // 깊이 비교를 항상 통과
-    Device->CreateDepthStencilState(&depthStencilDesc, &DepthStateDisable);
+    Device->CreateDepthStencilState(&depthStencilDesc, &DepthStencilStateTestWriteDisable);
 }
 
 void FGraphicsDevice::CreateRasterizerState()
@@ -309,15 +309,15 @@ void FGraphicsDevice::ReleaseDepthStencilResources()
     }
 
     // 깊이/스텐실 상태 해제
-    if (DepthStencilState)
+    if (DepthStencilStateTestWriteEnable)
     {
-        DepthStencilState->Release();
-        DepthStencilState = nullptr;
+        DepthStencilStateTestWriteEnable->Release();
+        DepthStencilStateTestWriteEnable = nullptr;
     }
-    if (DepthStateDisable)
+    if (DepthStencilStateTestWriteDisable)
     {
-        DepthStateDisable->Release();
-        DepthStateDisable = nullptr;
+        DepthStencilStateTestWriteDisable->Release();
+        DepthStencilStateTestWriteDisable = nullptr;
     }
 }
 
@@ -340,8 +340,8 @@ void FGraphicsDevice::Prepare(const std::shared_ptr<FEditorViewportClient>& Acti
 {
     Prepare();
     //TODO: 다른 곳으로 빼자
-    TArray<UHeightFogComponent*> Fogs;
-    for (const auto iter : TObjectRange<UHeightFogComponent>())
+    TArray<UExponentialHeightFogComponent*> Fogs;
+    for (const auto iter : TObjectRange<UExponentialHeightFogComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
         {
@@ -365,7 +365,7 @@ void FGraphicsDevice::Prepare() const
     //DeviceContext->RSSetViewports(1, &ViewportInfo); // GPU가 화면을 렌더링할 영역 설정
     DeviceContext->RSSetState(CurrentRasterizer); //레스터 라이저 상태 설정
 
-    DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
+    DeviceContext->OMSetDepthStencilState(DepthStencilStateTestWriteEnable, 0);
 
     DeviceContext->OMSetRenderTargets(2, RTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
     float blendFactor[4] = { 0, 0, 0, 0 };
@@ -383,7 +383,7 @@ void FGraphicsDevice::Prepare(D3D11_VIEWPORT* viewport) const
     DeviceContext->RSSetViewports(1, viewport);   // GPU가 화면을 렌더링할 영역 설정
     DeviceContext->RSSetState(CurrentRasterizer); //레스터 라이저 상태 설정
 
-    DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
+    DeviceContext->OMSetDepthStencilState(DepthStencilStateTestWriteEnable, 0);
 
     DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
     DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);            // 블렌뎅 상태 설정, 기본블렌딩 상태임

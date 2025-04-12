@@ -1,43 +1,43 @@
-#include "HeightFogComponent.h"
+#include "ExponentialHeightFogComponent.h"
 #include <UObject/Casts.h>
 
-UHeightFogComponent::UHeightFogComponent(float Density, float HeightFalloff, float StartDist, float CutoffDist, float MaxOpacity)
+UExponentialHeightFogComponent::UExponentialHeightFogComponent(float Density, float HeightFalloff, float StartDist, float CutoffDist, float MaxOpacity)
     :FogDensity(Density), FogHeightFalloff(HeightFalloff), StartDistance(StartDist), FogCutoffDistance(CutoffDist), FogMaxOpacity(MaxOpacity)
 {
     FogInscatteringColor = FLinearColor::White;
 }
 
-void UHeightFogComponent::SetFogDensity(float value)
+void UExponentialHeightFogComponent::SetFogDensity(float value)
 {
     FogDensity = value;
 }
 
-void UHeightFogComponent::SetFogHeightFalloff(float value)
+void UExponentialHeightFogComponent::SetFogHeightFalloff(float value)
 {
     FogHeightFalloff = value; 
 }
 
-void UHeightFogComponent::SetStartDistance(float value)
+void UExponentialHeightFogComponent::SetStartDistance(float value)
 {
     StartDistance = value;
 }
 
-void UHeightFogComponent::SetFogCutoffDistance(float value)
+void UExponentialHeightFogComponent::SetFogCutoffDistance(float value)
 {
     FogCutoffDistance = value;
 }
 
-void UHeightFogComponent::SetFogMaxOpacity(float value)
+void UExponentialHeightFogComponent::SetFogMaxOpacity(float value)
 {
     FogMaxOpacity = value;
 }
 
-void UHeightFogComponent::SetFogColor(FLinearColor color)
+void UExponentialHeightFogComponent::SetFogColor(FLinearColor color)
 {
     FogInscatteringColor = color;
 }
 
-UObject* UHeightFogComponent::Duplicate(UObject* InOuter)
+UObject* UExponentialHeightFogComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 

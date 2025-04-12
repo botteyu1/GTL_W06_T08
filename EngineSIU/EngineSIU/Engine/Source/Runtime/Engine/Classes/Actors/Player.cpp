@@ -116,9 +116,22 @@ void AEditorPlayer::Input()
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
         if (Engine)
         {
-            if (AActor* SelectedActor = Engine->GetSelectedActor())
+            USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+            AActor* SelectedActor = Engine->GetSelectedActor();
+
+            USceneComponent* TargetComponent = nullptr;
+    
+            if (SelectedComponent != nullptr)
             {
-                //Engine->DeselectActor(SelectedActor);
+                TargetComponent = SelectedComponent;
+            }
+            else if (SelectedActor != nullptr)
+            {
+                TargetComponent = SelectedActor->GetRootComponent();
+            }
+            
+            if (TargetComponent)
+            {
                 GEngine->ActiveWorld->DestroyActor(SelectedActor);
             }
         }
@@ -190,34 +203,24 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     const UActorComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
-    for (const auto iter : TObjectRange<UPrimitiveComponent>())
+    for (const auto iter : TObjectRange<USceneComponent>())
     {
-        UPrimitiveComponent* pObj;
-        if (iter->IsA<UPrimitiveComponent>() || iter->IsA<ULightComponent>())
-        {
-            pObj = static_cast<UPrimitiveComponent*>(iter);
-        }
-        else
-        {
-            continue;
-        }
-
-        if (pObj && !pObj->IsA<UGizmoBaseComponent>())
+        if (iter && !iter->IsA<UGizmoBaseComponent>())
         {
             float Distance = 0.0f;
             int currentIntersectCount = 0;
-            if (RayIntersectsObject(pickPosition, pObj, Distance, currentIntersectCount))
+            if (RayIntersectsObject(pickPosition, iter, Distance, currentIntersectCount))
             {
                 if (Distance < minDistance)
                 {
                     minDistance = Distance;
                     maxIntersect = currentIntersectCount;
-                    Possible = pObj;
+                    Possible = iter;
                 }
                 else if (abs(Distance - minDistance) < FLT_EPSILON && currentIntersectCount > maxIntersect)
                 {
                     maxIntersect = currentIntersectCount;
-                    Possible = pObj;
+                    Possible = iter;
                 }
             }
         }
@@ -225,6 +228,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     if (Possible)
     {
         Cast<UEditorEngine>(GEngine)->SelectActor(Possible->GetOwner());
+        Cast<UEditorEngine>(GEngine)->DeselectComponent(Cast<UEditorEngine>(GEngine)->GetSelectedComponent());
     }
 }
 
@@ -309,20 +313,32 @@ void AEditorPlayer::PickedObjControl()
         int32 deltaX = currentMousePos.x - m_LastMousePos.x;
         int32 deltaY = currentMousePos.y - m_LastMousePos.y;
 
-        // USceneComponent* pObj = GetWorld()->GetPickingObj();
-        AActor* PickedActor = Engine->GetSelectedActor();
+        USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+        AActor* SelectedActor = Engine->GetSelectedActor();
+
+        USceneComponent* TargetComponent = nullptr;
+    
+        if (SelectedComponent != nullptr)
+        {
+            TargetComponent = SelectedComponent;
+        }
+        else if (SelectedActor != nullptr)
+        {
+            TargetComponent = SelectedActor->GetRootComponent();
+        }
+        
         UGizmoBaseComponent* Gizmo = static_cast<UGizmoBaseComponent*>(ActiveViewport->GetPickedGizmoComponent());
         switch (cMode)
         {
         case CM_TRANSLATION:
-            ControlTranslation(PickedActor->GetRootComponent(), Gizmo, deltaX, deltaY);
+            ControlTranslation(TargetComponent, Gizmo, deltaX, deltaY);
             break;
         case CM_SCALE:
-            ControlScale(PickedActor->GetRootComponent(), Gizmo, deltaX, deltaY);
+            ControlScale(TargetComponent, Gizmo, deltaX, deltaY);
 
             break;
         case CM_ROTATION:
-            ControlRotation(PickedActor->GetRootComponent(), Gizmo, deltaX, deltaY);
+            ControlRotation(TargetComponent, Gizmo, deltaX, deltaY);
             break;
         default:
             break;

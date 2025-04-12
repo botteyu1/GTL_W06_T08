@@ -19,7 +19,7 @@ struct VS_INPUT
 {
     float3 position : POSITION; // 버텍스 위치
     float3 normal : NORMAL; // 버텍스 노멀
-    float3 tangent : TANGENT;
+    float3 Tangent : TANGENT;
     float2 texcoord : TEXCOORD;
     float4 color : COLOR; // 버텍스 색상
     int materialIndex : MATERIAL_INDEX;
@@ -34,6 +34,7 @@ struct PS_INPUT
     float normalFlag : TEXCOORD1; // 노멀 유효 플래그 (1.0 또는 0.0)
     float2 texcoord : TEXCOORD2; // UV 좌표
     int materialIndex : MATERIAL_INDEX; // 머티리얼 인덱스
+    float3x3 TBN : TBN;
 };
 
 PS_INPUT mainVS(VS_INPUT input)
@@ -53,6 +54,14 @@ PS_INPUT mainVS(VS_INPUT input)
     output.color = input.color;
   
     output.normal = normalize(mul(input.normal, (float3x3) MInverseTranspose));
+
+    float3 BiTangent = cross(input.normal, input.Tangent);
+    matrix<float, 3, 3> TBN = {
+        input.Tangent.x, input.Tangent.y, input.Tangent.z,        // column 0
+        BiTangent.x, BiTangent.y, BiTangent.z,                    // column 1
+        input.normal.x, input.normal.y, input.normal.z            // column 2
+    };
+    output.TBN = TBN;
     
     output.texcoord = input.texcoord;
     
