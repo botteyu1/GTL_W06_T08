@@ -12,7 +12,6 @@
 #include "Components/Light/SpotLightComponent.h"
 #include "Engine/EditorEngine.h"
 #include "GameFramework/Actor.h"
-
 #include "UObject/UObjectIterator.h"
 
 //------------------------------------------------------------------------------
@@ -83,13 +82,13 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
 
     if (this->DirectionalLight)
     {
-        SceneLightBufferData.DirectionalLight = this->DirectionalLight->GetLightData<FDirectionalLight>();
+        SceneLightBufferData.DirectionalLight[0] = this->DirectionalLight->GetLightData<FDirectionalLight>();
     }
     
     
     for (auto Light : PointLights)
     {
-        if (LightCount < MAX_POINT_LIGHT)
+        if (LightCount < NUM_MAX_POINTLIGHT)
         {
             SceneLightBufferData.PointLight[LightCount] = Light->GetLightData<FPointLight>();
             SceneLightBufferData.PointLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
@@ -107,7 +106,7 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
 
     for (auto Light : SpotLights)
     {
-        if (LightCount < MAX_LIGHTS)
+        if (LightCount < NUM_MAX_SPOTLIGHT)
         {
             SceneLightBufferData.SpotLight[LightCount] = Light->GetLightData<FSpotLight>();
             SceneLightBufferData.SpotLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);

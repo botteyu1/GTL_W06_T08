@@ -22,13 +22,6 @@
 
 #include "UnrealEd/EditorViewportClient.h"
 
-#define NUM_MAX_DIRLIGHT 2
-#define NUM_MAX_POINTLIGHT 16
-#define NUM_MAX_SPOTLIGHT 8
-
-#define FCONSTANT_STRINGIFY(x) #x
-#define FCONSTANT_TOSTRING(x) FCONSTANT_STRINGIFY(x)
-
 FStaticMeshRenderPass::FStaticMeshRenderPass()
     : VertexShader(nullptr)
     , PixelShader(nullptr)
@@ -78,24 +71,27 @@ void FStaticMeshRenderPass::CreateShader()
 
     InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
 
-    // hlsl파일에 들어갈 macro define
+    std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
+    std::string strPoint = std::to_string(NUM_MAX_POINTLIGHT);
+    std::string strSpot = std::to_string(NUM_MAX_SPOTLIGHT);
+
     const D3D_SHADER_MACRO UberDefines[] =
     {
-        "NUM_MAX_DIRLIGHT", FCONSTANT_TOSTRING(NUM_MAX_DIRLIGHT),
-        "NUM_MAX_POINTLIGHT", FCONSTANT_TOSTRING(NUM_MAX_POINTLIGHT),
-        "NUM_MAX_SPOTLIGHT", FCONSTANT_TOSTRING(NUM_MAX_SPOTLIGHT),
-        NULL, NULL
+        { "NUM_MAX_DIRLIGHT",   strDir.c_str() },
+        { "NUM_MAX_POINTLIGHT", strPoint.c_str() },
+        { "NUM_MAX_SPOTLIGHT",  strSpot.c_str() },
+        { NULL, NULL }
     };
 
     hr = ShaderManager->AddVertexShaderAndInputLayout(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS", StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines);
 
     hr = ShaderManager->AddPixelShader(L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
 
-    VertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
+    //VertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
 
-    PixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
+    //PixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
 
-    InputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
+    //InputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
 
 }
 void FStaticMeshRenderPass::ReleaseShader()

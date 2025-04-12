@@ -290,10 +290,9 @@ struct FPrimitiveCounts
     int pad1;
 };
 
-#define MAX_LIGHTS 16
-
-#define MAX_POINT_LIGHT 8
-#define MAX_SPOT_LIGHT 8
+constexpr uint32 NUM_MAX_DIRLIGHT = 1;
+constexpr uint32 NUM_MAX_POINTLIGHT = 16;
+constexpr uint32 NUM_MAX_SPOTLIGHT = 8;
 
 enum ELightType {
     POINT_LIGHT = 1,
@@ -381,25 +380,15 @@ struct FSceneLightBuffer
 {
     FAmbientLight AmbientLight;
 
-    FDirectionalLight DirectionalLight;
 
-    FPointLight PointLight[MAX_POINT_LIGHT];
-    FSpotLight SpotLight[MAX_SPOT_LIGHT];
+    FDirectionalLight DirectionalLight[NUM_MAX_DIRLIGHT];
+    FPointLight PointLight[NUM_MAX_SPOTLIGHT];
+    FSpotLight SpotLight[NUM_MAX_SPOTLIGHT];
     
+    int NumDirLights;
     int NumPointLights;
     int NumSpotLights;
-
-    float Pad0, Pad1;
 };
-
-struct FLightBuffer
-{
-    FLight gLights[MAX_LIGHTS]{};
-    FVector4 GlobalAmbientLight;
-    int nLights;
-    float    pad0, pad1, pad2;
-};
-
 
 struct FMaterialConstants {
     FVector DiffuseColor;
