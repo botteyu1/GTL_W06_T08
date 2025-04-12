@@ -31,8 +31,7 @@ struct FColor
     const uint32& DWColor() const { return Bits; }
 
     FColor() : B(0), G(0), R(0), A(255) {}
-    //FColor(uint8 InR, uint8 InG, uint8 InB, uint8 InA = 255) : B(InB), G(InG), R(InR), A(InA) {}
-    constexpr FColor(uint8 InR, uint8 InG, uint8 InB, uint8 InA = 255) : B(InB), G(InG), R(InR), A(InA) {}
+    FColor(uint8 InR, uint8 InG, uint8 InB, uint8 InA = 255) : B(InB), G(InG), R(InR), A(InA) {}
     FColor(uint32 InColor)
     {
         DWColor() = InColor;
@@ -95,6 +94,12 @@ struct FLinearColor
     FLinearColor() : R(0), G(0), B(0), A(0) {}
     //FLinearColor(float InR, float InG, float InB, float InA = 1.0f) : R(InR), G(InG), B(InB), A(InA) {}
     constexpr FLinearColor(float InR, float InG, float InB, float InA = 1.0f) : R(InR), G(InG), B(InB), A(InA) {}
+    FLinearColor(const FString& SourceString)
+        : R(0), G(0), B(0), A(0)
+    {
+        InitFromString(SourceString);
+    }
+    
 
     // FVector4 생성자와의 혼동을 피하기 위해 explicit으로 유지할 것.
     explicit FLinearColor(const FVector& InVector) : R(InVector.X), G(InVector.Y), B(InVector.Z), A(1.0f) {}
@@ -282,4 +287,5 @@ struct FLinearColor
     }
 
     FString ToString() const;
+    bool InitFromString(const FString& SourceString);
 };

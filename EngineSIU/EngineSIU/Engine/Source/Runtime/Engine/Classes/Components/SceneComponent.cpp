@@ -22,6 +22,44 @@ UObject* USceneComponent::Duplicate(UObject* InOuter)
     return NewComponent;
 }
 
+void USceneComponent::GetProperties(TMap<FString, FString>& OutProperties) const
+{
+    Super::GetProperties(OutProperties);
+    OutProperties.Add(TEXT("RelativeLocation"), *RelativeLocation.ToString());
+    OutProperties.Add(TEXT("RelativeRotation"), *RelativeRotation.ToString());
+    OutProperties.Add(TEXT("RelativeScale3D"), *RelativeScale3D.ToString());
+    USceneComponent* ParentComp = GetAttachParent();
+    if (ParentComp != nullptr) {
+        OutProperties.Add(TEXT("AttachParentID"), ParentComp->GetName());
+    }
+    else
+    {
+        OutProperties.Add(TEXT("AttachParentID"), "nullptr");
+    }
+    
+}
+
+void USceneComponent::SetProperties(const TMap<FString, FString>& InProperties)
+{
+    Super::SetProperties(InProperties);
+    const FString* TempStr = nullptr;
+    TempStr = InProperties.Find(TEXT("RelativeLocation"));
+    if (TempStr)
+    {
+        RelativeLocation.InitFromString(*TempStr);
+    }
+    TempStr = InProperties.Find(TEXT("RelativeRotation"));
+    if (TempStr)
+    {
+        RelativeRotation.InitFromString(*TempStr);
+    }
+    TempStr = InProperties.Find(TEXT("RelativeScale3D"));
+    if (TempStr)
+    {
+        RelativeScale3D.InitFromString(*TempStr);
+    }
+}
+
 void USceneComponent::InitializeComponent()
 {
     Super::InitializeComponent();

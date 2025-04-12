@@ -465,7 +465,7 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         std::string Key = std::to_string(VertexIndex) + "/" + std::to_string(UVIndex) + "/" + std::to_string(NormalIndex);
 
         uint32 FinalIndex;
-        if (IndexMap.Contains(Key) && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal))
+        if (IndexMap.Contains(Key) && (OutStaticMesh.Materials.Num() > 0 && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal)) )
         {
             FinalIndex = IndexMap[Key];
         }

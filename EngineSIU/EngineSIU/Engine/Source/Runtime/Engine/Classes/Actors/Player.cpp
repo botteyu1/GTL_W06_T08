@@ -135,8 +135,9 @@ void AEditorPlayer::Input()
             
             if (TargetComponent)
             {
-                Engine->DeselectActor(TargetComponent->GetOwner());
-                GEngine->ActiveWorld->DestroyActor(TargetComponent->GetOwner());
+                Engine->DeselectActor(SelectedActor);
+                Engine->DeselectComponent(SelectedComponent);
+                GEngine->ActiveWorld->DestroyActor(SelectedActor);
             }
         }
     }
@@ -173,7 +174,6 @@ bool AEditorPlayer::PickGizmo(FVector& pickPosition, FEditorViewportClient* InAc
 {
     bool isPickedGizmo = false;
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-    
     if (Engine->GetSelectedActor())
     {
         if (cMode == CM_TRANSLATION)
