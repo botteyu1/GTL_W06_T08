@@ -132,6 +132,8 @@ void AEditorPlayer::Input()
             
             if (TargetComponent)
             {
+                Engine->DeselectActor(SelectedActor);
+                Engine->DeselectComponent(SelectedComponent);
                 GEngine->ActiveWorld->DestroyActor(SelectedActor);
             }
         }
