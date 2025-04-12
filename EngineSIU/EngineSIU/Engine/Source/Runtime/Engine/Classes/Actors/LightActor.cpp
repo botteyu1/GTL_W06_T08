@@ -1,19 +1,13 @@
 #include "LightActor.h"
 #include "Components/Light/PointLightComponent.h"
 #include "Components/BillboardComponent.h"
-ALight::ALight()
+APointLight::APointLight()
 {
     PointLightComponent = AddComponent<UPointLightComponent>();
-    BillboardComponent = AddComponent<UBillboardComponent>();
 
-    RootComponent = BillboardComponent;
-
-    BillboardComponent->SetTexture(L"Assets/Editor/Icon/PointLight_64x.png");
-
-    PointLightComponent->AttachToComponent(RootComponent);
-
+    RootComponent = PointLightComponent;
 }
 
-ALight::~ALight()
+APointLight::~APointLight()
 {
 }

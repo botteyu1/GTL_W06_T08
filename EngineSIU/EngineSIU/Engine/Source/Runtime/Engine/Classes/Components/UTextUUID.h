@@ -11,6 +11,6 @@ public:
     virtual int CheckRayIntersection(
         FVector& rayOrigin,
         FVector& rayDirection, float& pfNearHitDistance
-    ) override;
+    ) const override;
     void SetUUID(uint32 UUID);
 };

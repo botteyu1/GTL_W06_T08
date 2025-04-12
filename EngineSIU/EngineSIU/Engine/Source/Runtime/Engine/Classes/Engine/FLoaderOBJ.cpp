@@ -280,6 +280,13 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
             OutFStaticMesh.Materials[MaterialIndex].SpecularScalar = x;
         }
 
+        if (Token == "sharpness")
+        {
+            float x;
+            LineStream >> x;
+            OutFStaticMesh.Materials[MaterialIndex].Sharpness = x;
+        }
+
         if (Token == "Ni")
         {
             float x;
@@ -443,17 +450,29 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         const uint32 UVIndex = RawData.UVIndices[i];
         const uint32 NormalIndex = RawData.NormalIndices[i];
 
+        uint32 MaterialIndex = 0;
+        for (int32 j = 0; j < OutStaticMesh.MaterialSubsets.Num(); j++)
+        {
+            const FMaterialSubset& Subset = OutStaticMesh.MaterialSubsets[j];
+            if ( i >= Subset.IndexStart && i < Subset.IndexStart + Subset.IndexCount)
+            {
+                MaterialIndex = Subset.MaterialIndex;
+                break;
+            }
+        }
+        
         // 키 생성 (v/vt/vn 조합)
         std::string Key = std::to_string(VertexIndex) + "/" + std::to_string(UVIndex) + "/" + std::to_string(NormalIndex);
 
         uint32 FinalIndex;
-        if (IndexMap.Contains(Key))
+        if (IndexMap.Contains(Key) && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal))
         {
             FinalIndex = IndexMap[Key];
         }
         else
         {
             FStaticMeshVertex StaticMeshVertex = {};
+            StaticMeshVertex.MaterialIndex = MaterialIndex;
             StaticMeshVertex.X = RawData.Vertices[VertexIndex].X;
             StaticMeshVertex.Y = RawData.Vertices[VertexIndex].Y;
             StaticMeshVertex.Z = RawData.Vertices[VertexIndex].Z;
@@ -484,16 +503,6 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
                 CalculateTangent(Vertex0, Vertex1, Vertex2);
                 CalculateTangent(Vertex1, Vertex2, Vertex0);
                 CalculateTangent(Vertex2, Vertex0, Vertex1);
-            }
-
-            for (int32 j = 0; j < OutStaticMesh.MaterialSubsets.Num(); j++)
-            {
-                const FMaterialSubset& Subset = OutStaticMesh.MaterialSubsets[j];
-                if ( i >= Subset.IndexStart && i < Subset.IndexStart + Subset.IndexCount)
-                {
-                    StaticMeshVertex.MaterialIndex = Subset.MaterialIndex;
-                    break;
-                }
             }
 
             FinalIndex = OutStaticMesh.Vertices.Num();
@@ -685,6 +694,7 @@ bool FManagerOBJ::SaveStaticMeshToBinary(const FWString& FilePath, const OBJ::FS
         File.write(reinterpret_cast<const char*>(&Material.Emissive), sizeof(Material.Emissive));
         File.write(reinterpret_cast<const char*>(&Material.SpecularScalar), sizeof(Material.SpecularScalar));
         File.write(reinterpret_cast<const char*>(&Material.DensityScalar), sizeof(Material.DensityScalar));
+        File.write(reinterpret_cast<const char*>(&Material.Sharpness), sizeof(Material.Sharpness));
         File.write(reinterpret_cast<const char*>(&Material.TransparencyScalar), sizeof(Material.TransparencyScalar));
         File.write(reinterpret_cast<const char*>(&Material.IlluminanceModel), sizeof(Material.IlluminanceModel));
 
@@ -760,6 +770,7 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
         File.read(reinterpret_cast<char*>(&Material.Emissive), sizeof(Material.Emissive));
         File.read(reinterpret_cast<char*>(&Material.SpecularScalar), sizeof(Material.SpecularScalar));
         File.read(reinterpret_cast<char*>(&Material.DensityScalar), sizeof(Material.DensityScalar));
+        File.read(reinterpret_cast<char*>(&Material.Sharpness), sizeof(Material.Sharpness));
         File.read(reinterpret_cast<char*>(&Material.TransparencyScalar), sizeof(Material.TransparencyScalar));
         File.read(reinterpret_cast<char*>(&Material.IlluminanceModel), sizeof(Material.IlluminanceModel));
 

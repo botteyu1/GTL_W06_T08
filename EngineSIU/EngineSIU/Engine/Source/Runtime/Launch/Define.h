@@ -88,6 +88,8 @@ namespace ETextureFlag
         Emissive = (1U << 4),
         Roughness = (1U << 5),
         Normal = (1U << 6),
+        // Displacement = (1U << 7),
+        // StencilDecal = (1U << 8),
     };
 }
 
@@ -109,35 +111,16 @@ struct FObjMaterialInfo
     FVector Specular;  // Ks : Specular (Vector) 
     FVector Ambient;   // Ka : Ambient (Vector)
     FVector Emissive;  // Ke : Emissive (Vector)
-
-    float SpecularScalar; // Ns : Specular Power (Float)
+    
+    float SpecularScalar; // Ns : Specular Power (Float)             Specular Exponent,  Shininess
+    float Sharpness;  // 선명도
+    // float roughness = clamp(1.0f - (Ns / 1000.0f), 0.0f, 1.0f);   or   float roughness = sqrt(2.0f / (Ns + 2.0f));
     float DensityScalar;  // Ni : Optical Density (Float)
     float TransparencyScalar; // d or Tr  : Transparency of surface (Float)
 
     uint32 IlluminanceModel; // illum: illumination Model between 0 and 10. (UINT)
 
     TMap<ETextureFlag::Type, PerTextureData> TextureData;
-    // /* Texture */
-    // FString DiffuseTextureName;  // map_Kd : Diffuse texture
-    // FWString DiffuseTexturePath;
-    //
-    // FString AmbientTextureName;  // map_Ka : Ambient texture
-    // FWString AmbientTexturePath;
-    //
-    // FString SpecularTextureName; // map_Ks : Specular texture
-    // FWString SpecularTexturePath;
-    //
-    // FString AlphaTextureName;    // map_d : Alpha texture
-    // FWString AlphaTexturePath;
-    //
-    // FString EmissiveTextureName;    // map_Ke : Emissive texture
-    // FWString EmissiveTexturePath;
-    //
-    // FString RoughnessTextureName;    // map_Ns : Roughness texture
-    // FWString RoughnessTexturePath;
-    //
-    // FString NormalTextureName;    // map_Bump : Roughness texture
-    // FWString NormalTexturePath;
 };
 
 // Cooked Data
@@ -205,6 +188,10 @@ struct FBoundingBox
     float pad;
     FVector max; // Maximum extents
     float pad1;
+
+    inline FVector GetPosition() { return (min + max) / 2.f; }
+    inline FVector GetExtent() { return (max - min) / 2.f; }
+
     bool Intersect(const FVector& rayOrigin, const FVector& rayDir, float& outDistance) const
     {
         float tmin = -FLT_MAX;
@@ -304,9 +291,15 @@ struct FPrimitiveCounts
 };
 
 #define MAX_LIGHTS 16
+
+#define MAX_POINT_LIGHT 8
+#define MAX_SPOT_LIGHT 8
+
 enum ELightType {
     POINT_LIGHT = 1,
-    SPOT_LIGHT = 2
+    SPOT_LIGHT = 2,
+    DIRECTIONAL_LIGHT = 3,
+    AMBIENT_LIGHT = 4,
 };
 
 struct FLight
@@ -331,6 +324,74 @@ struct FLight
     FVector LightPad;
 };
 
+struct FAmbientLight
+{
+    FVector Color;
+    float Intensity;
+
+    int bVisible;
+    FVector Pad0;
+};
+
+struct FDirectionalLight
+{
+    FVector Color;
+    float Intensity;
+
+    FVector Direction;
+    float Pad0;
+
+    int bVisible;
+    FVector Pad1;
+};
+
+struct FPointLight
+{
+    FVector Color;
+    float Intensity;
+
+    FVector Position;
+    float AttenuationRadius;
+
+    float Falloff;
+    FVector Pad1;
+
+    int bVisible;
+    FVector Pad2;
+};
+
+struct FSpotLight
+{
+    FVector Color;
+    float Intensity;
+
+    float AttenuationRadius;
+    float InnerConeAngle;
+    float OuterConeAngle;
+    float Falloff;
+
+    FVector Direction;
+    float Pad0;
+
+    FVector Position;
+    int bVisible;
+};
+
+struct FSceneLightBuffer
+{
+    FAmbientLight AmbientLight;
+
+    FDirectionalLight DirectionalLight;
+
+    FPointLight PointLight[MAX_POINT_LIGHT];
+    FSpotLight SpotLight[MAX_SPOT_LIGHT];
+    
+    int NumPointLights;
+    int NumSpotLights;
+
+    float Pad0, Pad1;
+};
+
 struct FLightBuffer
 {
     FLight gLights[MAX_LIGHTS]{};
@@ -352,6 +413,12 @@ struct FMaterialConstants {
 
     FVector EmmisiveColor;
     uint32 TextureFlag;
+
+    float Sharpness;
+    float Illum;
+
+    float pad1;
+    float pad2;
 };
 
 struct FPerObjectConstantBuffer {
