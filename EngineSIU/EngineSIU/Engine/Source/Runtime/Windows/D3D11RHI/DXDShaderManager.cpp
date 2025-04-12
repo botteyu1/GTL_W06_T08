@@ -390,7 +390,7 @@ HRESULT FDXDShaderManager::ReloadShaders(const std::wstring& VertexKey, const st
         VertexShaders[VertexKey] = PreviousVertexShader;
         InputLayouts[VertexKey] = PreviousInputLayout;
 
-        UE_LOG(LogLevel::Warning, "Successfully compiled vertex shader, but failed to compile pixel shader. Reverting previous vertex shader.");
+        UE_LOG(LogLevel::Warning, "Successfully compiled vertex shader, but failed to compile pixel shader. Reverting to previous vertex shader.");
         return hr;
     }
     else

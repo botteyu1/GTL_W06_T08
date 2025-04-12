@@ -263,7 +263,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
 
         static bool IsUber;
         IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
-        if (ImGui::Checkbox("UberLit.hlsl", &IsUber))
+        if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
         {
             GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
         }

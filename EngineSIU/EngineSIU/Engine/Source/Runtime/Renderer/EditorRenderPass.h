@@ -83,7 +83,7 @@ private:
     void UpdateTextureIcon(IconType type);
 
     // Arrow
-    void RenderArrows(const UWorld* World);
+    void RenderArrows();
     void PrepareConstantbufferArrow();
     void UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer);
 
