@@ -125,7 +125,7 @@ float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
 {
     float3 Diffuse;
     float3 Specular;
-    
+
     // Blinn-phong
     float3 ToLight = gPoint[nIndex].Position - vPosition;
     float Distance = length(ToLight);
