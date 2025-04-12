@@ -5,7 +5,7 @@
 #include "Math/Color.h"
 #include "Math/Matrix.h"
 #include "Math/Vector.h"
-#include "Engine/Classes/Components/HeightFogComponent.h"
+#include "Engine/Classes/Components/ExponentialHeightFogComponent.h"
 class FGraphicsDevice;
 class FDXDShaderManager;
 class FDXDBufferManager;
@@ -37,7 +37,7 @@ public:
 
     void UpdateScreenConstant(const D3D11_VIEWPORT& viewport);
 
-    void UpdateFogConstant(const std::shared_ptr<FEditorViewportClient>& ActiveViewport, UHeightFogComponent* Fog);
+    void UpdateFogConstant(const std::shared_ptr<FEditorViewportClient>& ActiveViewport, UExponentialHeightFogComponent* Fog);
 
     void CreateBlendState();
 
@@ -69,7 +69,7 @@ private:
 
     ID3D11BlendState* FogBlendState = nullptr;
 
-    TArray<UHeightFogComponent*> FogComponents;
+    TArray<UExponentialHeightFogComponent*> FogComponents;
 
     float screenWidth = 0;
     float screenHeight = 0;

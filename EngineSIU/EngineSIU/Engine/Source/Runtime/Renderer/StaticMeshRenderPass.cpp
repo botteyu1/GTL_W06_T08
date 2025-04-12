@@ -216,7 +216,22 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         FVector4 UUIDColor = Comp->EncodeUUID() / 255.0f;
 
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        bool Selected = (Engine && Engine->GetSelectedActor() == Comp->GetOwner());
+
+        USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+        AActor* SelectedActor = Engine->GetSelectedActor();
+
+        USceneComponent* TargetComponent = nullptr;
+    
+        if (SelectedComponent != nullptr)
+        {
+            TargetComponent = SelectedComponent;
+        }
+        else if (SelectedActor != nullptr)
+        {
+            TargetComponent = SelectedActor->GetRootComponent();
+        }
+        
+        bool Selected = (Engine && TargetComponent == Comp);
 
         UpdatePerObjectConstant(Model, Viewport->GetViewMatrix(), Viewport->GetProjectionMatrix(), UUIDColor, Selected);
         FCameraConstantBuffer CameraData(Viewport->GetViewMatrix(), Viewport->GetProjectionMatrix(), Viewport->ViewTransformPerspective.GetLocation(), 0);

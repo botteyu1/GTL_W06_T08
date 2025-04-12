@@ -122,7 +122,7 @@ FVector USceneComponent::GetWorldLocation() const
 {
     if (AttachParent)
     {
-        return AttachParent->GetWorldLocation() + RelativeLocation;
+        return AttachParent->GetWorldMatrix().TransformPosition(RelativeLocation);
     }
     return RelativeLocation;
 }

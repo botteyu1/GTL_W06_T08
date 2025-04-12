@@ -182,8 +182,28 @@ void FGizmoRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& View
 void FGizmoRenderPass::RenderGizmoComponent(UGizmoBaseComponent* GizmoComp, const std::shared_ptr<FEditorViewportClient>& Viewport, const UWorld* World)
 {
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-    if (Engine && !Engine->GetSelectedActor())
+    if (Engine == nullptr)
         return;
+
+    USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+    AActor* SelectedActor = Engine->GetSelectedActor();
+
+    USceneComponent* TargetComponent = nullptr;
+    
+    if (SelectedComponent != nullptr)
+    {
+        TargetComponent = SelectedComponent;
+    }
+    else if (SelectedActor != nullptr)
+    {
+        TargetComponent = SelectedActor->GetRootComponent();
+    }
+
+    if (TargetComponent == nullptr)
+    {
+        return;
+    }
+    
     // 모델 행렬.
     FMatrix Model = GizmoComp->GetWorldMatrix();
 

@@ -1,6 +1,6 @@
 #include "GraphicDevice.h"
 #include <cwchar>
-#include <Components/HeightFogComponent.h>
+#include <Components/ExponentialHeightFogComponent.h>
 #include <UObject/UObjectIterator.h>
 #include <Engine/Engine.h>
 #include "PropertyEditor/ShowFlags.h"
@@ -340,8 +340,8 @@ void FGraphicsDevice::Prepare(const std::shared_ptr<FEditorViewportClient>& Acti
 {
     Prepare();
     //TODO: 다른 곳으로 빼자
-    TArray<UHeightFogComponent*> Fogs;
-    for (const auto iter : TObjectRange<UHeightFogComponent>())
+    TArray<UExponentialHeightFogComponent*> Fogs;
+    for (const auto iter : TObjectRange<UExponentialHeightFogComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
         {

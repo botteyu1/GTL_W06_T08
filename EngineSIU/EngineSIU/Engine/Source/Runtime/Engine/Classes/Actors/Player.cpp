@@ -116,10 +116,24 @@ void AEditorPlayer::Input()
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
         if (Engine)
         {
-            if (AActor* SelectedActor = Engine->GetSelectedActor())
+            USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+            AActor* SelectedActor = Engine->GetSelectedActor();
+
+            USceneComponent* TargetComponent = nullptr;
+    
+            if (SelectedComponent != nullptr)
             {
-                Engine->DeselectActor(SelectedActor);
-                GEngine->ActiveWorld->DestroyActor(SelectedActor);
+                TargetComponent = SelectedComponent;
+            }
+            else if (SelectedActor != nullptr)
+            {
+                TargetComponent = SelectedActor->GetRootComponent();
+            }
+            
+            if (TargetComponent)
+            {
+                Engine->DeselectActor(TargetComponent->GetOwner());
+                GEngine->ActiveWorld->DestroyActor(TargetComponent->GetOwner());
             }
         }
     }
@@ -156,6 +170,7 @@ bool AEditorPlayer::PickGizmo(FVector& pickPosition, FEditorViewportClient* InAc
 {
     bool isPickedGizmo = false;
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    
     if (Engine->GetSelectedActor())
     {
         if (cMode == CM_TRANSLATION)
@@ -215,6 +230,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     if (Possible)
     {
         Cast<UEditorEngine>(GEngine)->SelectActor(Possible->GetOwner());
+        Cast<UEditorEngine>(GEngine)->DeselectComponent(Cast<UEditorEngine>(GEngine)->GetSelectedComponent());
     }
 }
 
@@ -299,20 +315,32 @@ void AEditorPlayer::PickedObjControl()
         int32 deltaX = currentMousePos.x - m_LastMousePos.x;
         int32 deltaY = currentMousePos.y - m_LastMousePos.y;
 
-        // USceneComponent* pObj = GetWorld()->GetPickingObj();
-        AActor* PickedActor = Engine->GetSelectedActor();
+        USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+        AActor* SelectedActor = Engine->GetSelectedActor();
+
+        USceneComponent* TargetComponent = nullptr;
+    
+        if (SelectedComponent != nullptr)
+        {
+            TargetComponent = SelectedComponent;
+        }
+        else if (SelectedActor != nullptr)
+        {
+            TargetComponent = SelectedActor->GetRootComponent();
+        }
+        
         UGizmoBaseComponent* Gizmo = static_cast<UGizmoBaseComponent*>(ActiveViewport->GetPickedGizmoComponent());
         switch (cMode)
         {
         case CM_TRANSLATION:
-            ControlTranslation(PickedActor->GetRootComponent(), Gizmo, deltaX, deltaY);
+            ControlTranslation(TargetComponent, Gizmo, deltaX, deltaY);
             break;
         case CM_SCALE:
-            ControlScale(PickedActor->GetRootComponent(), Gizmo, deltaX, deltaY);
+            ControlScale(TargetComponent, Gizmo, deltaX, deltaY);
 
             break;
         case CM_ROTATION:
-            ControlRotation(PickedActor->GetRootComponent(), Gizmo, deltaX, deltaY);
+            ControlRotation(TargetComponent, Gizmo, deltaX, deltaY);
             break;
         default:
             break;
