@@ -78,7 +78,7 @@ struct FRenderResourcesDebug
         TArray<class UDirectionalLightComponent*> DirLight;
         TArray<class USpotLightComponent*> SpotLight;
         TArray<class UPointLightComponent*> PointLight;
-        TArray<class UHeightFogComponent*> Fog;
+        TArray<class UExponentialHeightFogComponent*> Fog;
     } Components;
 
 

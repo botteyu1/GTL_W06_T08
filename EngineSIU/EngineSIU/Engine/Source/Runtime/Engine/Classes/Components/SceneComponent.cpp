@@ -28,6 +28,14 @@ void USceneComponent::GetProperties(TMap<FString, FString>& OutProperties) const
     OutProperties.Add(TEXT("RelativeLocation"), *RelativeLocation.ToString());
     OutProperties.Add(TEXT("RelativeRotation"), *RelativeRotation.ToString());
     OutProperties.Add(TEXT("RelativeScale3D"), *RelativeScale3D.ToString());
+    USceneComponent* ParentComp = GetAttachParent();
+    if (ParentComp != nullptr) {
+        OutProperties.Add(TEXT("AttachParentID"), ParentComp->GetName());
+    }
+    else
+    {
+        OutProperties.Add(TEXT("AttachParentID"), "nullptr");
+    }
     
 }
 

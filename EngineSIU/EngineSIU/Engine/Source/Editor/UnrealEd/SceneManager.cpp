@@ -437,11 +437,6 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
                 continue;
             }
 
-            if (componentData.ComponentID == "USpotLightComponent_156")
-            {
-                int a= 0;
-            }
-
             // --- 이제 TargetComponent는 유효한 기존 컴포넌트 또는 새로 생성된 컴포넌트 ---
             if (TargetComponent)
             {

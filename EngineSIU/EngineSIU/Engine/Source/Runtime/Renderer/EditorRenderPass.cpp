@@ -10,7 +10,7 @@
 #include "Engine/Classes/Components/Light/DirectionalLightComponent.h"
 #include "Engine/Classes/Components/Light/PointLightComponent.h"
 #include "Engine/Classes/Components/Light/SpotLightComponent.h"
-#include "Engine/Classes/Components/HeightFogComponent.h"
+#include "Engine/Classes/Components/ExponentialHeightFogComponent.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/Engine.h"
@@ -597,7 +597,7 @@ void FEditorRenderPass::PrepareComponents()
         }
     }
 
-    for (const auto iter : TObjectRange<UHeightFogComponent>())
+    for (const auto iter : TObjectRange<UExponentialHeightFogComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
         {
@@ -1160,7 +1160,7 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
         DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
     }
 
-    for (UHeightFogComponent* FogComp : Resources.Components.Fog)
+    for (UExponentialHeightFogComponent* FogComp : Resources.Components.Fog)
     {
         FConstantBufferDebugIcon b;
         b.Position = FogComp->GetWorldLocation();

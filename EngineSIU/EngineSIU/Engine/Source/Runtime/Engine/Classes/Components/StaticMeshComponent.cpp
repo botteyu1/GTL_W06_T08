@@ -1,5 +1,6 @@
 #include "Components/StaticMeshComponent.h"
 
+#include "Engine/FLoaderOBJ.h"
 #include "Launch/EngineLoop.h"
 #include "UObject/Casts.h"
 #include "UObject/ObjectFactory.h"
@@ -139,7 +140,7 @@ void UStaticMeshComponent::GetUsedMaterials(TArray<UMaterial*>& Out) const
     }
 }
 
-int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
+int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) const 
 {
     if (!AABB.Intersect(rayOrigin, rayDirection, pfNearHitDistance)) return 0;
     int nIntersections = 0;
@@ -190,6 +191,8 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
 
 void UStaticMeshComponent::UpdateAABB()
 {
+    if (staticMesh == nullptr)
+        return;
     FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
     FVector max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
     for (const FStaticMeshVertex& Vertex : staticMesh->GetRenderData()->Vertices)

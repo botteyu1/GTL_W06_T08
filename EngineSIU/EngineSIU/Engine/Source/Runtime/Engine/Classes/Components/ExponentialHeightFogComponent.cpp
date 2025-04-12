@@ -51,7 +51,7 @@ UObject* UExponentialHeightFogComponent::Duplicate(UObject* InOuter)
     return NewComponent;
 }
 
-void UHeightFogComponent::GetProperties(TMap<FString, FString>& OutProperties) const
+void UExponentialHeightFogComponent::GetProperties(TMap<FString, FString>& OutProperties) const
 {
     Super::GetProperties(OutProperties);
     OutProperties.Add(TEXT("FogDensity"), FString::Printf(TEXT("%f"), FogDensity));
@@ -64,7 +64,7 @@ void UHeightFogComponent::GetProperties(TMap<FString, FString>& OutProperties) c
     OutProperties.Add(TEXT("FogInscatteringColor"), FString::Printf(TEXT("%s"), *FogInscatteringColor.ToString()));
 }
 
-void UHeightFogComponent::SetProperties(const TMap<FString, FString>& InProperties)
+void UExponentialHeightFogComponent::SetProperties(const TMap<FString, FString>& InProperties)
 {
     Super::SetProperties(InProperties);
     const FString* TempStr = nullptr;
