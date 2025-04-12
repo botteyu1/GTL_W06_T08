@@ -939,8 +939,11 @@ void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstant
 
 void FEditorRenderPass::RenderSpotlightInstanced()
 {
-    ShaderManager->SetVertexShaderAndInputLayout(ShaderNameSphere, DeviceContext);
-    ShaderManager->SetPixelShader(ShaderNameSphere, DeviceContext);
+    // TODO : 현재 z값이 과도하게 크면 cone의 둥근 부분이 구형이 아님
+    // 따라서 따로 그려줘서 곡률이 일정하게 만들어야 할거같음
+    // 아니고 그냥 셰이더에서 할수있을거같기도 함...
+    ShaderManager->SetVertexShaderAndInputLayout(ShaderNameCone, DeviceContext);
+    ShaderManager->SetPixelShader(ShaderNameCone, DeviceContext);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
     UINT offset = 0;
@@ -958,6 +961,9 @@ void FEditorRenderPass::RenderSpotlightInstanced()
         b.Radius = SpotComp->GetAttenuationRadius();
         b.Direction = SpotComp->GetForwardVector();
         b.Angle = SpotComp->GetInnerConeAngle();
+        // 테스트용
+        b.Angle = 50;
+        b.Radius = 50;
         b.Color = InnerColor;
         BufferAll.Add(b);
 
@@ -1223,6 +1229,18 @@ void FEditorRenderPass::RenderArrows()
         buf.Direction = DLightComp->GetForwardVector();
         buf.ArrowScaleZ = ArrowScale;
         buf.Color = DLightComp->GetLightColor();
+        UdpateConstantbufferArrow(buf);
+        DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
+
+    }
+    for (USpotLightComponent* SLightComp : Resources.Components.SpotLight)
+    {
+        FConstantBufferDebugArrow buf;
+        buf.Position = SLightComp->GetWorldLocation();
+        buf.ArrowScaleXYZ = ArrowScale;
+        buf.Direction = SLightComp->GetForwardVector();
+        buf.ArrowScaleZ = ArrowScale;
+        buf.Color = SLightComp->GetLightColor();
         UdpateConstantbufferArrow(buf);
         DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
 
