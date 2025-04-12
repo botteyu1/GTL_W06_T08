@@ -48,10 +48,19 @@ public:
     void SetPixelShader(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const;
     void SetInputLayout(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const;
 
+    HRESULT ReloadVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
+    HRESULT ReloadPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
+    HRESULT ReloadShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint, 
+        const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
+        const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines);
+
 private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
 	TMap<std::wstring, ID3D11VertexShader*> VertexShaders;
 	TMap<std::wstring, ID3D11PixelShader*> PixelShaders;
+
+    template<typename T>
+    void SafeRelease(T*& comObject);
 
 };
 

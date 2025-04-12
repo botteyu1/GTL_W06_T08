@@ -120,7 +120,7 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex evi) const
 }
 
 // Uberlit.hlsl로 변경
-void FStaticMeshRenderPass::SetUberShader(bool bValue)
+bool FStaticMeshRenderPass::SetUberShader(bool bValue)
 {
 	if (bValue)
 	{
@@ -132,17 +132,21 @@ void FStaticMeshRenderPass::SetUberShader(bool bValue)
 
         if (NewVertexShader && NewPixelShader && NewInputLayout)
         {
-            VertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
+            VertexShader = NewVertexShader;
 
-            PixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
+            PixelShader = NewPixelShader;
 
-            InputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
+            InputLayout = NewInputLayout;
 
-            IsUber = bValue;
+            bIsUber = bValue;
+            return true;
         }
+        // 실패. 하나 이상이 nullptr
         else
         {
-            IsUber = !bValue;
+            UE_LOG(LogLevel::Warning, "Failed to change shader. Target Shader is invalid.");
+            bIsUber = !bValue;
+            return false;
         }
 	}
 	else
@@ -155,17 +159,21 @@ void FStaticMeshRenderPass::SetUberShader(bool bValue)
 
         if (NewVertexShader && NewPixelShader && NewInputLayout)
         {
-            VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+            VertexShader = NewVertexShader;
 
-            PixelShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShader");
+            PixelShader = NewPixelShader;
 
-            InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
+            InputLayout = NewInputLayout;
 
-	        IsUber = bValue;
+	        bIsUber = bValue;
+            return true;
         }
+        // 실패. 하나 이상이 nullptr
         else
         {
-            IsUber = !bValue;
+            UE_LOG(LogLevel::Warning, "Failed to change shader. Target Shader is invalid.");
+            bIsUber = !bValue;
+            return false;
         }
 	}
 }
@@ -190,46 +198,50 @@ void FStaticMeshRenderPass::UpdateShaders()
 	{"MATERIAL_INDEX", 0, DXGI_FORMAT_R32_UINT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	D3D11_INPUT_ELEMENT_DESC TextureLayoutDesc[] = {
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
-	};
+	//D3D11_INPUT_ELEMENT_DESC TextureLayoutDesc[] = {
+	//	{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	//	{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	//};
 
 	Stride = sizeof(FStaticMeshVertex);
 
-	HRESULT hr = ShaderManager->AddVertexShaderAndInputLayout(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS", StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc));
-	// Vertex Shader 생성 실패하면 그대로 종료
-	if (FAILED(hr))
-	{
-		return;
-	}
-	hr = ShaderManager->AddPixelShader(L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS");
-	// Vertex는 성공했지만 Pixel은 실패했으면, Vertex는 revert
-	if (FAILED(hr))
-	{
-		ShaderManager->RemoveVertexShaderByKey(L"StaticMeshVertexShader");
-		ShaderManager->RemoveInputLayoutByKey(L"StaticMeshVertexShader");
+    ShaderManager->ReloadShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
+        StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), nullptr,
+        L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS", nullptr);
 
-		ShaderManager->AddVertexShader(L"StaticMeshVertexShader", PreviousVertexShaderMesh);
-		ShaderManager->AddInputLayout(L"StaticMeshVertexShader", PreviousInputLayoutMesh);
-	}
-	// 이전의 Shader는 release
-	else
-	{
-        UE_LOG(LogLevel::Display, TEXT("Successfully compiled StaticMeshShader."));
-        if (PreviousVertexShaderMesh)
-        {
-            PreviousVertexShaderMesh->Release();
-        }
-        if (PreviousInputLayoutMesh)
-        {
-            PreviousInputLayoutMesh->Release();
-        }
-        if (PreviousPixelShaderMesh)
-        {
-            PreviousPixelShaderMesh->Release();
-        }
-	}
+	//HRESULT hr = ShaderManager->AddVertexShaderAndInputLayout(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS", StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc));
+	//// Vertex Shader 생성 실패하면 그대로 종료
+	//if (FAILED(hr))
+	//{
+	//	return;
+	//}
+	//hr = ShaderManager->AddPixelShader(L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS");
+	//// Vertex는 성공했지만 Pixel은 실패했으면, Vertex는 revert
+	//if (FAILED(hr))
+	//{
+	//	ShaderManager->RemoveVertexShaderByKey(L"StaticMeshVertexShader");
+	//	ShaderManager->RemoveInputLayoutByKey(L"StaticMeshVertexShader");
+
+	//	ShaderManager->AddVertexShader(L"StaticMeshVertexShader", PreviousVertexShaderMesh);
+	//	ShaderManager->AddInputLayout(L"StaticMeshVertexShader", PreviousInputLayoutMesh);
+	//}
+	//// 이전의 Shader는 release
+	//else
+	//{
+ //       UE_LOG(LogLevel::Display, TEXT("Successfully compiled StaticMeshShader."));
+ //       if (PreviousVertexShaderMesh)
+ //       {
+ //           PreviousVertexShaderMesh->Release();
+ //       }
+ //       if (PreviousInputLayoutMesh)
+ //       {
+ //           PreviousInputLayoutMesh->Release();
+ //       }
+ //       if (PreviousPixelShaderMesh)
+ //       {
+ //           PreviousPixelShaderMesh->Release();
+ //       }
+	//}
 
 	std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
 	std::string strPoint = std::to_string(NUM_MAX_POINTLIGHT);
@@ -243,43 +255,47 @@ void FStaticMeshRenderPass::UpdateShaders()
 		{ NULL, NULL }
 	};
 
-	SetUberShader(IsUber);
+    ShaderManager->ReloadShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
+        StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines,
+        L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
+	
+    SetUberShader(bIsUber);
 
-	hr = ShaderManager->AddVertexShaderAndInputLayout(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS", StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines);
-	// Vertex Shader 생성 실패하면 그대로 종료
-	if (FAILED(hr))
-	{
-		return;
-	}
-	hr = ShaderManager->AddPixelShader(L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
-	// Vertex는 성공했지만 Pixel은 실패했으면, Vertex는 revert
-	if (FAILED(hr))
-	{
-		ShaderManager->RemoveVertexShaderByKey(L"UberShaderVertex");
-		ShaderManager->RemoveInputLayoutByKey(L"UberShaderVertex");
+	//hr = ShaderManager->AddVertexShaderAndInputLayout(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS", StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines);
+	//// Vertex Shader 생성 실패하면 그대로 종료
+	//if (FAILED(hr))
+	//{
+	//	return;
+	//}
+	//hr = ShaderManager->AddPixelShader(L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
+	//// Vertex는 성공했지만 Pixel은 실패했으면, Vertex는 revert
+	//if (FAILED(hr))
+	//{
+	//	ShaderManager->RemoveVertexShaderByKey(L"UberShaderVertex");
+	//	ShaderManager->RemoveInputLayoutByKey(L"UberShaderVertex");
 
-		ShaderManager->AddVertexShader(L"UberShaderVertex", PreviousVertexShaderUber);
-		ShaderManager->AddInputLayout(L"UberShaderVertex", PreviousInputLayoutUber);
-	}
-	// 이전의 Shader는 release
-	else
-	{
-        UE_LOG(LogLevel::Display, TEXT("Successfully compiled uberShader."));
-        if (PreviousVertexShaderUber)
-        {
-		    PreviousVertexShaderUber->Release();
-        }
-        if (PreviousInputLayoutUber)
-        {
-            PreviousInputLayoutUber->Release();
-        }
-        if (PreviousPixelShaderUber)
-        {
-            PreviousPixelShaderUber->Release();
-        }
-	}
+	//	ShaderManager->AddVertexShader(L"UberShaderVertex", PreviousVertexShaderUber);
+	//	ShaderManager->AddInputLayout(L"UberShaderVertex", PreviousInputLayoutUber);
+	//}
+	//// 이전의 Shader는 release
+	//else
+	//{
+ //       UE_LOG(LogLevel::Display, TEXT("Successfully compiled uberShader."));
+ //       if (PreviousVertexShaderUber)
+ //       {
+	//	    PreviousVertexShaderUber->Release();
+ //       }
+ //       if (PreviousInputLayoutUber)
+ //       {
+ //           PreviousInputLayoutUber->Release();
+ //       }
+ //       if (PreviousPixelShaderUber)
+ //       {
+ //           PreviousPixelShaderUber->Release();
+ //       }
+	//}
 
-	SetUberShader(IsUber);
+	//SetUberShader(bIsUber);
 }
 
 
