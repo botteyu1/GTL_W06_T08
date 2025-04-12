@@ -124,21 +124,50 @@ void FStaticMeshRenderPass::SetUberShader(bool bValue)
 {
 	if (bValue)
 	{
-		VertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
+		ID3D11VertexShader* NewVertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
 
-		PixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
+        ID3D11PixelShader* NewPixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
 
-		InputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
+        ID3D11InputLayout* NewInputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
+
+        if (NewVertexShader && NewPixelShader && NewInputLayout)
+        {
+            VertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
+
+            PixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
+
+            InputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
+
+            IsUber = bValue;
+        }
+        else
+        {
+            IsUber = !bValue;
+        }
 	}
 	else
 	{
-		VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+		ID3D11VertexShader* NewVertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
 
-		PixelShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShader");
+        ID3D11PixelShader* NewPixelShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShader");
 
-		InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
+        ID3D11InputLayout* NewInputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
+
+        if (NewVertexShader && NewPixelShader && NewInputLayout)
+        {
+            VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+
+            PixelShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShader");
+
+            InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
+
+	        IsUber = bValue;
+        }
+        else
+        {
+            IsUber = !bValue;
+        }
 	}
-	IsUber = bValue;
 }
 
 void FStaticMeshRenderPass::UpdateShaders()
@@ -187,9 +216,19 @@ void FStaticMeshRenderPass::UpdateShaders()
 	// 이전의 Shader는 release
 	else
 	{
-		PreviousVertexShaderMesh->Release();
-		PreviousInputLayoutMesh->Release();
-		PreviousPixelShaderMesh->Release();
+        UE_LOG(LogLevel::Display, TEXT("Successfully compiled StaticMeshShader."));
+        if (PreviousVertexShaderMesh)
+        {
+            PreviousVertexShaderMesh->Release();
+        }
+        if (PreviousInputLayoutMesh)
+        {
+            PreviousInputLayoutMesh->Release();
+        }
+        if (PreviousPixelShaderMesh)
+        {
+            PreviousPixelShaderMesh->Release();
+        }
 	}
 
 	std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
@@ -225,9 +264,19 @@ void FStaticMeshRenderPass::UpdateShaders()
 	// 이전의 Shader는 release
 	else
 	{
-		PreviousVertexShaderUber->Release();
-		PreviousInputLayoutUber->Release();
-		PreviousPixelShaderUber->Release();
+        UE_LOG(LogLevel::Display, TEXT("Successfully compiled uberShader."));
+        if (PreviousVertexShaderUber)
+        {
+		    PreviousVertexShaderUber->Release();
+        }
+        if (PreviousInputLayoutUber)
+        {
+            PreviousInputLayoutUber->Release();
+        }
+        if (PreviousPixelShaderUber)
+        {
+            PreviousPixelShaderUber->Release();
+        }
 	}
 
 	SetUberShader(IsUber);
@@ -343,6 +392,10 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
 
 void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
+    if (GetAsyncKeyState('P') & 0x8000)
+    {
+        UpdateShaders();
+    }
     if (!(Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))) return;
 
     PrepareRenderState();

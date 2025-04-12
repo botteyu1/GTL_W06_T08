@@ -46,7 +46,6 @@ VS_OUT Uber_VS(VS_IN input)
 float4 Uber_PS(VS_OUT Input) : SV_TARGET
 {
     float4 finalPixel = DiffuseTexture.Sample(Sampler, Input.texcoord);
-    return floatdfasdfas4(1, 1, 1, 1);
     // Ambient Light의 컬러를 계산
     finalPixel += float4(AmbientLight.AmbientColor, 1.f) * AmbientLight.Intensity;
     
