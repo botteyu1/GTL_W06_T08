@@ -51,7 +51,10 @@ void AEditorPlayer::Input()
             std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
             ScreenToViewSpace(mousePos.x, mousePos.y, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix(), pickPosition);
             bool res = PickGizmo(pickPosition, ActiveViewport.get());
-            if (!res) PickActor(pickPosition);
+            if (res == false)
+            {
+                PickActor(pickPosition);
+            }
         }
         else
         {
@@ -200,9 +203,12 @@ bool AEditorPlayer::PickGizmo(FVector& pickPosition, FEditorViewportClient* InAc
 
 void AEditorPlayer::PickActor(const FVector& pickPosition)
 {
-    if (!(ShowFlags::GetInstance().currentFlags & EEngineShowFlags::SF_Primitives)) return;
+    if (!(ShowFlags::GetInstance().currentFlags & EEngineShowFlags::SF_Primitives))
+    {
+        return;
+    }
 
-    const UActorComponent* Possible = nullptr;
+    UPrimitiveComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
     for (const auto iter : TObjectRange<UPrimitiveComponent>())
@@ -240,7 +246,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     if (Possible)
     {
         Cast<UEditorEngine>(GEngine)->SelectActor(Possible->GetOwner());
-        Cast<UEditorEngine>(GEngine)->DeselectComponent(Cast<UEditorEngine>(GEngine)->GetSelectedComponent());
+        Cast<UEditorEngine>(GEngine)->SelectComponent(Possible);
     }
 }
 
