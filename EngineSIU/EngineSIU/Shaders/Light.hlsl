@@ -32,9 +32,6 @@ struct Ambient
 {
     float3 AmbientColor;
     float Intensity;
-    
-    int bVisible;
-    float3 Pad0;
 };
 
 struct Directional
@@ -44,9 +41,6 @@ struct Directional
 
     float3 Direction;
     float Pad0;
-
-    int bVisible;
-    float3 Pad1;
 };
 
 struct PointLight
@@ -59,9 +53,6 @@ struct PointLight
 
     float Falloff;
     float3 Pad0;
-
-    int bVisible;
-    float3 Pad1;
 };
 
 struct SpotLight
@@ -69,16 +60,14 @@ struct SpotLight
     float3 Color;
     float Intensity;
 
+    float3 Position;
     float AttenuationRadius;
+    float3 Direction;
+    float Falloff;
     float InnerConeAngle;
     float OuterConeAngle;
-    float Falloff;
 
-    float3 Direction;
-    float Pad0;
-
-    float3 Position;
-    int bVisible;
+    float2 Pad0;
 };
 
 cbuffer cbLights : register(b2)
@@ -139,7 +128,6 @@ float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
     
     // Blinn-phong
     float3 ToLight = gPoint[nIndex].Position - vPosition;
-    return float4(1,1,1, 1.0f);
     float Distance = length(ToLight);
     float3 LightDirection = ToLight / Distance; // normalize
 
@@ -224,8 +212,6 @@ float3 CalculateDirectionalLight(float3 vPosition, float3 vNormal)
 float4 Lighting(float3 vPosition, float3 vNormal)
 {
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-
-    return float4(gNumPointLights, 0, 0, 1.0f);
     
     [unroll(MAX_POINT_LIGHTS)]
     for (int i = 0; i < gNumPointLights; i++)
