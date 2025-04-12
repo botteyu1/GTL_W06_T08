@@ -17,12 +17,14 @@ namespace MaterialUtils
     inline void UpdateMaterial(FDXDBufferManager* BufferManager, FGraphicsDevice* Graphics, const FObjMaterialInfo& MaterialInfo) {
         FMaterialConstants data;
         data.DiffuseColor = MaterialInfo.Diffuse;
-        data.TransparencyScalar = MaterialInfo.TransparencyScalar;
         data.AmbientColor = MaterialInfo.Ambient;
-        data.DensityScalar = MaterialInfo.DensityScalar;
         data.SpecularColor = MaterialInfo.Specular;
-        data.SpecularScalar = MaterialInfo.SpecularScalar;
         data.EmmisiveColor = MaterialInfo.Emissive;
+        data.Sharpness = MaterialInfo.Sharpness;
+        data.SpecularScalar = MaterialInfo.SpecularScalar;
+        data.DensityScalar = MaterialInfo.DensityScalar;
+        data.Illum = MaterialInfo.IlluminanceModel;
+        data.TransparencyScalar = MaterialInfo.TransparencyScalar;
         data.TextureFlag = MaterialInfo.TextureFlag;
 
         BufferManager->UpdateConstantBuffer(TEXT("FMaterialConstants"), data);

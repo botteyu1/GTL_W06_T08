@@ -39,6 +39,11 @@ struct FMaterial
     
     float3 EmissiveColor;
     uint TextureFlag;
+
+    float Sharpness;
+    float Illum;
+
+    float2 pad;
 };
 
 cbuffer MaterialConstants : register(b3)
