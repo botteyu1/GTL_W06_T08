@@ -349,7 +349,7 @@ struct alignas(16) FSceneLightBuffer
     FAmbientLight AmbientLight;
 
     FDirectionalLight DirectionalLight[NUM_MAX_DIRLIGHT];
-    FPointLight PointLight[NUM_MAX_POINTLIGHT];
+    FPointLight PointLight[NUM_MAX_SPOTLIGHT];
     FSpotLight SpotLight[NUM_MAX_SPOTLIGHT];
     
     int NumDirLights;
