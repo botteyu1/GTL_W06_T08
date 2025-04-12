@@ -22,6 +22,12 @@
 
 #include "UnrealEd/EditorViewportClient.h"
 
+#define NUM_MAX_DIRLIGHT 2
+#define NUM_MAX_POINTLIGHT 16
+#define NUM_MAX_SPOTLIGHT 8
+
+#define FCONSTANT_STRINGIFY(x) #x
+#define FCONSTANT_TOSTRING(x) FCONSTANT_STRINGIFY(x)
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
     : VertexShader(nullptr)
@@ -71,6 +77,25 @@ void FStaticMeshRenderPass::CreateShader()
     PixelShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShader");
 
     InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
+
+    // hlsl파일에 들어갈 macro define
+    const D3D_SHADER_MACRO UberDefines[] =
+    {
+        "NUM_MAX_DIRLIGHT", FCONSTANT_TOSTRING(NUM_MAX_DIRLIGHT),
+        "NUM_MAX_POINTLIGHT", FCONSTANT_TOSTRING(NUM_MAX_POINTLIGHT),
+        "NUM_MAX_SPOTLIGHT", FCONSTANT_TOSTRING(NUM_MAX_SPOTLIGHT),
+        NULL, NULL
+    };
+
+    hr = ShaderManager->AddVertexShaderAndInputLayout(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS", StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines);
+
+    hr = ShaderManager->AddPixelShader(L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
+
+    VertexShader = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
+
+    PixelShader = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
+
+    InputLayout = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
 
 }
 void FStaticMeshRenderPass::ReleaseShader()

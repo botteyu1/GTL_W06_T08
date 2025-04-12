@@ -12,6 +12,7 @@ VS_OUT Uber_VS(VS_IN Input)
 #elif LIGHTING_MODEL_PHONG
 
 #endif
+    output.position = float4(1, 1, 1, 1);
     return output;
 }
 

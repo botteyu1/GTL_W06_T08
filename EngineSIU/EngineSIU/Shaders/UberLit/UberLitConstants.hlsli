@@ -23,11 +23,11 @@ cbuffer cbLights : register(b2)
 {
     FAmbientLight AmbientLight;
 
-    FDirectionalLight DirectionalLights[MAX_NUM_DIR_LIGHTS];
+    FDirectionalLight DirectionalLights[NUM_MAX_DIRLIGHT];
 
-    FPointLight PointLights[MAX_NUM_POINT_LIGHTS];
+    FPointLight PointLights[NUM_MAX_POINTLIGHT];
 
-    FSpotLight SpotLights[MAX_NUM_SPOT_LIGHTS];
+    FSpotLight SpotLights[NUM_MAX_SPOTLIGHT];
 
     int NumDirectionalLights;
     int NumPointLights;

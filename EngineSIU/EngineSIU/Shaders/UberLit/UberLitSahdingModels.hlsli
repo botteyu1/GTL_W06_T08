@@ -6,6 +6,12 @@
 
 // Lambert Shading
 // Per-Pixel로 값을 구함. Diffuse만
+// !!! 예시 !!!
+//float3 ComputeLambert(SurfaceInfo surf, float3 lightDir, float3 lightColor)
+//{
+//    float NdotL = max(dot(surf.Normal, lightDir), 0.0f);
+//    return lightColor * NdotL;
+//}
 
 // Blinn-Phong Shading
 // Per-Pixel로 값을 구함. Specular + Diffuse
