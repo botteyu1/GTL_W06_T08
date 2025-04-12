@@ -68,4 +68,5 @@ cbuffer ConstantBufferDebugArrow : register(b13)
     float ArrowScaleXYZ;
     float3 ArrowDirection;
     float ArrowScaleZ;
+    float4 ArrowColor;
 }

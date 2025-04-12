@@ -84,7 +84,7 @@ FVector USceneComponent::GetForwardVector() const
     Forward4 = FMatrix::TransformVector(Forward4, GetWorldMatrix());
     FVector Forward;
     Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
-    Forward = Forward.Normalize();
+    Forward.Normalize();
 
     return Forward;
 }

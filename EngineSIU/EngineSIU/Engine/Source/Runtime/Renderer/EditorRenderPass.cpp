@@ -662,7 +662,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
     ID3D11DepthStencilState* DepthStateDisable = Graphics->DepthStencilStateTestWriteDisable;
     DeviceContext->OMSetDepthStencilState(DepthStateDisable, 0);
     RenderIcons(ActiveViewport);
-    //RenderArrows(World);
+    RenderArrows();
     //RenderGizmos(World);
 }
 
@@ -1076,13 +1076,13 @@ void FEditorRenderPass::LazyLoad()
     Resources.IconTextures[IconType::ExponentialFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Icons/ExponentialHeightFog_64.png");
     Resources.IconTextures[IconType::AtmosphericFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Icons/AtmosphericFog_64.png");
 
-// Gizmo arrow 로드
-    //UStaticMesh* Mesh = FManagerOBJ::GetStaticMesh(L"gizmo_loc_z.obj");
-    //Resources.Primitives.Arrow.Vertex = Mesh->GetRenderData()->VertexBuffer;
-    //Resources.Primitives.Arrow.Index = Mesh->GetRenderData()->IndexBuffer;
-    //Resources.Primitives.Arrow.NumVertices = Mesh->GetRenderData()->Vertices.Num();
-    //Resources.Primitives.Arrow.NumIndices = Mesh->GetRenderData()->Indices.Num();
-    //Resources.Primitives.Arrow.VertexStride = sizeof(Mesh->GetRenderData()->Vertices);
+//// Gizmo arrow 로드
+    UStaticMesh* Mesh = FManagerOBJ::GetStaticMesh(L"Assets/GizmoTranslationZ.obj");
+    Resources.Primitives.Arrow.Vertex = Mesh->GetRenderData()->VertexBuffer;
+    Resources.Primitives.Arrow.Index = Mesh->GetRenderData()->IndexBuffer;
+    Resources.Primitives.Arrow.NumVertices = Mesh->GetRenderData()->Vertices.Num();
+    Resources.Primitives.Arrow.NumIndices = Mesh->GetRenderData()->Indices.Num();
+    Resources.Primitives.Arrow.VertexStride = sizeof(Mesh->GetRenderData()->Vertices[0]);
 
 }
 
@@ -1201,10 +1201,10 @@ void FEditorRenderPass::UpdateTextureIcon(IconType type)
     DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[type]->SamplerState);
 }
 
-void FEditorRenderPass::RenderArrows(const UWorld* World)
+void FEditorRenderPass::RenderArrows()
 {
     // XYZ한번. Z는 중복으로 적용
-    const float ArrowScale = 5;
+    const float ArrowScale = 3;
 
     ShaderManager->SetVertexShaderAndInputLayout(ShaderNameArrow, DeviceContext);
     ShaderManager->SetPixelShader(ShaderNameArrow, DeviceContext);
@@ -1215,18 +1215,17 @@ void FEditorRenderPass::RenderArrows(const UWorld* World)
     DeviceContext->IASetIndexBuffer(Resources.Primitives.Arrow.Index, DXGI_FORMAT_R32_UINT, 0);
 
     PrepareConstantbufferArrow();
-    for (ULightComponentBase* LightComp : Resources.Components.PointLight)
+    for (UDirectionalLightComponent* DLightComp : Resources.Components.DirLight)
     {
-        if (UDirectionalLightComponent* DLightComp = Cast<UDirectionalLightComponent>(LightComp))
-        {
-            FConstantBufferDebugArrow buf;
-            buf.Position = DLightComp->GetWorldLocation();
-            buf.ArrowScaleXYZ = ArrowScale;
-            buf.Direction = DLightComp->GetForwardVector();
-            buf.ArrowScaleZ = ArrowScale;
-            UdpateConstantbufferArrow(buf);
-            DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
-        }
+        FConstantBufferDebugArrow buf;
+        buf.Position = DLightComp->GetWorldLocation();
+        buf.ArrowScaleXYZ = ArrowScale;
+        buf.Direction = DLightComp->GetForwardVector();
+        buf.ArrowScaleZ = ArrowScale;
+        buf.Color = DLightComp->GetLightColor();
+        UdpateConstantbufferArrow(buf);
+        DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
+
     }
 }
 

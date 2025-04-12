@@ -208,7 +208,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
         return;
     }
 
-    UPrimitiveComponent* Possible = nullptr;
+    USceneComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
     for (const auto iter : TObjectRange<USceneComponent>())
