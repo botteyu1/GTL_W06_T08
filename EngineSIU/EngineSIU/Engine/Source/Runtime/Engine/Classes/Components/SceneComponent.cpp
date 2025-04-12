@@ -92,6 +92,7 @@ void USceneComponent::DestroyComponent(bool bPromoteChildren)
             AActor* Owner = GetOwner();
             if (AttachParent)
             {
+                Child->DetachFromComponent(this);
                 // 자식 컴포넌트들을 부모에 어태치
                 Child->SetupAttachment(AttachParent);
             }
@@ -99,6 +100,7 @@ void USceneComponent::DestroyComponent(bool bPromoteChildren)
             {
                 if (Owner->GetRootComponent())
                 {
+                    Child->DetachFromComponent(this);
                     // 부모가 nullptr인 경우 Owner의 Root에라도 어태치
                     Child->SetupAttachment(Owner->GetRootComponent());
                 }
