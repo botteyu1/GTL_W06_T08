@@ -53,7 +53,7 @@ struct FMaterial
 };
 
 ///////////////////////////////////////////////
-// Lighting
+// Lighting 상수버퍼용
 ///////////////////////////////////////////////
 struct FAmbientLight
 {
@@ -106,4 +106,23 @@ struct FSpotLight
 
     float3 Position;
     int bVisible;
+};
+
+///////////////////////////////////////////////
+// Lighting 내부계산용
+///////////////////////////////////////////////
+struct SurfaceInfo
+{
+    float3 WorldPos;
+    float3 Normal;
+    float3 ViewDir; // normalize(CameraPos - WorldPos)
+};
+
+struct BlinnPhongParams
+{
+    float3 LightDir; // Directional일 경우: normalize(-Dir), Spot일 경우: normalize(Pos - P)
+    float3 LightColor;
+    float3 HalfVector;
+    float Attenuation; // 거리, 각도 등 반영한 감쇠 계수
+    float Shininess;
 };

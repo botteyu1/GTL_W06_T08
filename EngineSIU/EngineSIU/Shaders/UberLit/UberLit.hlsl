@@ -1,6 +1,6 @@
 // UberLit.hlsl
-#include "UberLit/UberLitConstants.hlsli"
-#include "UberLit/UberLitTextures.hlsli"
+#include "UberLitConstants.hlsli"
+#include "UberLitTextures.hlsli"
 
 VS_OUT Uber_VS(VS_IN Input)
 {

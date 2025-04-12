@@ -1,5 +1,5 @@
 // UberLitConstants.hlsl
-#include "UberLit/UberLitStructs.hlsli"
+#include "UberLitStructs.hlsli"
 // constant buffer를 지정하는 header file
 
 // 전처리기 macro는 D3DCompile에서 정의
