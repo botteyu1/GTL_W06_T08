@@ -190,34 +190,24 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     const UActorComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
-    for (const auto iter : TObjectRange<UPrimitiveComponent>())
+    for (const auto iter : TObjectRange<USceneComponent>())
     {
-        UPrimitiveComponent* pObj;
-        if (iter->IsA<UPrimitiveComponent>() || iter->IsA<ULightComponent>())
-        {
-            pObj = static_cast<UPrimitiveComponent*>(iter);
-        }
-        else
-        {
-            continue;
-        }
-
-        if (pObj && !pObj->IsA<UGizmoBaseComponent>())
+        if (iter && !iter->IsA<UGizmoBaseComponent>())
         {
             float Distance = 0.0f;
             int currentIntersectCount = 0;
-            if (RayIntersectsObject(pickPosition, pObj, Distance, currentIntersectCount))
+            if (RayIntersectsObject(pickPosition, iter, Distance, currentIntersectCount))
             {
                 if (Distance < minDistance)
                 {
                     minDistance = Distance;
                     maxIntersect = currentIntersectCount;
-                    Possible = pObj;
+                    Possible = iter;
                 }
                 else if (abs(Distance - minDistance) < FLT_EPSILON && currentIntersectCount > maxIntersect)
                 {
                     maxIntersect = currentIntersectCount;
-                    Possible = pObj;
+                    Possible = iter;
                 }
             }
         }

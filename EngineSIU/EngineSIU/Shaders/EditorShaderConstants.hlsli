@@ -28,6 +28,7 @@ struct SphereData
 {
     float3 Position;
     float Radius;
+    float4 Color;
 };
 cbuffer ConstantBufferDebugSphere : register(b13)
 {

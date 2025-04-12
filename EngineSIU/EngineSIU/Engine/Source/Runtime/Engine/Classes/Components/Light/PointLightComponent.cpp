@@ -17,6 +17,12 @@ void UPointLightComponent::TickComponent(float DeltaTime)
     ULightComponent::TickComponent(DeltaTime);
 }
 
+void UPointLightComponent::AddScale(FVector InAddValue)
+{
+    float delta = InAddValue.X + InAddValue.Y + InAddValue.Z;
+
+    LightData.AttenuationRadius = std::max(0.1f, LightData.AttenuationRadius + delta);
+}
 void* UPointLightComponent::GetLightDefinition()
 {
     return &LightData;

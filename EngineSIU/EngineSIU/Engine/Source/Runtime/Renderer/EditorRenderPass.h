@@ -23,6 +23,7 @@ public:
     void Render(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void SetGridParameter(float Spacing, uint32 GridCount);
     void Release();
+    static const float IconScale;
 
 private:
     ID3D11DeviceContext* DeviceContext;

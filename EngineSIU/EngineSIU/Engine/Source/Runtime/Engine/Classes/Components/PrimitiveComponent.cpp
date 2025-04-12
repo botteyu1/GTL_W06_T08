@@ -20,7 +20,7 @@ void UPrimitiveComponent::TickComponent(float DeltaTime)
 	Super::TickComponent(DeltaTime);
 }
 
-int UPrimitiveComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
+int UPrimitiveComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) const
 {
     //if (!AABB.Intersect(rayOrigin, rayDirection, pfNearHitDistance)) return 0;
     int nIntersections = 0;

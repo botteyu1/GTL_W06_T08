@@ -5,7 +5,7 @@ USpotLightComponent::USpotLightComponent()
     LightData.Intensity = Intensity;
     LightData.Color = FVector(LightColor.R, LightColor.G, LightColor.B);
 
-    LightData.Direction = FVector::ZeroVector;
+    LightData.Direction = GetForwardVector();
     LightData.Falloff = 1.0f;
     LightData.AttenuationRadius = 1.0f;
     LightData.InnerConeAngle = 0.0f;

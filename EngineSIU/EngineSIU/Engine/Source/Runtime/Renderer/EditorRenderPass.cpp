@@ -7,15 +7,19 @@
 #include "D3D11RHI/GraphicDevice.h"
 #include "Engine/Classes/Actors/Player.h"
 #include "Renderer.h"
+#include "Engine/Classes/Components/Light/DirectionalLightComponent.h"
 #include "Engine/Classes/Components/Light/PointLightComponent.h"
 #include "Engine/Classes/Components/Light/SpotLightComponent.h"
 #include "Engine/Classes/Components/HeightFogComponent.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/Engine.h"
+#include "Engine/EditorEngine.h"
 #include "World/World.h"
 #include "Engine/Source/Runtime/Windows/D3D11RHI/DXDBufferManager.h"
 #include "Engine/Source/Runtime/Windows/D3D11RHI/DXDShaderManager.h"
+
+const float FEditorRenderPass::IconScale = 3.f;
 
 void FEditorRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)
 {
@@ -549,6 +553,7 @@ void FEditorRenderPass::PrepareRendertarget()
 void FEditorRenderPass::PrepareComponents()
 {
     Resources.Components.StaticMesh.Empty();
+    Resources.Components.DirLight.Empty();
     Resources.Components.PointLight.Empty();
     Resources.Components.SpotLight.Empty();
     Resources.Components.Fog.Empty();
@@ -565,6 +570,14 @@ void FEditorRenderPass::PrepareComponents()
         if (iter->GetWorld() == GEngine->ActiveWorld)
         {
             Resources.Components.StaticMesh.Add(iter);
+        }
+    }
+
+    for (const auto iter : TObjectRange<UDirectionalLightComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
+        {
+            Resources.Components.DirLight.Add(iter);
         }
     }
 
@@ -876,7 +889,7 @@ void FEditorRenderPass::RenderPointlightInstanced()
     for (int i = 0; i < (1 + BufferAll.Num() / ConstantBufferSizeSphere) * ConstantBufferSizeSphere; ++i)
     {
         TArray<FConstantBufferDebugSphere> SubBuffer;
-        for (int j = 0; j < ConstantBufferSizeAABB; ++j)
+        for (int j = 0; j < ConstantBufferSizeSphere; ++j)
         {
             if (BufferIndex < BufferAll.Num())
             {
@@ -1076,7 +1089,6 @@ void FEditorRenderPass::LazyLoad()
 void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
     // ULightComponentBase::CheckRayIntersection에서도 수정 필요
-    const float IconScale = 5;
     ShaderManager->SetVertexShader(ShaderNameIcon, DeviceContext);
     ShaderManager->SetPixelShader(ShaderNameIcon, DeviceContext);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1085,12 +1097,46 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
 
     PrepareConstantbufferIcon();
 
+    AActor* PickedActor = nullptr;
+    if (UEditorEngine* Engine = Cast<UEditorEngine>(GEngine))
+    {
+        if (AEditorPlayer* player = Engine->GetEditorPlayer())
+        {
+            PickedActor = Engine->GetSelectedActor();
+        }
+    }
+
+    for (UDirectionalLightComponent* DirLightComp : Resources.Components.DirLight)
+    {
+        FConstantBufferDebugIcon b;
+        b.Position = DirLightComp->GetWorldLocation();
+        b.Scale = IconScale;
+        if (DirLightComp->GetOwner() == PickedActor)
+        {
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
+        }
+        else
+        {
+            b.Color = DirLightComp->GetLightColor();
+        }
+        UdpateConstantbufferIcon(b);
+        UpdateTextureIcon(IconType::DirectionalLight);
+        DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
+    }
+    
     for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
     {
         FConstantBufferDebugIcon b;
         b.Position = PointLightComp->GetWorldLocation();
         b.Scale = IconScale;
-        b.Color = PointLightComp->GetLightColor();
+        if (PointLightComp->GetOwner() == PickedActor)
+        {
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
+        }
+        else
+        {
+            b.Color = PointLightComp->GetLightColor();
+        }
         UdpateConstantbufferIcon(b);
         UpdateTextureIcon(IconType::PointLight);
         DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
@@ -1101,30 +1147,18 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
         FConstantBufferDebugIcon b;
         b.Position = SpotLightComp->GetWorldLocation();
         b.Scale = IconScale;
-        b.Color = SpotLightComp->GetLightColor();
+        if (SpotLightComp->GetOwner() == PickedActor)
+        {
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
+        }
+        else
+        {
+            b.Color = SpotLightComp->GetLightColor();
+        }
         UdpateConstantbufferIcon(b);
         UpdateTextureIcon(IconType::SpotLight);
         DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
     }
-
-
-        //if (UPointLightComponent* PointLightComp = Cast<UPointLightComponent>(LightComp))
-        //{
-        //    UpdateTextureIcon(IconType::PointLight);
-        //}
-        //else if (USpotLightComponent* SpotLightComp = Cast<USpotLightComponent>(LightComp))
-        //{
-        //    UpdateTextureIcon(IconType::SpotLight);
-        //}
-        //else if (UDirectionalLightComponent* DirectionalLightComp = Cast<UDirectionalLightComponent>(LightComp))
-        //{
-        //    UpdateTextureIcon(IconType::DirectionalLight);
-        //}
-        //else
-        //{
-        //    // 잘못된 light 종류
-        //    continue;
-        //};
 
     for (UHeightFogComponent* FogComp : Resources.Components.Fog)
     {
@@ -1167,51 +1201,51 @@ void FEditorRenderPass::UpdateTextureIcon(IconType type)
     DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[type]->SamplerState);
 }
 
-//void FEditorRenderPass::RenderArrows(const UWorld* World)
-//{
-//    // XYZ한번. Z는 중복으로 적용
-//    const float ArrowScale = 5;
-//
-//    ShaderManager->SetVertexShaderAndInputLayout(ShaderNameArrow, DeviceContext);
-//    ShaderManager->SetPixelShader(ShaderNameArrow, DeviceContext);
-//    DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//
-//    UINT offset = 0;
-//    DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Arrow.Vertex, &Resources.Primitives.Arrow.VertexStride, &offset);
-//    DeviceContext->IASetIndexBuffer(Resources.Primitives.Arrow.Index, DXGI_FORMAT_R32_UINT, 0);
-//
-//    PrepareConstantbufferArrow();
-//    for (ULightComponentBase* LightComp : Resources.Components.PointLight)
-//    {
-//        if (UDirectionalLightComponent* DLightComp = Cast<UDirectionalLightComponent>(LightComp))
-//        {
-//            FConstantBufferDebugArrow buf;
-//            buf.Position = DLightComp->GetComponentLocation();
-//            buf.ArrowScaleXYZ = ArrowScale;
-//            buf.Direction = DLightComp->GetLightDirection();
-//            buf.ArrowScaleZ = ArrowScale;
-//            UdpateConstantbufferArrow(buf);
-//            DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
-//        }
-//    }
-//}
-//
-//void FEditorRenderPass::PrepareConstantbufferArrow()
-//{
-//    if (Resources.ConstantBuffers.Arrow13)
-//    {
-//        DeviceContext->VSSetConstantBuffers(13, 1, &Resources.ConstantBuffers.Arrow13);
-//    }
-//}
-//
-//void FEditorRenderPass::UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer)
-//{
-//    if (Resources.ConstantBuffers.Arrow13)
-//    {
-//        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
-//
-//        DeviceContext->Map(Resources.ConstantBuffers.Arrow13, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-//        memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugArrow)); // TArray이니까 실제 값을 받아와야함
-//        DeviceContext->Unmap(Resources.ConstantBuffers.Arrow13, 0); // GPU�� �ٽ� ��밡���ϰ� �����
-//    }
-//}
+void FEditorRenderPass::RenderArrows(const UWorld* World)
+{
+    // XYZ한번. Z는 중복으로 적용
+    const float ArrowScale = 5;
+
+    ShaderManager->SetVertexShaderAndInputLayout(ShaderNameArrow, DeviceContext);
+    ShaderManager->SetPixelShader(ShaderNameArrow, DeviceContext);
+    DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    UINT offset = 0;
+    DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Arrow.Vertex, &Resources.Primitives.Arrow.VertexStride, &offset);
+    DeviceContext->IASetIndexBuffer(Resources.Primitives.Arrow.Index, DXGI_FORMAT_R32_UINT, 0);
+
+    PrepareConstantbufferArrow();
+    for (ULightComponentBase* LightComp : Resources.Components.PointLight)
+    {
+        if (UDirectionalLightComponent* DLightComp = Cast<UDirectionalLightComponent>(LightComp))
+        {
+            FConstantBufferDebugArrow buf;
+            buf.Position = DLightComp->GetWorldLocation();
+            buf.ArrowScaleXYZ = ArrowScale;
+            buf.Direction = DLightComp->GetForwardVector();
+            buf.ArrowScaleZ = ArrowScale;
+            UdpateConstantbufferArrow(buf);
+            DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
+        }
+    }
+}
+
+void FEditorRenderPass::PrepareConstantbufferArrow()
+{
+    if (Resources.ConstantBuffers.Arrow13)
+    {
+        DeviceContext->VSSetConstantBuffers(13, 1, &Resources.ConstantBuffers.Arrow13);
+    }
+}
+
+void FEditorRenderPass::UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer)
+{
+    if (Resources.ConstantBuffers.Arrow13)
+    {
+        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
+
+        DeviceContext->Map(Resources.ConstantBuffers.Arrow13, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
+        memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugArrow)); // TArray이니까 실제 값을 받아와야함
+        DeviceContext->Unmap(Resources.ConstantBuffers.Arrow13, 0); // GPU�� �ٽ� ��밡���ϰ� �����
+    }
+}

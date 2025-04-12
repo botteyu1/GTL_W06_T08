@@ -1,11 +1,11 @@
-﻿#include "DirectionalLightComponent.h"
+#include "DirectionalLightComponent.h"
 
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
     LightData.bVisible = bVisible;
     LightData.Color = FVector(LightColor.R, LightColor.G, LightColor.B);
     LightData.Intensity = Intensity;
-    LightData.Direction = this->GetWorldRotation();
+    LightData.Direction = this->GetForwardVector();
 }
 
 void UDirectionalLightComponent::TickComponent(float DeltaTime)

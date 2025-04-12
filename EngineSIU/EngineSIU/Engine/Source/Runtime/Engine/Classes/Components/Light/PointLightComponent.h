@@ -10,7 +10,10 @@ public:
     virtual ~UPointLightComponent() override;
 
     void TickComponent(float DeltaTime) override;
-    
+
+    virtual void AddScale(FVector InAddValue) override;
+
+
     // position은 scenecomponent 변수 가져감
     float GetAttenuationRadius() const { return LightData.AttenuationRadius; }
     float GetFalloff() const { return LightData.Falloff; }
