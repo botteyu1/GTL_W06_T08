@@ -25,6 +25,10 @@ public:
 	HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName);
 	HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines = nullptr);
 	HRESULT AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize);
+
+    void AddVertexShader(const std::wstring& Key, ID3D11VertexShader* VerteShader);
+    void AddVertexShader(const std::wstring& Key, ID3D11PixelShader* PixelShader);
+    void AddInputLayout(const std::wstring& Key, ID3D11InputLayout* InputLayout);
 	
 	HRESULT AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines = nullptr);
 
@@ -33,6 +37,11 @@ public:
 	ID3D11InputLayout* GetInputLayoutByKey(const std::wstring& Key) const;
 	ID3D11VertexShader* GetVertexShaderByKey(const std::wstring& Key) const;
 	ID3D11PixelShader* GetPixelShaderByKey(const std::wstring& Key) const;
+
+
+    void RemoveInputLayoutByKey(const std::wstring& Key);
+    void RemoveVertexShaderByKey(const std::wstring& Key);
+    void RemovePixelShaderByKey(const std::wstring& Key);
 
     void SetVertexShader(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const;
     void SetVertexShaderAndInputLayout(const std::wstring KeyName, ID3D11DeviceContext* DeviceContext) const;

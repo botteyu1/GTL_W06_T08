@@ -84,7 +84,7 @@ FVector USceneComponent::GetForwardVector() const
     Forward4 = FMatrix::TransformVector(Forward4, GetWorldMatrix());
     FVector Forward;
     Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
-    Forward = Forward.Normalize();
+    Forward.Normalize();
 
     return Forward;
 }
@@ -95,7 +95,7 @@ FVector USceneComponent::GetRightVector() const
     Right4 = FMatrix::TransformVector(Right4, GetWorldMatrix());
     FVector Right;
     Right = FVector(Right4.X, Right4.Y, Right4.Z);
-    Right = Right.Normalize();
+    Right.Normalize();
 
     return Right;
 }
@@ -106,7 +106,7 @@ FVector USceneComponent::GetUpVector() const
     Up4 = FMatrix::TransformVector(Up4, GetWorldMatrix());
     FVector Up;
     Up = FVector(Up4.X, Up4.Y, Up4.Z);
-    Up = Up.Normalize();
+    Up.Normalize();
 
     return Up;
 }

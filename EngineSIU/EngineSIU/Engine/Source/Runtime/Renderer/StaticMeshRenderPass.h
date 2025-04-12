@@ -45,10 +45,15 @@ public:
     void RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices) const;
 
     // Shader 관련 함수 (생성/해제 등)
-    void CreateShader();
+    HRESULT CreateShader();
+
     void ReleaseShader();
 
     void ChangeViewMode(EViewModeIndex evi) const;
+
+    void SetUberShader(bool bValue);
+
+    void UpdateShaders();
 private:
     TArray<UStaticMeshComponent*> StaticMeshObjs;
 
@@ -65,4 +70,6 @@ private:
     FGraphicsDevice* Graphics;
     
     FDXDShaderManager* ShaderManager;
+
+    bool IsUber = false;
 };

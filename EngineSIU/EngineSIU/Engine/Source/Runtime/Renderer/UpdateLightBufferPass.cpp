@@ -73,7 +73,6 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     else
     {
         FAmbientLight TempLight;
-        TempLight.bVisible = true;
         TempLight.Color = FVector(0.1f, 0.1f, 0.1f);
         TempLight.Intensity = 1.0f;
         
@@ -90,11 +89,13 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     {
         if (LightCount < NUM_MAX_POINTLIGHT)
         {
-            SceneLightBufferData.PointLight[LightCount] = Light->GetLightData<FPointLight>();
-            SceneLightBufferData.PointLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
-            SceneLightBufferData.PointLight[LightCount].Position = Light->GetWorldLocation();
-            SceneLightBufferData.PointLight[LightCount].Intensity = Light->GetIntensity();
-            SceneLightBufferData.PointLight[LightCount].bVisible = Light->IsVisible() ? 1 : 0;
+            if (Light->IsVisible())
+            {
+                SceneLightBufferData.PointLight[LightCount] = Light->GetLightData<FPointLight>();
+                SceneLightBufferData.PointLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
+                SceneLightBufferData.PointLight[LightCount].Position = Light->GetWorldLocation();
+                SceneLightBufferData.PointLight[LightCount].Intensity = Light->GetIntensity();
+            }
             
             LightCount++;
         }
@@ -108,11 +109,13 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     {
         if (LightCount < NUM_MAX_SPOTLIGHT)
         {
-            SceneLightBufferData.SpotLight[LightCount] = Light->GetLightData<FSpotLight>();
-            SceneLightBufferData.SpotLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
-            SceneLightBufferData.SpotLight[LightCount].Position = Light->GetWorldLocation();
-            SceneLightBufferData.SpotLight[LightCount].Intensity = Light->GetIntensity();
-            SceneLightBufferData.SpotLight[LightCount].bVisible = Light->IsVisible() ? 1 : 0;
+            if (Light->IsVisible())
+            {
+                SceneLightBufferData.SpotLight[LightCount] = Light->GetLightData<FSpotLight>();
+                SceneLightBufferData.SpotLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
+                SceneLightBufferData.SpotLight[LightCount].Position = Light->GetWorldLocation();
+                SceneLightBufferData.SpotLight[LightCount].Intensity = Light->GetIntensity();
+            }
             
             LightCount++;
         }
@@ -126,9 +129,4 @@ void FUpdateLightBufferPass::ClearRenderArr()
 {
     PointLights.Empty();
     SpotLights.Empty();
-}
-
-void FUpdateLightBufferPass::UpdateLightBuffer(FLight Light) const
-{
-
 }

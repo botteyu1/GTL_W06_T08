@@ -301,50 +301,22 @@ enum ELightType {
     AMBIENT_LIGHT = 4,
 };
 
-struct FLight
-{
-    FVector DiffuseColor;
-    float pad1;
-
-    FVector SpecularColor;
-    float pad2;
-
-    FVector Position;
-    float Falloff;
-
-    FVector Direction;
-    float pad3;
-
-    float Attenuation = 20.f;
-    int   Enabled;
-    int   Type;
-    float Intensity = 1000.f;    // m_fIntensity: 광원 강도
-    float AttRadius = 100.f;    // m_fAttRadius: 감쇠 반경
-    FVector LightPad;
-};
-
-struct FAmbientLight
+struct alignas(16) FAmbientLight
 {
     FVector Color;
     float Intensity;
-
-    int bVisible;
-    FVector Pad0;
 };
 
-struct FDirectionalLight
+struct alignas(16) FDirectionalLight
 {
     FVector Color;
     float Intensity;
 
     FVector Direction;
-    float Pad0;
-
-    int bVisible;
-    FVector Pad1;
+    // pad 4 byte
 };
 
-struct FPointLight
+struct alignas(16) FPointLight
 {
     FVector Color;
     float Intensity;
@@ -353,33 +325,28 @@ struct FPointLight
     float AttenuationRadius;
 
     float Falloff;
-    FVector Pad1;
-
-    int bVisible;
-    FVector Pad2;
+    // pad 12 byte
 };
 
-struct FSpotLight
+struct alignas(16) FSpotLight
 {
     FVector Color;
     float Intensity;
 
+    FVector Position;  
     float AttenuationRadius;
+
+    FVector Direction;
+    float Falloff;
+
     float InnerConeAngle;
     float OuterConeAngle;
-    float Falloff;
-
-    FVector Direction;
-    float Pad0;
-
-    FVector Position;
-    int bVisible;
+    // pad 8 byte
 };
 
-struct FSceneLightBuffer
+struct alignas(16) FSceneLightBuffer
 {
     FAmbientLight AmbientLight;
-
 
     FDirectionalLight DirectionalLight[NUM_MAX_DIRLIGHT];
     FPointLight PointLight[NUM_MAX_SPOTLIGHT];
@@ -388,9 +355,10 @@ struct FSceneLightBuffer
     int NumDirLights;
     int NumPointLights;
     int NumSpotLights;
+    // pad 4 byte
 };
 
-struct FMaterialConstants {
+struct alignas(16) FMaterialConstants {
     FVector DiffuseColor;
     float TransparencyScalar;
 
@@ -410,7 +378,7 @@ struct FMaterialConstants {
     float pad2;
 };
 
-struct FPerObjectConstantBuffer {
+struct alignas(16) FPerObjectConstantBuffer {
     FMatrix Model;      // 모델
     FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
     FVector4 UUIDColor;
@@ -418,7 +386,7 @@ struct FPerObjectConstantBuffer {
     FVector pad;
 };
 
-struct FCameraConstantBuffer
+struct alignas(16) FCameraConstantBuffer
 {
     FMatrix View;
     FMatrix Projection;
@@ -426,22 +394,22 @@ struct FCameraConstantBuffer
     float pad;
 };
 
-struct FSubUVConstant
+struct alignas(16)FSubUVConstant
 {
     FVector2D uvOffset;
     FVector2D uvScale;
 };
-struct FLitUnlitConstants {
+struct alignas(16)FLitUnlitConstants {
     int isLit; // 1 = Lit, 0 = Unlit 
     FVector pad;
 };
 
-struct FSubMeshConstants {
+struct alignas(16) FSubMeshConstants {
     float isSelectedSubMesh;
     FVector pad;
 };
 
-struct FTextureConstants {
+struct alignas(16) FTextureConstants {
     float UOffset;
     float VOffset;
     float pad0;
@@ -486,7 +454,7 @@ struct FScreenConstants
 };
 
 
-struct FFogConstants
+struct alignas(16) FFogConstants
 {
     FMatrix InvViewProj;
     FLinearColor FogColor;

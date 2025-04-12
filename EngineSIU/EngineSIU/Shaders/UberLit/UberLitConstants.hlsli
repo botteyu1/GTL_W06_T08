@@ -23,7 +23,7 @@ cbuffer cbLights : register(b2)
 {
     FAmbientLight AmbientLight;
 
-    FDirectionalLight DirectionalLights[NUM_MAX_DIRLIGHT];
+    FDirectionalLight DirectionalLights[NUM_MAX_DIRLIGHT]; // 현재 Light.hlsl는 1개만 쓰고있음.
 
     FPointLight PointLights[NUM_MAX_POINTLIGHT];
 

@@ -27,6 +27,6 @@ protected:
     FLinearColor LightColor;
 
     /** Can be visible */
-    bool bVisible;
+    bool bVisible = true;
 
 };

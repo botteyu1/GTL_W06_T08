@@ -54,41 +54,33 @@ struct FMaterial
 
 ///////////////////////////////////////////////
 // Lighting 상수버퍼용
+// Define.h 참고해서 맞춰두기
 ///////////////////////////////////////////////
 struct FAmbientLight
 {
     float3 AmbientColor;
     float Intensity;
-    
-    int bVisible;
-    float3 Pad0;
 };
 
 struct FDirectionalLight
 {
-    float3 DirectionalColor;
+    float3 Color;
     float Intensity;
 
     float3 Direction;
-    float Pad0;
-
-    int bVisible;
-    float3 Pad1;
+    // pad 4 byte
 };
 
 struct FPointLight
 {
-    float3 PointColor;
+    float3 Color;
     float Intensity;
 
     float3 Position;
-    float Attenuation;
+    float AttenuationRadius;
 
     float Falloff;
-    float3 Pad0;
-
-    int bVisible;
-    float3 Pad1;
+    // pad 12 byte
 };
 
 struct FSpotLight
@@ -96,14 +88,13 @@ struct FSpotLight
     float3 Color;
     float Intensity;
 
+    float3 Position;
     float AttenuationRadius;
-    float InnerConeAngle;
-    float OuterConeAngle;
-    float Falloff;
 
     float3 Direction;
-    float Pad0;
-
-    float3 Position;
-    int bVisible;
+    float Falloff;
+    
+    float InnerConeAngle;
+    float OuterConeAngle;
+    // pad 8 byte
 };

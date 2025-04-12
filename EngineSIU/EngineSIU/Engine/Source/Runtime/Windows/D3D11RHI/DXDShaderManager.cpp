@@ -1,4 +1,5 @@
 #include "DXDShaderManager.h"
+#include "Define.h"
 
 
 FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
@@ -51,6 +52,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
     {
         if (ErrorBlob) {
             OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
             ErrorBlob->Release();
         }
         return hr;
@@ -90,6 +92,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     {
         if (ErrorBlob) {
             OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
             ErrorBlob->Release();
         }
         return hr;
@@ -115,6 +118,33 @@ HRESULT FDXDShaderManager::AddInputLayout(const std::wstring& Key, const D3D11_I
     return S_OK;
 }
 
+void FDXDShaderManager::AddVertexShader(const std::wstring& Key, ID3D11VertexShader* VerteShader)
+{
+    if (!VerteShader)
+    {
+        return;
+    }
+    VertexShaders[Key] = VerteShader;
+}
+
+void FDXDShaderManager::AddVertexShader(const std::wstring& Key, ID3D11PixelShader* PixelShader)
+{
+    if (!PixelShader)
+    {
+        return;
+    }
+    PixelShaders[Key] = PixelShader;
+}
+
+void FDXDShaderManager::AddInputLayout(const std::wstring& Key, ID3D11InputLayout* InputLayout)
+{
+    if (!InputLayout)
+    {
+        return;
+    }
+    InputLayouts[Key] = InputLayout;
+}
+
 HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines)
 {
     UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -134,6 +164,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     {
         if (ErrorBlob) {
             OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
             ErrorBlob->Release();
         }
         return hr;
@@ -187,6 +218,36 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
         return *PixelShaders.Find(Key);
     }
     return nullptr;
+}
+
+void FDXDShaderManager::RemoveInputLayoutByKey(const std::wstring& Key)
+{
+    if (InputLayouts.Contains(Key))
+    {
+        InputLayouts[Key]->Release();
+        InputLayouts[Key] = nullptr;
+        InputLayouts.Remove(Key);
+    }
+}
+
+void FDXDShaderManager::RemoveVertexShaderByKey(const std::wstring& Key)
+{
+    if (VertexShaders.Contains(Key))
+    {
+        VertexShaders[Key]->Release();
+        VertexShaders[Key] = nullptr;
+        VertexShaders.Remove(Key);
+    }
+}
+
+void FDXDShaderManager::RemovePixelShaderByKey(const std::wstring& Key)
+{
+    if (PixelShaders.Contains(Key))
+    {
+        PixelShaders[Key]->Release();
+        PixelShaders[Key] = nullptr;
+        PixelShaders.Remove(Key);
+    }
 }
 
 void FDXDShaderManager::SetVertexShader(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const
