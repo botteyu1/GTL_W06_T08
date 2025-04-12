@@ -1,6 +1,6 @@
 // light.hlsl
 
-// UBer는 밖에서 define되고있음
+#define NUM_MAX_DIRLIGHT 1
 #define MAX_POINT_LIGHTS 16
 #define MAX_SPOT_LIGHTS 8
 
@@ -32,6 +32,9 @@ struct Ambient
 {
     float3 AmbientColor;
     float Intensity;
+    
+    int bVisible;
+    float3 Pad0;
 };
 
 struct Directional
@@ -41,6 +44,9 @@ struct Directional
 
     float3 Direction;
     float Pad0;
+
+    int bVisible;
+    float3 Pad1;
 };
 
 struct PointLight
@@ -53,6 +59,9 @@ struct PointLight
 
     float Falloff;
     float3 Pad0;
+
+    int bVisible;
+    float3 Pad1;
 };
 
 struct SpotLight
@@ -60,22 +69,23 @@ struct SpotLight
     float3 Color;
     float Intensity;
 
-    float3 Position;
     float AttenuationRadius;
-
-    float3 Direction;
-    float Falloff;
-    
     float InnerConeAngle;
     float OuterConeAngle;
-    float2 pad;
+    float Falloff;
+
+    float3 Direction;
+    float Pad0;
+
+    float3 Position;
+    int bVisible;
 };
 
 cbuffer cbLights : register(b2)
 {
     Ambient gAmbient;
 
-    Directional gDirectional;
+    Directional gDirectional[NUM_MAX_DIRLIGHT];
 
     PointLight gPoint[MAX_POINT_LIGHTS];
 
@@ -85,12 +95,6 @@ cbuffer cbLights : register(b2)
     int gNumPointLights;
     int gNumSpotLights;
     int pad1;
-
-    // Legacy
-    // LIGHT gLights[MAX_LIGHTS];
-    // float4 gcGlobalAmbientLight;
-    // int gnLights;
-    // float3 padCB;
 };
 
 float4 CalculateSpotLight(int nIndex, float3 vPosition, float3 vNormal)
@@ -130,71 +134,99 @@ float4 CalculateSpotLight(int nIndex, float3 vPosition, float3 vNormal)
 
 float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
 {
-    // 광원과 픽셀 위치 간 벡터 계산
-    float3 vToLight = gPoint[nIndex].Position - vPosition;
-    float fDistance = length(vToLight);
-
-    // 감쇠 반경을 벗어나면 기여하지 않음
-    if (fDistance > gPoint[nIndex].Attenuation)
-    {
-        return float4(0.0f, 0.0f, 0.0f, 1.0f);
-    }
+    float3 Diffuse;
+    float3 Specular;
     
-    float fSpecularFactor = 0.0f;
-    vToLight /= fDistance; // 정규화
-    float fDiffuseFactor = saturate(dot(vNormal, vToLight));
+    // Blinn-phong
+    float3 ToLight = gPoint[nIndex].Position - vPosition;
+    return float4(1,1,1, 1.0f);
+    float Distance = length(ToLight);
+    float3 LightDirection = ToLight / Distance; // normalize
 
-    if (fDiffuseFactor > 0.0f)
-    {
-        float3 vView = normalize(CameraPosition - vPosition);
-        float3 vHalf = normalize(vToLight + vView);
-        fSpecularFactor = pow(max(dot(normalize(vNormal), vHalf), 0.0f), 1);
-    }
+    float Attenuation = saturate(1.0f - Distance / gPoint[nIndex].Attenuation);
+    Attenuation *= gPoint[nIndex].Falloff;
 
-    float fAttenuationFactor = 1.0f / (1.0f + gPoint[nIndex].Attenuation * fDistance * fDistance);
-   
-    float3 lit = (gAmbient.AmbientColor * Material.AmbientColor.rgb) +
-                 (gPoint[nIndex].PointColor * fDiffuseFactor * Material.DiffuseColor) +
-                 (gPoint[nIndex].PointColor * fSpecularFactor * Material.SpecularColor);
+    float3 ViewDirection = normalize(CameraPosition - vPosition);
+    float3 HalfVector = normalize(ViewDirection + LightDirection);
 
-    return float4(lit * fAttenuationFactor * gPoint[nIndex].Intensity, 1.0f);
+    float NdotL = max(dot(vNormal, LightDirection), 0.0f);
+    float NdotH = max(dot(vNormal, HalfVector), 0.0f);
+
+    Diffuse = gPoint[nIndex].PointColor * NdotL * Material.DiffuseColor * Attenuation;
+    Specular = gPoint[nIndex].PointColor * pow(NdotH, Material.SpecularScalar) * Attenuation;
+
+    // Lambert
+    Specular = float3(0.0f, 0.0f, 0.0f);
+
+    // Gouraud - per vertex
+    float3 ReflectDirection = reflect(LightDirection, vNormal);
+    Specular = gPoint[nIndex].PointColor * pow(max(dot(ReflectDirection, ViewDirection), 0.0f), Material.SpecularScalar) * Attenuation;
+    
+    return float4(gPoint[nIndex].Intensity * (Diffuse + Specular), 1.0f);
 }
 
-float3 CalculateDirectionalLight(float3 vPosition, float3 vNormal, float3 BaseColor)
+float3 CalculateDirectionalLight(float3 vPosition, float3 vNormal)
 {
-    float3 LightDirection = normalize(-gDirectional.Direction);
-    float Diff = max(dot(vNormal, LightDirection), 0.0f);
+    float3 Specular = float3(0.0f, 0.0f, 0.0f);
+    // Phong
+    // float3 LightDirection = normalize(gDirectional.Direction);
+    // float Diff = max(dot(-LightDirection, vNormal), 0.0f);
+    //
+    // float3 Diffuse = gDirectional.DirectionalColor * Diff;
+    //
+    // if (Diff > 0.f)
+    // {
+    //     float3 View = normalize(CameraPosition - vPosition);
+    //     float3 ReflectionDirection = normalize(reflect(LightDirection, vNormal));
+    //     float Spec = pow(max(dot(ReflectionDirection, View), 0.0f), Material.SpecularScalar);
+    //     
+    //     Specular = gDirectional.DirectionalColor * Material.SpecularColor * Spec;
+    // }
 
-    float3 Diffuse = gDirectional.DirectionalColor * Diff * BaseColor * gDirectional.Intensity;
-
-    float3 ReflectionDirection = reflect(-LightDirection, vNormal);
-
+    // Blinn-Phong
+    //
+    float3 LightDirection = normalize(gDirectional[0].Direction);
     float3 View = normalize(CameraPosition - vPosition);
-    float Spec = pow(max(dot(View, ReflectionDirection), 0.0f), Material.SpecularScalar);
-    float3 Specular = gDirectional.DirectionalColor * Material.SpecularColor * Spec * gDirectional.Intensity;
+    float3 HalfVector = normalize(View + LightDirection);
+    
+    float Diff = max(dot(vNormal, -LightDirection), 0.0f);
+    float3 Diffuse = gDirectional[0].DirectionalColor * Diff;
+    
 
-    return Diffuse * Specular;
+    if (Diff > 0.0f)
+    {
+        float Spec = pow(max(dot(vNormal, HalfVector), 0.0f), Material.SpecularScalar);
+        Specular = gDirectional[0].DirectionalColor * Spec;
+    }
+
+    // Lambert
+    //
+    // float3 LightDirection = normalize(gDirectional.Direction);
+    // float NdotL = max(dot(vNormal, -LightDirection), 0.0f);
+    //
+    // float3 Diffuse = gDirectional.DirectionalColor * NdotL;
+
+    // Gouraud
+    //
+    // float3 LightDirection = normalize(gDirectional.Direction);
+    // float3 View = normalize(CameraPosition - vPosition);
+    // float3 ReflectDirection = reflect(LightDirection, vNormal);
+    //
+    // float Diff = max(dot(vNormal, -LightDirection), 0.0f);
+    // float Spec = pow(max(dot(ReflectDirection, View), 0.0f), Material.SpecularScalar);
+    //
+    // float3 Diffuse = gDirectional.DirectionalColor * Diff;
+    // Specular = gDirectional.DirectionalColor * Spec;
+    
+    return gDirectional[0].Intensity * (Diffuse + Specular);
 }
 
 float4 Lighting(float3 vPosition, float3 vNormal)
 {
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    // [unroll(MAX_LIGHTS)]
-    // for (int i = 0; i < gnLights; i++)
-    // {
-    //     if (gLights[i].m_bEnable)
-    //     {
-    //         if (gLights[i].m_nType == POINT_LIGHT)
-    //         {
-    //             cColor += PointLight(i, vPosition, vNormal);
-    //         }
-    //         else if (gLights[i].m_nType == SPOT_LIGHT)
-    //         {
-    //             cColor += SpotLight(i, vPosition, vNormal);
-    //         }
-    //     }
-    // }
 
+    return float4(gNumPointLights, 0, 0, 1.0f);
+    
     [unroll(MAX_POINT_LIGHTS)]
     for (int i = 0; i < gNumPointLights; i++)
     {
@@ -211,7 +243,7 @@ float4 Lighting(float3 vPosition, float3 vNormal)
     cColor += float4(gAmbient.AmbientColor, 1.0f);
 
     // 전역 디렉셔널 추가
-    cColor += float4( gDirectional.DirectionalColor /*CalculateDirectionalLight(vPosition, vNormal, gDirectional.DirectionalColor)*/, 1.0f);
+    cColor += float4( CalculateDirectionalLight(vPosition, vNormal), 1.0f);
     cColor.w = 1;
     
     return cColor;

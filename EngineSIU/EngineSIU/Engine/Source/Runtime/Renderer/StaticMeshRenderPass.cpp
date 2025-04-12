@@ -182,7 +182,7 @@ void FStaticMeshRenderPass::UpdateShaders()
 		ShaderManager->RemoveInputLayoutByKey(L"StaticMeshVertexShader");
 
 		ShaderManager->AddVertexShader(L"StaticMeshVertexShader", PreviousVertexShaderMesh);
-		ShaderManager->AddInputLayout(L"UberShaderVertex", PreviousInputLayoutMesh);
+		ShaderManager->AddInputLayout(L"StaticMeshVertexShader", PreviousInputLayoutMesh);
 	}
 	// 이전의 Shader는 release
 	else
