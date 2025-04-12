@@ -6,7 +6,7 @@
 #include "UnrealEd/EditorViewportClient.h"
 
 
-int UGizmoBaseComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
+int UGizmoBaseComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) const
 {
     int nIntersections = 0;
     if (staticMesh == nullptr) return 0;

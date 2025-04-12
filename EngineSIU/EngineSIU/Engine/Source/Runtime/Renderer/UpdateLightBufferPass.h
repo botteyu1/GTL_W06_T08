@@ -11,6 +11,8 @@ class FEditorViewportClient;
 
 class UPointLightComponent;
 class USpotLightComponent;
+class UDirectionalLightComponent;
+class UAmbientLightComponent;
 
 class FUpdateLightBufferPass : public IRenderPass
 {
@@ -27,6 +29,9 @@ public:
 private:
     TArray<USpotLightComponent*> SpotLights;
     TArray<UPointLightComponent*> PointLights;
+    UDirectionalLightComponent* DirectionalLight;
+    UAmbientLightComponent* AmbientLight;
+    
 
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;

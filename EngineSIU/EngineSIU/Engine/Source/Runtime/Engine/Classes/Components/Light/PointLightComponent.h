@@ -9,10 +9,23 @@ public:
     UPointLightComponent();
     virtual ~UPointLightComponent() override;
 
-private:
-    float AttenuationRadius;
-    float LightFalloffExponent;
+    void TickComponent(float DeltaTime) override;
+
+    virtual void AddScale(FVector InAddValue) override;
+
+
+    // position은 scenecomponent 변수 가져감
+    float GetAttenuationRadius() const { return LightData.AttenuationRadius; }
+    float GetFalloff() const { return LightData.Falloff; }
+
+    void SetAttenuationRadius(float InRadius) { LightData.AttenuationRadius = InRadius; }
+    void SetFalloff(float InFalloff) { LightData.Falloff = InFalloff; }
+
+protected:
+    void* GetLightDefinition() override;
     
+private:
+    FPointLight LightData;
 };
 
 

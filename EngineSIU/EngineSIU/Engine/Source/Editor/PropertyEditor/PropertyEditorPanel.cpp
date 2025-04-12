@@ -72,6 +72,7 @@ void PropertyEditorPanel::Render()
         RenderForSceneComponent(TargetComponent, player);
     }
 
+
     if (SelectedActor)
     {
         RenderForActor(SelectedActor, TargetComponent);
