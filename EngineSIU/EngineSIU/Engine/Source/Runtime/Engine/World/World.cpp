@@ -2,7 +2,6 @@
 
 #include "Actors/Player.h"
 #include "BaseGizmos/TransformGizmo.h"
-#include "Camera/CameraComponent.h"
 #include "Classes/Components/StaticMeshComponent.h"
 #include "Components/SkySphereComponent.h"
 #include "Engine/FLoaderOBJ.h"

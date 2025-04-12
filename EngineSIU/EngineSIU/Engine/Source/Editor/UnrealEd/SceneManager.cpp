@@ -10,7 +10,6 @@
 #include "EditorViewportClient.h"
 //#include "Components/LightComponent.h"
 #include "Components/SkySphereComponent.h"
-#include "Camera/CameraComponent.h"
 #include "UObject/Casts.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/FLoaderOBJ.h"

@@ -231,7 +231,6 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\ResourceMgr.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealClient.cpp" />
     <ClCompile Include="Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoArrowComponent.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Camera\CameraComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UserInterface\Console.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\CubeComp.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Define.cpp" />
@@ -262,7 +261,6 @@
     <ClCompile Include="Engine\Source\Runtime\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoRectangleComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\SceneComponent.cpp" />
-    <ClCompile Include="Engine\Source\Editor\UnrealEd\SceneMgr.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\SphereComp.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\BillboardComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\ParticleSubUVComponent.cpp" />
@@ -347,7 +345,6 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\World\WorldContext.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\World\WorldType.h" />
     <ClInclude Include="Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoArrowComponent.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\Camera\CameraComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UserInterface\Console.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\CubeComp.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\Define.h" />
@@ -403,7 +400,6 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\Quad.h" />
     <ClInclude Include="Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoRectangleComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\SceneComponent.h" />
-    <ClInclude Include="Engine\Source\Editor\UnrealEd\SceneMgr.h" />
     <ClInclude Include="Engine\Source\Runtime\Windows\D3D11RHI\GraphicDevice.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\UObject\Object.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\Renderer.h" />
