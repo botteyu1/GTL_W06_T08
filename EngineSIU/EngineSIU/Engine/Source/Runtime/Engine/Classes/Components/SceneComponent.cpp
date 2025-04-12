@@ -80,35 +80,20 @@ int USceneComponent::CheckRayIntersection(FVector& InRayOrigin, FVector& InRayDi
 
 FVector USceneComponent::GetForwardVector() const
 {
-    FVector4 Forward4 = FVector4(1.f, 0.f, 0.0f, 0.0f);
-    Forward4 = FMatrix::TransformVector(Forward4, GetWorldMatrix());
-    FVector Forward;
-    Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
-    Forward = Forward.Normalize();
-
-    return Forward;
+    const FVector Forward = GetWorldMatrix().GetAxis(0);
+    return Forward.GetSafeNormal();
 }
 
 FVector USceneComponent::GetRightVector() const
 {
-    FVector4 Right4 = FVector4(0.f, 0.f, 1.0f, 0.0f);
-    Right4 = FMatrix::TransformVector(Right4, GetWorldMatrix());
-    FVector Right;
-    Right = FVector(Right4.X, Right4.Y, Right4.Z);
-    Right = Right.Normalize();
-
-    return Right;
+    const FVector Right = GetWorldMatrix().GetAxis(1);
+    return Right.GetSafeNormal();
 }
 
 FVector USceneComponent::GetUpVector() const
 {
-    FVector4 Up4 = FVector4(0.f, 0.f, 1.0f, 0.0f);
-    Up4 = FMatrix::TransformVector(Up4, GetWorldMatrix());
-    FVector Up;
-    Up = FVector(Up4.X, Up4.Y, Up4.Z);
-    Up = Up.Normalize();
-
-    return Up;
+    const FVector Up = GetWorldMatrix().GetAxis(2);
+    return Up.GetSafeNormal();
 }
 
 
