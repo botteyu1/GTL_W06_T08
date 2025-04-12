@@ -70,7 +70,6 @@ public:
     FBillboardRenderPass* BillboardRenderPass = nullptr;
     FGizmoRenderPass* GizmoRenderPass = nullptr;
     FUpdateLightBufferPass* UpdateLightBufferPass = nullptr;
-    FLineRenderPass* LineRenderPass = nullptr;
     FDepthBufferDebugPass* DepthBufferDebugPass = nullptr;
     FFogRenderPass* FogRenderPass = nullptr;
     FEditorRenderPass* EditorRenderPass = nullptr;

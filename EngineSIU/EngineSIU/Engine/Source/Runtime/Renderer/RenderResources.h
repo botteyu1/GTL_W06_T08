@@ -42,7 +42,7 @@ struct FRenderResources
 
     struct FConstantBufferContainer
     {
-        FConstantBuffersStaticMesh StaticMesh;
+        //FConstantBuffersStaticMesh StaticMesh;
         // texture관련 cb필요.
         //FConstantBuffersBatchLine BatchLine;
         //FConstantBuffersBatchLine BatchLine; // line text 추가해야함
