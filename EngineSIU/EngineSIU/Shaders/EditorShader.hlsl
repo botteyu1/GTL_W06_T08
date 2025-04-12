@@ -400,7 +400,7 @@ PS_INPUT arrowVS(VS_INPUT input)
     pos = mul(pos, ProjMatrix);
 
     output.position = pos;
-    output.color = float4(0.7, 0.7, 0.7, 1.0f);
+    output.color = ArrowColor;
 
     return output;
 }

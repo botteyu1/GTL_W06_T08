@@ -1,7 +1,6 @@
-﻿#pragma once
+#pragma once
 #include "GameFramework/Actor.h"
 
-class UBillboardComponent;
 class UAmbientLightComponent;
 
 class AAmbientLight : public AActor
@@ -13,5 +12,4 @@ public:
 
 protected:
     UPROPERTY(UAmbientLightComponent*, AmbientLightComponent, = nullptr)
-    UPROPERTY(UBillboardComponent*, BillboardComponent, = nullptr)
 };

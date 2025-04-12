@@ -17,7 +17,7 @@ public:
     void InitializeLight();
 
     template<typename T>
-    T& GetLightData() { return *static_cast<T*>(GetLightDefinition()); }
+   T& GetLightData() { return *static_cast<T*>(GetLightDefinition()); }
 
 protected:
     FBoundingBox AABB;

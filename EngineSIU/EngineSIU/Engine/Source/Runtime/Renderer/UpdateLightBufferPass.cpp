@@ -37,6 +37,9 @@ void FUpdateLightBufferPass::Initialize(FDXDBufferManager* InBufferManager, FGra
 
 void FUpdateLightBufferPass::PrepareRender()
 {
+    this->DirectionalLight = nullptr;
+    this->AmbientLight = nullptr;
+    
     for (const auto iter : TObjectRange<ULightComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
@@ -120,6 +123,7 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
                 SceneLightBufferData.SpotLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
                 SceneLightBufferData.SpotLight[LightCount].Position = Light->GetWorldLocation();
                 SceneLightBufferData.SpotLight[LightCount].Intensity = Light->GetIntensity();
+                SceneLightBufferData.SpotLight[LightCount].Direction = Light->GetForwardVector();
             }
             
             LightCount++;

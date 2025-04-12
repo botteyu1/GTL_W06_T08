@@ -212,5 +212,6 @@ struct alignas(16) FConstantBufferDebugArrow
     float ArrowScaleXYZ;
     alignas(16) FVector Direction;
     float ArrowScaleZ;
+    FLinearColor Color;
 };
 

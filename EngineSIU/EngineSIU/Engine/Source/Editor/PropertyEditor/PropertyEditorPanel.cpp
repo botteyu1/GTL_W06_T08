@@ -263,7 +263,15 @@ void PropertyEditorPanel::RenderForLightComponent(ULightComponent* LightComp) co
          {
              float Radius = PointLightComp->GetAttenuationRadius();
              if (ImGui::DragFloat("Radius", &Radius,0.1f, 0.0f, 10000.0f, "%1.f"))
+             {
                  PointLightComp->SetAttenuationRadius(Radius);
+             }
+
+             float falloff = PointLightComp->GetFalloff();
+             if (ImGui::DragFloat("Falloff", &falloff, 0.1f, 0.1f, 10.0f, "%.2f"))
+             {
+                 PointLightComp->SetFalloff(falloff);
+             }
          }
          
          /*  
@@ -272,8 +280,36 @@ void PropertyEditorPanel::RenderForLightComponent(ULightComponent* LightComp) co
             lightObj->SetFalloff(falloff);
         }
 
-        TODO : For SpotLight
         */
+
+        // TODO : For SpotLight
+         if (USpotLightComponent* SpotComp = Cast<USpotLightComponent>(LightComp))
+         {
+             // AttenuationRadius
+             float Radius = SpotComp->GetAttenuationRadius();
+             if (ImGui::DragFloat("Radius", &Radius,0.1f, 0.0f, 10000.0f, "%1.f"))
+             {
+                 SpotComp->SetAttenuationRadius(Radius);
+             }
+             // InnerCone
+             float InnerCone = SpotComp->GetInnerConeAngle();
+             if (ImGui::DragFloat("InnerCone", &InnerCone, 0.1f, 0.0f, 80.0f, "%1.f"))
+             {
+                 SpotComp->SetInnerConeAngle(InnerCone);
+             }
+             // OuterCone
+             float OuterCone = SpotComp->GetOuterConeAngle();
+             if (ImGui::DragFloat("OuterCone", &OuterCone, 0.1f, 0.0f, 80.0f, "%1.f"))
+             {
+                 SpotComp->SetOuterConeAngle(OuterCone);
+             }
+             // Falloff
+             float Falloff = SpotComp->GetFalloff();
+             if (ImGui::DragFloat("Falloff", &Falloff, 0.1f, 0.1f, 10.0f, "%1.f"))
+             {
+                 SpotComp->SetFalloff(Falloff);
+             }
+         }
          
          ImGui::TreePop();
      }

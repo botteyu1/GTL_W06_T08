@@ -89,36 +89,63 @@ cbuffer cbLights : register(b2)
 float4 CalculateSpotLight(int nIndex, float3 vPosition, float3 vNormal)
 {
     // 광원과 픽셀 위치 간 벡터 계산
-    float3 vToLight = gSpot[nIndex].Position - vPosition;
-    float fDistance = length(vToLight);
+    // float3 vToLight = gSpot[nIndex].Position - vPosition;
+    // float fDistance = length(vToLight);
+    //
+    // // 감쇠 반경을 벗어나면 기여하지 않음
+    // if (fDistance > gSpot[nIndex].AttenuationRadius)
+    // {
+    //     return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // }
+    //
+    // float fSpecularFactor = 0.0f;
+    // vToLight /= fDistance; // 정규화
+    //
+    // float fDiffuseFactor = saturate(dot(vNormal, vToLight));
+    //
+    // if (fDiffuseFactor > 0.0f)
+    // {
+    //     float3 vView = normalize(CameraPosition - vPosition);
+    //     float3 vHalf = normalize(vToLight + vView);
+    //     fSpecularFactor = pow(max(dot(normalize(vNormal), vHalf), 0.0f), 1);
+    // }
+    //
+    // float fSpotFactor = pow(max(dot(-vToLight, gSpot[nIndex].Direction), 0.0f), gSpot[nIndex].Falloff);
+    // float fAttenuationFactor = 1.0f / (1.0f + gSpot[nIndex].AttenuationRadius * fDistance * fDistance);
+    //
+    // float3 lit = (gAmbient.AmbientColor * Material.AmbientColor.rgb) +
+    //              (gSpot[nIndex].Color * fDiffuseFactor * Material.DiffuseColor) +
+    //              (gSpot[nIndex].Color * fSpecularFactor * Material.SpecularColor);
 
-    // 감쇠 반경을 벗어나면 기여하지 않음
-    if (fDistance > gSpot[nIndex].AttenuationRadius)
-    {
-        return float4(0.0f, 0.0f, 0.0f, 0.0f);
-    }
+    float3 Diffuse;
+    float3 Specular;
 
-    float fSpecularFactor = 0.0f;
-    vToLight /= fDistance; // 정규화
+    // Blinn-phong
+    float3 ToLight = gSpot[nIndex].Position - vPosition;
+    float Distance = length(ToLight);
+    float3 LightDirection = ToLight / Distance;
+
+    // 감쇠거리
+    float Attenuation = saturate(1.0f - Distance / gSpot[nIndex].AttenuationRadius);
+    Attenuation *= Attenuation;
+
+    // Spot Cone 각도
+    float SpotCos = dot(-LightDirection, normalize(gSpot[nIndex].Direction));
+    float SpotFactor = saturate( (SpotCos - gSpot[nIndex].OuterConeAngle) / (gSpot[nIndex].InnerConeAngle - gSpot[nIndex].OuterConeAngle) );
+    SpotFactor = pow(SpotFactor, gSpot[nIndex].Falloff);
+
+    float LightScale = gSpot[nIndex].Intensity * Attenuation * SpotFactor;
     
-    float fDiffuseFactor = saturate(dot(vNormal, vToLight));
+    float3 ViewDirection = normalize(CameraPosition - vPosition);
+    float3 HalfVector = normalize(ViewDirection + LightDirection);
 
-    if (fDiffuseFactor > 0.0f)
-    {
-        float3 vView = normalize(CameraPosition - vPosition);
-        float3 vHalf = normalize(vToLight + vView);
-        fSpecularFactor = pow(max(dot(normalize(vNormal), vHalf), 0.0f), 1);
-    }
-    
-    float fSpotFactor = pow(max(dot(-vToLight, gSpot[nIndex].Direction), 0.0f), gSpot[nIndex].Falloff);
-    float fAttenuationFactor = 1.0f / (1.0f + gSpot[nIndex].AttenuationRadius * fDistance * fDistance);
-    
-    float3 lit = (gAmbient.AmbientColor * Material.AmbientColor.rgb) +
-                 (gSpot[nIndex].Color * fDiffuseFactor * Material.DiffuseColor) +
-                 (gSpot[nIndex].Color * fSpecularFactor * Material.SpecularColor);
+    float NdotL = max(dot(vNormal, LightDirection), 0.0f);
+    float NdotH = max(dot(vNormal, HalfVector), 0.0f);
 
-    // intensity와 attenuation factor, spot factor를 곱하여 최종 색상 계산
-    return float4(lit * fAttenuationFactor * fSpotFactor * gSpot[nIndex].Intensity, 1.0f);
+    Diffuse = gSpot[nIndex].Color * NdotL * Material.DiffuseColor * LightScale;
+    Specular = gSpot[nIndex].Color * pow(NdotH, Material.SpecularScalar) * LightScale;
+
+    return float4(Diffuse + Specular, 1.0f);
 }
 
 float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
@@ -132,7 +159,7 @@ float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
     float3 LightDirection = ToLight / Distance; // normalize
 
     float Attenuation = saturate(1.0f - Distance / gPoint[nIndex].Attenuation);
-    Attenuation *= gPoint[nIndex].Falloff;
+    Attenuation = pow(Attenuation, gPoint[nIndex].Falloff);
 
     float3 ViewDirection = normalize(CameraPosition - vPosition);
     float3 HalfVector = normalize(ViewDirection + LightDirection);
@@ -146,7 +173,7 @@ float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
     // Lambert
     Specular = float3(0.0f, 0.0f, 0.0f);
 
-    // Gouraud - per vertex
+    // Gouraud - used to vertex shader
     float3 ReflectDirection = reflect(LightDirection, vNormal);
     Specular = gPoint[nIndex].PointColor * pow(max(dot(ReflectDirection, ViewDirection), 0.0f), Material.SpecularScalar) * Attenuation;
     
