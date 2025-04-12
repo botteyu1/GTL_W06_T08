@@ -68,7 +68,7 @@ struct FDirectionalLight
     float Intensity;
 
     float3 Direction;
-    // pad 4 byte
+    float pad;
 };
 
 struct FPointLight
@@ -80,7 +80,7 @@ struct FPointLight
     float AttenuationRadius;
 
     float Falloff;
-    // pad 12 byte
+    float3 pad;
 };
 
 struct FSpotLight
@@ -96,5 +96,5 @@ struct FSpotLight
     
     float InnerConeAngle;
     float OuterConeAngle;
-    // pad 8 byte
+    float2 pad;
 };
