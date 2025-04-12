@@ -116,29 +116,48 @@ void AEditorPlayer::Input()
 
     if (GetAsyncKeyState(VK_DELETE) & 0x8000)
     {
-        UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        if (Engine)
+        if (!bDeleteDown)
         {
-            USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
-            AActor* SelectedActor = Engine->GetSelectedActor();
+            UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+            if (Engine)
+            {
+                USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+                AActor* SelectedActor = Engine->GetSelectedActor();
 
-            USceneComponent* TargetComponent = nullptr;
-    
-            if (SelectedComponent != nullptr)
-            {
-                TargetComponent = SelectedComponent;
-            }
-            else if (SelectedActor != nullptr)
-            {
-                TargetComponent = SelectedActor->GetRootComponent();
-            }
+                if (SelectedComponent)
+                {
+                    AActor* Owner = SelectedComponent->GetOwner();
             
-            if (TargetComponent)
-            {
-                Engine->DeselectActor(SelectedActor);
-                Engine->DeselectComponent(SelectedComponent);
-                GEngine->ActiveWorld->DestroyActor(SelectedActor);
+                    if (Owner && Owner->GetRootComponent() != SelectedComponent)
+                    {
+                        UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedComponent->GetName());
+                        Engine->DeselectComponent(SelectedComponent);
+                        SelectedComponent->DestroyComponent();
+                    }
+                    else if (SelectedActor)
+                    {
+                        UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
+                        Engine->DeselectActor(SelectedActor);
+                        Engine->DeselectComponent(SelectedComponent);
+                        Engine->ActiveWorld->DestroyActor(SelectedActor);
+                    }
+                }
+                else if (SelectedActor)
+                {
+                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
+                    Engine->DeselectActor(SelectedActor);
+                    Engine->DeselectComponent(SelectedComponent);
+                    Engine->ActiveWorld->DestroyActor(SelectedActor);
+                }
             }
+            bDeleteDown = true;
+        }
+    }
+    else
+    {
+        if (bDeleteDown)
+        {
+            bDeleteDown = false;
         }
     }
 }
@@ -211,7 +230,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     USceneComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
-    for (const auto iter : TObjectRange<USceneComponent>())
+    for (auto iter : TObjectRange<USceneComponent>())
     {
         if (iter && !iter->IsA<UGizmoBaseComponent>())
         {
