@@ -124,17 +124,20 @@ float4 CalculateSpotLight(int nIndex, float3 vPosition, float3 vNormal)
     float3 ToLight = gSpot[nIndex].Position - vPosition;
     float Distance = length(ToLight);
     float3 LightDirection = ToLight / Distance;
-
+    
     // 감쇠거리
-    float Attenuation = saturate(1.0f - Distance / gSpot[nIndex].AttenuationRadius);
-    Attenuation *= Attenuation;
+    float Attenuation = 1.0f - saturate(Distance / gSpot[nIndex].AttenuationRadius);
+    Attenuation = pow(Attenuation, gSpot[nIndex].Falloff);
 
     // Spot Cone 각도
-    float SpotCos = dot(-LightDirection, normalize(gSpot[nIndex].Direction));
-    float SpotFactor = saturate( (SpotCos - gSpot[nIndex].OuterConeAngle) / (gSpot[nIndex].InnerConeAngle - gSpot[nIndex].OuterConeAngle) );
-    SpotFactor = pow(SpotFactor, gSpot[nIndex].Falloff);
+    float CosAngle = dot(-gSpot[nIndex].Direction, LightDirection); // 이 부분
+    float Outer = cos(radians(gSpot[nIndex].OuterConeAngle));
+    float Inner = 1.0f / cos(radians(gSpot[nIndex].InnerConeAngle));
 
-    float LightScale = gSpot[nIndex].Intensity * Attenuation * SpotFactor;
+    float ConeAttenuation = saturate((CosAngle - Outer) * Inner);
+    ConeAttenuation = pow(ConeAttenuation, gSpot[nIndex].Falloff);
+
+    float LightScale = gSpot[nIndex].Intensity * ConeAttenuation * Attenuation;
     
     float3 ViewDirection = normalize(CameraPosition - vPosition);
     float3 HalfVector = normalize(ViewDirection + LightDirection);
