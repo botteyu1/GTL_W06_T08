@@ -78,7 +78,7 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     else
     {
         FAmbientLight TempLight;
-        TempLight.Color = FVector(0.1f, 0.1f, 0.1f);
+        TempLight.Color = FVector(0.0f, 0.0f, 0.0f);
         TempLight.Intensity = 1.0f;
         
         SceneLightBufferData.AmbientLight = TempLight; 
@@ -90,6 +90,11 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
         SceneLightBufferData.DirectionalLight[0].Color = FVector(this->DirectionalLight->GetLightColor().R, this->DirectionalLight->GetLightColor().G, this->DirectionalLight->GetLightColor().B);
         SceneLightBufferData.DirectionalLight[0].Intensity = this->DirectionalLight->GetIntensity();
         SceneLightBufferData.DirectionalLight[0].Direction = this->DirectionalLight->GetForwardVector();
+        SceneLightBufferData.NumDirLights = 1;
+    }
+    else
+    {
+        SceneLightBufferData.NumDirLights = 0;
     }
     
     
