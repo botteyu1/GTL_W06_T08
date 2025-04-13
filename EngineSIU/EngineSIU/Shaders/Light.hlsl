@@ -49,7 +49,7 @@ struct PointLight
     float Intensity;
 
     float3 Position;
-    float Attenuation;
+    float AttenuationRadius;
 
     float Falloff;
     float3 Pad0;
@@ -126,15 +126,15 @@ float4 CalculateSpotLight(int nIndex, float3 vPosition, float3 vNormal)
     float3 LightDirection = ToLight / Distance;
     
     // 감쇠거리
-    float Attenuation = 1.0f - saturate(Distance / gSpot[nIndex].AttenuationRadius);
+    float Attenuation = saturate(1.0 - Distance / gSpot[nIndex].AttenuationRadius);
     Attenuation = pow(Attenuation, gSpot[nIndex].Falloff);
 
     // Spot Cone 각도
-    float CosAngle = dot(-gSpot[nIndex].Direction, LightDirection); // 이 부분
-    float Outer = cos(radians(gSpot[nIndex].OuterConeAngle));
-    float Inner = 1.0f / cos(radians(gSpot[nIndex].InnerConeAngle));
+    float CosAngle = dot(gSpot[nIndex].Direction, -LightDirection);
+    float Outer = cos(radians(gSpot[nIndex].OuterConeAngle / 2.0f));
+    float Inner = cos(radians(gSpot[nIndex].InnerConeAngle / 2.0f));
 
-    float ConeAttenuation = saturate((CosAngle - Outer) * Inner);
+    float ConeAttenuation = saturate((CosAngle - Outer) / (Inner - Outer));
     ConeAttenuation = pow(ConeAttenuation, gSpot[nIndex].Falloff);
 
     float LightScale = gSpot[nIndex].Intensity * ConeAttenuation * Attenuation;
@@ -161,7 +161,7 @@ float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
     float Distance = length(ToLight);
     float3 LightDirection = ToLight / Distance; // normalize
 
-    float Attenuation = saturate(1.0f - Distance / gPoint[nIndex].Attenuation);
+    float Attenuation = saturate(1.0f - Distance / gPoint[nIndex].AttenuationRadius);
     Attenuation = pow(Attenuation, gPoint[nIndex].Falloff);
 
     float3 ViewDirection = normalize(CameraPosition - vPosition);
@@ -203,11 +203,11 @@ float3 CalculateDirectionalLight(float3 vPosition, float3 vNormal)
 
     // Blinn-Phong
     //
-    float3 LightDirection = normalize(gDirectional[0].Direction);
+    float3 LightDirection = normalize(-gDirectional[0].Direction);
     float3 View = normalize(CameraPosition - vPosition);
     float3 HalfVector = normalize(View + LightDirection);
     
-    float Diff = max(dot(vNormal, -LightDirection), 0.0f);
+    float Diff = max(dot(vNormal, LightDirection), 0.0f);
     float3 Diffuse = gDirectional[0].DirectionalColor * Diff;
     
 
