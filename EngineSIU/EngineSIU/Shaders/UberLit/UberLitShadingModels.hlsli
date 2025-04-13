@@ -10,10 +10,13 @@
  * @param VertexNormal World vertex normal
  * @param DiffuseColor out DiffuseColor
  */
+
+#if LIGHTING_MODEL_LAMBERT
 void ComputeLambert(float3 LightColor, float3 LightDirection, float3 VertexNormal, out float3 DiffuseColor)
 {
     DiffuseColor = LightColor * max(dot(VertexNormal, (LightDirection / length(LightDirection))), 0.0f);
 }
+#endif
 
 /**
  * Blinn Phong Shader
@@ -28,8 +31,9 @@ void ComputeLambert(float3 LightColor, float3 LightDirection, float3 VertexNorma
  * @param DiffuseColor out DiffuseColor
  * @param SpecularColor out SpecularColor
  */
+#if LIGHTING_MODEL_PHONG
 void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDirection, float3 VertexNormal,
-    float Shininess = 1.0f, out float3 DiffuseColor, out float3 SpecularColor)
+    float Shininess, out float3 OutDiffuseColor, out float3 OutSpecularColor)
 {
     float Distance = length(LightDirection);
     
@@ -39,10 +43,10 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
     float NdotL = max(dot(VertexNormal, LightDirectionNormalized), 0.0f);
     float NdotH = max(dot(VertexNormal, HalfVec), 0.0f);
     
-    DiffuseColor = LightColor * NdotL;
-    SpecularColor = LightColor * pow(NdotH, Shininess);
+    OutDiffuseColor = LightColor * NdotL;
+    OutSpecularColor = LightColor * pow(NdotH, Shininess);
 }
-
+#endif
 
 /**
  * GouraudShader
@@ -60,30 +64,35 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
  * @return Color3
  */
 float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float Shininess,
-                             FAmbientLight AmbientLight, FDirectionalLight DirectionalLight,
-                             FPointLight PointLights[], FSpotLight SpotLights[],
-                             int NumOfPointLight, int NumOfSpotLight)
+                             FAmbientLight AmbientLight, FDirectionalLight DirectionalLights[NUM_MAX_DIRLIGHT],
+                             FPointLight PointLights[NUM_MAX_POINTLIGHT], FSpotLight SpotLights[NUM_MAX_SPOTLIGHT],
+                             int NumOfDirLight, int NumOfPointLight, int NumOfSpotLight)
 {
     // Initialize by Ambient Light
-    float3 ResultColor = float3(AmbientLight.Color) * AmbientLight.Intensity;
+    float3 ResultColor = float3(DirectionalLights[0].Color);
+    ResultColor += AmbientLight.Color * AmbientLight.Intensity;
+    
     float3 ViewDirection = normalize(CameraPosition - VertexPosition);
     
     /***********************
      * Directional Light   *
      ***********************/
-    
-    // Calculate direction vector.
-    float3 LightDirection = normalize(-DirectionalLight.Direction);
-    float3 DirectionalReflectDirection = reflect(-LightDirection, VertexNormal);
 
-    // Calculate dot
-    float DirectionalDiffuseDot = max(dot(VertexNormal, LightDirection), 0.0f);
-    float DirectionalSpecularDot = pow(max(dot(DirectionalReflectDirection, ViewDirection), 0.0f), Shininess);
+    if (NumOfDirLight > 0)
+    {
+        // Calculate direction vector.
+        float3 LightDirection = normalize(-DirectionalLights[0].Direction);
+        float3 DirectionalReflectDirection = reflect(-LightDirection, VertexNormal);
 
-    // Sum color
-    float3 DirectionalDiffuse = DirectionalLight.Color * DirectionalDiffuseDot;
-    float3 DirectionalSpecular = DirectionalLight.Color * DirectionalSpecularDot;
-    ResultColor += DirectionalLight.Intensity * (DirectionalDiffuse + DirectionalSpecular);
+        // Calculate dot
+        float DirectionalDiffuseDot = max(dot(VertexNormal, LightDirection), 0.0f);
+        float DirectionalSpecularDot = pow(max(dot(DirectionalReflectDirection, ViewDirection), 0.0f), Shininess);
+
+        // Sum color
+        float3 DirectionalDiffuse = DirectionalLights[0].Color * DirectionalDiffuseDot;
+        float3 DirectionalSpecular = DirectionalLights[0].Color * DirectionalSpecularDot;
+        ResultColor += DirectionalLights[0].Intensity * (DirectionalDiffuse + DirectionalSpecular);
+    }
     
     /***********************
      * Point Light         *
@@ -130,7 +139,7 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
         Attenuation = pow(Attenuation, Spot.Falloff);
 
         // Calculate cone attenuation
-        float CosAngle = dot(Spot.Direction, -LightDirection);
+        float CosAngle = dot(Spot.Direction, -SpotLightDirection);
         float Outer = cos(radians(Spot.OuterConeAngle / 2.0f));
         float Inner = cos(radians(Spot.InnerConeAngle / 2.0f));
 

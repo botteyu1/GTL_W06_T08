@@ -49,16 +49,12 @@ VS_OUT Uber_VS(VS_IN input)
     output.TBN = TBN;
     
     output.texcoord = input.texcoord;
-    
+
 #if LIGHTING_MODEL_GOURAUD
     float3 GouraudColor = ComputeGouraudShading(output.worldPos, output.normal, 1.0f,
-        AmbientLight, DirectionalLights[0], PointLights, SpotLights,
-        NumPointLights, NumSpotLights);
+         AmbientLight, DirectionalLights, PointLights, SpotLights,
+         NumDirLights, NumPointLights, NumSpotLights);
     output.color = float4(GouraudColor, 1);
-#elif LIGHTING_MODEL_LAMBERT
-
-#elif LIGHTING_MODEL_PHONG
-
 #endif
     return output;
 }
@@ -67,24 +63,9 @@ PS_OUT Uber_PS(VS_OUT Input)
 {
     PS_OUT Output;
     Output.UUID = UUID;
-
-#if LIGHTING_MODEL_GOURAUD
-    if (!IsLit)
-    {
-        Output.color = float4(BaseColor, 1);
-    }
     
-    // 선택
-    if (isSelected)
-    {
-        Output.color += float4(0.02, 0.02, 0.02, 1);
-    }
-    
-    return Output;
-#endif
-    
-    float3 Normal = normalize(Input.normal);
     float3 BaseColor = float3(1, 1, 1);
+    float3 Normal = normalize(Input.normal);
     float3 MatAmbientColor = float3(0, 0, 0);
     float3 MatSpecularColor = float3(0, 0, 0);
     float3 MatAlphaColor = float3(0, 0, 0);
@@ -145,15 +126,20 @@ PS_OUT Uber_PS(VS_OUT Input)
     float3 Direction;
     float Attenuation;
 
+#if LIGHTING_MODEL_GOURAUD
 
-#if LIGHTING_MODEL_LAMBERT
+    float3 FinalColor = BaseColor * Input.color.rgb;
+    Output.color = float4(FinalColor, 1);
+    return Output;
+    
+#elif LIGHTING_MODEL_LAMBERT
     for (int i = 0; i < NumPointLights; i++)
     {
         CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
         ComputeLambert(PointLights[i].Color, Direction, Normal, DiffuseColor);
 
         DiffuseColor *= Attenuation;
-        TotalColor += DiffuseColor;
+        TotalColor += PointLights[i].Intensity * DiffuseColor;
     }
 
     for (int i = 0; i < NumSpotLights; i++)
@@ -164,14 +150,14 @@ PS_OUT Uber_PS(VS_OUT Input)
         ComputeLambert(SpotLights[i].Color, Direction, Normal, DiffuseColor);
 
         DiffuseColor *= Attenuation;
-        TotalColor += DiffuseColor;
+        TotalColor += SpotLights[i].Intensity * DiffuseColor;
     }
 
     // Directional
     CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
     ComputeLambert(DirectionalLights[0].Color, Direction, Normal, DiffuseColor);
 
-    TotalColor += DiffuseColor;
+    TotalColor += DirectionalLights[0].Intensity * DiffuseColor;
 #elif LIGHTING_MODEL_PHONG
     // Specular Reflectance
     float3 SpecularColor;
@@ -218,6 +204,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     if (!IsLit)
     {
         Output.color = float4(BaseColor, 1);
+        return Output;
     }
     
     // 선택
