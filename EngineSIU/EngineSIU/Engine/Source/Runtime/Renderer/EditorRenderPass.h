@@ -53,7 +53,7 @@ private:
     //void PrepareShaderGizmo();
     //void PrepareConstantbufferGizmo();
 
-    // Axis
+    // Axiss
     void RenderAxis();
 
     // AABB
@@ -87,10 +87,12 @@ private:
     void PrepareConstantbufferArrow();
     void UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer);
 
-    const uint32 ConstantBufferSizeAABB = 8;
-    const uint32 ConstantBufferSizeSphere = 8;
-    const uint32 ConstantBufferSizeCone = 8;
+    void UpdateShaders();
 
+    const uint32 ConstantBufferSizeAABB = 8;
+    const uint32 ConstantBufferSizeSphere = 1;
+    const uint32 ConstantBufferSizeCone = 2;
+    const uint32 NumSegments = 64; // hlsl에서도 수정필요
     FConstantBufferDebugGrid CurrentGridSettings;
 
     const std::wstring ShaderPath = L"Shaders/EditorShader.hlsl";
