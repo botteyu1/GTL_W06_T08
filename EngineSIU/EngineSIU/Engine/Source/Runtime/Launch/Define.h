@@ -355,6 +355,7 @@ struct alignas(16) FSceneLightBuffer
     int NumDirLights;
     int NumPointLights;
     int NumSpotLights;
+    int pad;
     // pad 4 byte
 };
 
