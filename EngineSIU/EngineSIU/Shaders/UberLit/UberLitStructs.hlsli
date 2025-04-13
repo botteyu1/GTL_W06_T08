@@ -58,7 +58,7 @@ struct FMaterial
 ///////////////////////////////////////////////
 struct FAmbientLight
 {
-    float3 AmbientColor;
+    float3 Color;
     float Intensity;
 };
 
@@ -68,7 +68,7 @@ struct FDirectionalLight
     float Intensity;
 
     float3 Direction;
-    // pad 4 byte
+    float Pad0;
 };
 
 struct FPointLight
@@ -80,7 +80,7 @@ struct FPointLight
     float AttenuationRadius;
 
     float Falloff;
-    // pad 12 byte
+    float3 Pad0;
 };
 
 struct FSpotLight
@@ -96,5 +96,5 @@ struct FSpotLight
     
     float InnerConeAngle;
     float OuterConeAngle;
-    // pad 8 byte
+    float2 Pad0;
 };

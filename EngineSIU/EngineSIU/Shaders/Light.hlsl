@@ -171,14 +171,14 @@ float4 CalculatePointLight(int nIndex, float3 vPosition, float3 vNormal)
     float NdotH = max(dot(vNormal, HalfVector), 0.0f);
 
     Diffuse = gPoint[nIndex].PointColor * NdotL * Material.DiffuseColor * Attenuation;
-    Specular = gPoint[nIndex].PointColor * pow(NdotH, Material.SpecularScalar) * Attenuation;
+    Specular = gPoint[nIndex].PointColor * Material.SpecularColor * pow(NdotH, Material.SpecularScalar) * Attenuation;
 
     // Lambert
-    Specular = float3(0.0f, 0.0f, 0.0f);
+    //Specular = float3(0.0f, 0.0f, 0.0f);
 
     // Gouraud - used to vertex shader
     float3 ReflectDirection = reflect(LightDirection, vNormal);
-    Specular = gPoint[nIndex].PointColor * pow(max(dot(ReflectDirection, ViewDirection), 0.0f), Material.SpecularScalar) * Attenuation;
+    //Specular = gPoint[nIndex].PointColor * pow(max(dot(ReflectDirection, ViewDirection), 0.0f), Material.SpecularScalar) * Attenuation;
     
     return float4(gPoint[nIndex].Intensity * (Diffuse + Specular), 1.0f);
 }

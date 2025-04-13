@@ -10,14 +10,14 @@ cbuffer MatrixConstants : register(b0)
     row_major float4x4 MInverseTranspose;
     float4 UUID;
     bool isSelected;
-    float3 MatrixPad0;
+    float3 Pad0;
 };
 cbuffer CameraConstants : register(b1)
 {
     row_major float4x4 View;
     row_major float4x4 Projection;
     float3 CameraPosition;
-    float pad;
+    float Pad1;
 };
 cbuffer cbLights : register(b2)
 {
@@ -32,6 +32,7 @@ cbuffer cbLights : register(b2)
     int NumDirectionalLights;
     int NumPointLights;
     int NumSpotLights;
+    int Pad2;
 };
 cbuffer MaterialConstants : register(b3)
 {
@@ -40,17 +41,17 @@ cbuffer MaterialConstants : register(b3)
 cbuffer FlagConstants : register(b4)
 {
     bool IsLit;
-    float3 flagPad0;
+    float3 Pad3;
 }
 
 cbuffer SubMeshConstants : register(b5)
 {
     bool IsSelectedSubMesh;
-    float3 SubMeshPad0;
+    float3 Pad4;
 }
 
 cbuffer TextureConstants : register(b6)
 {
     float2 UVOffset;
-    float2 TexturePad0;
+    float2 Pad5;
 }

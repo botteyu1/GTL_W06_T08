@@ -80,12 +80,14 @@ HRESULT FStaticMeshRenderPass::CreateShader()
     std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
     std::string strPoint = std::to_string(NUM_MAX_POINTLIGHT);
     std::string strSpot = std::to_string(NUM_MAX_SPOTLIGHT);
+    std::string strGouraud = std::to_string(1);
 
     const D3D_SHADER_MACRO UberDefines[] =
     {
         { "NUM_MAX_DIRLIGHT",   strDir.c_str() },
         { "NUM_MAX_POINTLIGHT", strPoint.c_str() },
         { "NUM_MAX_SPOTLIGHT",  strSpot.c_str() },
+        {"LIGHTING_MODEL_GOURAUD", strGouraud.c_str()},
         { NULL, NULL }
     };
 
@@ -195,12 +197,13 @@ void FStaticMeshRenderPass::UpdateShaders()
 	std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
 	std::string strPoint = std::to_string(NUM_MAX_POINTLIGHT);
 	std::string strSpot = std::to_string(NUM_MAX_SPOTLIGHT);
-
+    std::string strGouraud = std::to_string(1);
 	const D3D_SHADER_MACRO UberDefines[] =
 	{
 		{ "NUM_MAX_DIRLIGHT",   strDir.c_str() },
 		{ "NUM_MAX_POINTLIGHT", strPoint.c_str() },
 		{ "NUM_MAX_SPOTLIGHT",  strSpot.c_str() },
+	    {"LIGHTING_MODEL_GOURAUD", strGouraud.c_str()},
 		{ NULL, NULL }
 	};
 
