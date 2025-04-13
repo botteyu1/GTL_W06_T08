@@ -261,13 +261,14 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
 
         ImGui::Separator();
 
-        static bool IsUber = false;
-        if (ImGui::Checkbox("UberLit.hlsl", &IsUber))
+        static bool IsUber;
+        IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
+        if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
         {
             GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
         }
 
-        if (ImGui::Button("ReCompile Shader"))
+        if (ImGui::Button("Recompile Shader(P)"))
         {
             GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
         }

@@ -51,9 +51,11 @@ public:
 
     void ChangeViewMode(EViewModeIndex evi) const;
 
-    void SetUberShader(bool bValue);
+    bool SetUberShader(bool bValue);
 
     void UpdateShaders();
+
+    bool IsUber() const { return bIsUber; }
 private:
     TArray<UStaticMeshComponent*> StaticMeshObjs;
 
@@ -71,5 +73,5 @@ private:
     
     FDXDShaderManager* ShaderManager;
 
-    bool IsUber = false;
+    bool bIsUber = false;
 };

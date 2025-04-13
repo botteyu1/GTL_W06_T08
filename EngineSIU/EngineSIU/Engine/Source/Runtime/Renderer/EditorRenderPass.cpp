@@ -654,7 +654,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
 
     RenderAABBInstanced();
     RenderPointlightInstanced();
-    RenderSpotlightInstanced();
+    //RenderSpotlightInstanced();
     RenderAxis();
     RenderGrid(ActiveViewport);
 
