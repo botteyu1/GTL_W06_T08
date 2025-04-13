@@ -49,11 +49,11 @@ public:
 
     void ReleaseShader();
 
-    void ChangeViewMode(EViewModeIndex evi) const;
+    void ChangeViewMode(EViewModeIndex evi);
 
     bool SetUberShader(bool bValue);
 
-    void UpdateShaders();
+    void UpdateShaders(int32 GouraudFlag = 1, int32 LambertFlag = 0, int32 PhongFlag = 0);
 
     bool IsUber() const { return bIsUber; }
 private:

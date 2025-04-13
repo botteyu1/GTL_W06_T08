@@ -444,7 +444,7 @@ void ControlEditorPanel::CreateFlagButton() const
 
     ImGui::SameLine();
 
-    const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
+    const char* ViewModeNames[] = { "Lit_Gouraud", "Lit_Lambert", "Lit_BlinnPhong", "Unlit", "Wireframe", "SceneDepth" };
     
     int rawViewMode = (int)ActiveViewport->GetViewMode();
     int safeIndex = (rawViewMode >= 0) ? (rawViewMode % 4) : 0;
