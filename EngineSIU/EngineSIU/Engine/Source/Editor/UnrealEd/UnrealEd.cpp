@@ -1,20 +1,28 @@
 ﻿#include "UnrealEd.h"
 #include "EditorPanel.h"
 
-#include "PropertyEditor/ControlEditorPanel.h"
+#include "PropertyEditor/ViewportControlEditorPanel.h"
 #include "PropertyEditor/OutlinerEditorPanel.h"
 #include "PropertyEditor/PropertyEditorPanel.h"
+#include "PropertyEditor/WorldControlEditorPanel.h"
 
 void UnrealEd::Initialize()
 {
-    auto ControlPanel = std::make_shared<ControlEditorPanel>();
-    Panels["ControlPanel"] = ControlPanel;
+    auto WorldControlPanel = std::make_shared<WorldControlEditorPanel>();
+    //WorldControlPanel->Rect.
+    AddEditorPanel("WorldControlPanel", WorldControlPanel);
+
+    // On Add Viewport ->
+    // On Remove Viewport ->
+    // On Resize Viewport ->
+    auto ViewportControlPanel = std::make_shared<ViewportControlEditorPanel>();
+    AddEditorPanel("ViewportControlPanel", ViewportControlPanel);
     
     auto OutlinerPanel = std::make_shared<OutlinerEditorPanel>();
-    Panels["OutlinerPanel"] = OutlinerPanel;
+    AddEditorPanel("OutlinerPanel", OutlinerPanel);
     
     auto PropertyPanel = std::make_shared<PropertyEditorPanel>();
-    Panels["PropertyPanel"] = PropertyPanel;
+    AddEditorPanel("PropertyPanel", PropertyPanel);
 }
 
 void UnrealEd::Render() const
@@ -28,6 +36,14 @@ void UnrealEd::Render() const
 void UnrealEd::AddEditorPanel(const FString& PanelId, const std::shared_ptr<UEditorPanel>& EditorPanel)
 {
     Panels[PanelId] = EditorPanel;
+}
+
+void UnrealEd::RemoveEditorPanel(const FString& PanelId)
+{
+    if (Panels.Contains(PanelId))
+    {
+        Panels.Remove(PanelId);
+    }
 }
 
 void UnrealEd::OnResize(HWND hWnd) const

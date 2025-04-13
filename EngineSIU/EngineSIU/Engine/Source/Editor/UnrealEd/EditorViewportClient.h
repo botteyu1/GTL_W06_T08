@@ -11,6 +11,7 @@
 #define MIN_ORTHOZOOM				1.0							/* 2D ortho viewport zoom >= MIN_ORTHOZOOM */
 #define MAX_ORTHOZOOM				1e25
 
+class FSlateRect;
 class ATransformGizmo;
 class USceneComponent;
 
@@ -83,15 +84,15 @@ public:
     FEditorViewportClient();
     virtual ~FEditorViewportClient() override;
 
-    virtual void Draw(FViewport* Viewport) override;
     virtual UWorld* GetWorld() const override { return nullptr; }
     void Initialize(int32 viewportIndex);
     void Tick(float DeltaTime);
     void Release() const;
+    //virtual void Draw() override;
 
     void Input();
     void ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc);
-    void ResizeViewport(FRect Top, FRect Bottom, FRect Left, FRect Right);
+    void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
 
     bool IsSelected(POINT InPoint) const;
 

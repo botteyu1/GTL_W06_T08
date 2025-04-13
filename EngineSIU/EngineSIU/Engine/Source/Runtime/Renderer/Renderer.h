@@ -44,7 +44,7 @@ public:
     //==========================================================================
     void PrepareRender();
     void ClearRenderArr();
-    void Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
+    void Render(const std::shared_ptr<FEditorViewportClient>& Viewport);
 
     // 뷰 모드 변경
     void ChangeViewMode(EViewModeIndex evi);

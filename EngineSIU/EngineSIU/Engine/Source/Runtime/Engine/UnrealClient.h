@@ -1,6 +1,9 @@
 #pragma once
-#include "Define.h" 
+#define _TCHAR_DEFINED
 #include <d3d11.h>
+
+#include "HAL/PlatformType.h"
+#include "SlateCore/Layout/SlateRect.h"
 
 
 enum class EViewScreenLocation : uint8
@@ -19,8 +22,8 @@ public:
 
     void Initialize();
     void ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc);
-    void ResizeViewport(FRect Top, FRect Bottom, FRect Left, FRect Right);
-    void ResizeViewport(FRect newRect);
+    void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
+    void ResizeViewport(FSlateRect newRect);
 
 private:
     D3D11_VIEWPORT viewport;            // 뷰포트 정보

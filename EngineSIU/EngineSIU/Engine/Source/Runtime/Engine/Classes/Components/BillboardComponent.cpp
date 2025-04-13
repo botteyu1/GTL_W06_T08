@@ -101,7 +101,7 @@ void UBillboardComponent::SetUUIDParent(USceneComponent* _parent)
 FMatrix UBillboardComponent::CreateBillboardMatrix() const
 {
     // 카메라 뷰 행렬을 가져와서 위치 정보를 제거한 후 전치하여 LookAt 행렬 생성
-    FMatrix CameraView = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
+    FMatrix CameraView = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient()->GetViewMatrix();
     CameraView.M[0][3] = CameraView.M[1][3] = CameraView.M[2][3] = 0.0f;
     CameraView.M[3][0] = CameraView.M[3][1] = CameraView.M[3][2] = 0.0f;
     CameraView.M[3][3] = 1.0f;
@@ -136,10 +136,11 @@ bool UBillboardComponent::CheckPickingOnNDC(const TArray<FVector>& quadVertices,
     float ndcX = (2.0f * mousePos.x / viewport.Width) - 1.0f;
     float ndcY = -((2.0f * mousePos.y / viewport.Height) - 1.0f);
 
+    auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     // MVP 행렬 계산
     FMatrix M = CreateBillboardMatrix();
-    FMatrix V = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
-    FMatrix P = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetProjectionMatrix();
+    FMatrix V = FocusedViewportClient->GetViewMatrix();
+    FMatrix P = FocusedViewportClient->GetProjectionMatrix();
     FMatrix MVP = M * V * P;
 
     // quadVertices를 MVP로 변환하여 NDC 공간에서의 최소/최대값 구하기

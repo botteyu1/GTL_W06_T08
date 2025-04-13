@@ -1,11 +1,9 @@
 #include "SLevelEditor.h"
+
 #include <fstream>
-#include <ostream>
-#include <sstream>
-#include "EngineLoop.h"
+
 #include "UnrealClient.h"
 #include "Slate/Widgets/Layout/SSplitter.h"
-#include "SlateCore/Widgets/SWindow.h"
 #include "UnrealEd/EditorViewportClient.h"
 
 SLevelEditor::SLevelEditor()
@@ -21,16 +19,16 @@ void SLevelEditor::Initialize()
 {
     for (size_t i = 0; i < 4; i++)
     {
-        ViewportClients[i] = std::make_shared<FEditorViewportClient>();
+        ViewportClients.Add(std::make_shared<FEditorViewportClient>());
         ViewportClients[i]->Initialize(i);
     }
     ActiveViewportClient = ViewportClients[0];
     OnResize();
     VSplitter = new SSplitterV();
-    VSplitter->Initialize(FRect(0.0f, EditorHeight * 0.5f - 10, EditorHeight, 20));
+    VSplitter->Initialize(FSlateRect(0.0f, EditorHeight * 0.5f - 10, EditorHeight, 20));
     VSplitter->OnDrag(FPoint(0, 0));
     HSplitter = new SSplitterH();
-    HSplitter->Initialize(FRect(EditorWidth * 0.5f - 10, 0.0f, 20, EditorWidth));
+    HSplitter->Initialize(FSlateRect(EditorWidth * 0.5f - 10, 0.0f, 20, EditorWidth));
     HSplitter->OnDrag(FPoint(0, 0));
     LoadConfig();
     bInitialize = true;
@@ -55,7 +53,7 @@ void SLevelEditor::Tick(double deltaTime)
     //Test Code Cursor icon End
     OnResize();
     ActiveViewportClient->Input();
-    for (std::shared_ptr<FEditorViewportClient> Viewport : ViewportClients)
+    for (auto const& Viewport : ViewportClients)
     {
         Viewport->Tick(deltaTime);
     }
@@ -136,11 +134,11 @@ void SLevelEditor::Release()
 
 void SLevelEditor::SelectViewport(POINT point)
 {
-    for (int i = 0; i < 4; i++)
+    for (const auto& ViewportClient : ViewportClients)
     {
-        if (ViewportClients[i]->IsSelected(point))
+        if (ViewportClient->IsSelected(point))
         {
-            SetViewportClient(i);
+            SetViewportClient(ViewportClient);
             break;
         }
     }
@@ -163,18 +161,17 @@ void SLevelEditor::OnResize()
 
 void SLevelEditor::ResizeViewports()
 {
-    if (bMultiViewportMode) {
-        if (GetViewports()[0]) {
-            for (int i = 0;i < 4;++i)
-            {
-                GetViewports()[i]->ResizeViewport(VSplitter->SideLT->Rect, VSplitter->SideRB->Rect,
-                    HSplitter->SideLT->Rect, HSplitter->SideRB->Rect);
-            }
+    if (bMultiViewportMode)
+    {
+        for (const auto& ViewportClient : ViewportClients)
+        {
+            ViewportClient->ResizeViewport(VSplitter->SideLT->Rect, VSplitter->SideRB->Rect,
+                HSplitter->SideLT->Rect, HSplitter->SideRB->Rect);
         }
     }
     else
     {
-        ActiveViewportClient->GetViewport()->ResizeViewport(FRect(0.0f, 0.0f, EditorWidth, EditorHeight));
+        ActiveViewportClient->GetViewport()->ResizeViewport(FSlateRect(0.0f, 0.0f, EditorWidth, EditorHeight));
     }
 }
 
@@ -204,9 +201,9 @@ void SLevelEditor::LoadConfig()
 
     SetViewportClient(GetValueFromConfig(config, "ActiveViewportIndex", 0));
     bMultiViewportMode = GetValueFromConfig(config, "bMutiView", false);
-    for (size_t i = 0; i < 4; i++)
+    for (const auto& ViewportClient : ViewportClients)
     {
-        ViewportClients[i]->LoadConfig(config);
+        ViewportClient->LoadConfig(config);
     }
     if (HSplitter)
         HSplitter->LoadConfig(config);
@@ -222,9 +219,9 @@ void SLevelEditor::SaveConfig()
         HSplitter->SaveConfig(config);
     if (VSplitter)
         VSplitter->SaveConfig(config);
-    for (size_t i = 0; i < 4; i++)
+    for (const auto& ViewportClient : ViewportClients)
     {
-        ViewportClients[i]->SaveConfig(config);
+        ViewportClient->SaveConfig(config);
     }
     ActiveViewportClient->SaveConfig(config);
     config["bMutiView"] = std::to_string(bMultiViewportMode);

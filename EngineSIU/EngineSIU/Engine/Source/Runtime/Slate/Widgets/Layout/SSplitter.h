@@ -1,15 +1,15 @@
 #pragma once
+#include <sstream>
+
 #include "SlateCore/Widgets/SWindow.h"
-#include "Container/Map.h"
-#include "fstream"
-#include "sstream"
+
 class SSplitter : public SWindow
 {
 public:
     SWindow* SideLT; // Left or Top
     SWindow* SideRB; // Right or Bottom
     
-    virtual void Initialize(FRect initRect) override;
+    virtual void Initialize(FSlateRect initRect) override;
 
     virtual void OnDragStart(const FPoint& mousePos) { /* 초기화 */ }
     virtual void OnDrag(const FPoint& delta) = 0; // 가로/세로에 따라 구현 다름.
@@ -45,7 +45,7 @@ public:
 class SSplitterH : public SSplitter
 {
 public:
-    virtual void Initialize(FRect initRect) override;
+    virtual void Initialize(FSlateRect initRect) override;
     virtual void OnResize(float width, float height) override;
 
     virtual void LoadConfig(const TMap<FString, FString>& config) override;
@@ -53,20 +53,22 @@ public:
 
     virtual void OnDrag(const FPoint& delta) override {
         // 수평 스플리터의 경우, 좌우로 이동
-        Rect.leftTopX += delta.x;
+        Rect.Left += delta.X;
 
         UpdateChildRects();
     }
 
-    virtual void UpdateChildRects() override {
-
+    virtual void UpdateChildRects() override
+    {
         if (SideLT)
-            SideLT->Rect.width = Rect.leftTopX - SideLT->Rect.leftTopX;
+        {
+            SideLT->Rect.SetWidth(Rect.Left - SideLT->Rect.Left);
+        }
         if (SideRB)
         {
-            float prevleftTopX = SideRB->Rect.leftTopX;
-            SideRB->Rect.leftTopX = Rect.leftTopX + Rect.width;
-            SideRB->Rect.width =  SideRB->Rect.width + prevleftTopX  - SideRB->Rect.leftTopX;
+            float prevleftTopX = SideRB->Rect.Left;
+            SideRB->Rect.Left = Rect.Left + Rect.GetWidth();
+            SideRB->Rect.SetWidth(SideRB->Rect.GetWidth() + prevleftTopX - SideRB->Rect.Left);
         }
     }
 };
@@ -74,7 +76,7 @@ public:
 class SSplitterV : public SSplitter
 {
 public:
-    virtual void Initialize(FRect initRect) override;
+    virtual void Initialize(FSlateRect initRect) override;
     virtual void OnResize(float width, float height)    override;
 
     virtual void LoadConfig(const TMap<FString, FString>& config)   override;
@@ -82,19 +84,21 @@ public:
 
     virtual void OnDrag(const FPoint& delta) override {
 
-        Rect.leftTopY += delta.y;
+        Rect.Top += delta.Y;
         UpdateChildRects();
     }
 
     virtual void UpdateChildRects() override {
 
         if (SideLT)
-            SideLT->Rect.height = Rect.leftTopY - SideLT->Rect.leftTopY;
+        {
+            SideLT->Rect.SetHeight(Rect.Top - SideLT->Rect.Top);
+        }
         if (SideRB)
         {
-            float prevleftTopY = SideRB->Rect.leftTopY;
-            SideRB->Rect.leftTopY = Rect.leftTopY + Rect.height;
-            SideRB->Rect.height = SideRB->Rect.height + prevleftTopY - SideRB->Rect.leftTopY;
+            float prevleftTopY = SideRB->Rect.Top;
+            SideRB->Rect.Top = Rect.Top + Rect.GetHeight();
+            SideRB->Rect.SetHeight(SideRB->Rect.GetHeight() + prevleftTopY - SideRB->Rect.Top);
         }
     }
 };

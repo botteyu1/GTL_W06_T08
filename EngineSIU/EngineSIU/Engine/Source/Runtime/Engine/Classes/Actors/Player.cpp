@@ -47,7 +47,7 @@ void AEditorPlayer::Input()
 
             FVector pickPosition;
 
-            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
             ScreenToViewSpace(mousePos.x, mousePos.y, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix(), pickPosition);
             bool res = PickGizmo(pickPosition, ActiveViewport.get());
             if (res == false)
@@ -65,7 +65,7 @@ void AEditorPlayer::Input()
         if (bLeftMouseDown)
         {
             bLeftMouseDown = false;
-            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
             ActiveViewport->SetPickedGizmoComponent(nullptr);
         }
     }
@@ -251,14 +251,15 @@ void AEditorPlayer::AddCoordiMode()
 
 void AEditorPlayer::ScreenToViewSpace(int screenX, int screenY, const FMatrix& viewMatrix, const FMatrix& projectionMatrix, FVector& rayOrigin)
 {
-    D3D11_VIEWPORT viewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetD3DViewport();
+    auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
+    D3D11_VIEWPORT viewport = FocusedViewportClient->GetD3DViewport();
     
     float viewportX = screenX - viewport.TopLeftX;
     float viewportY = screenY - viewport.TopLeftY;
 
     rayOrigin.X = ((2.0f * viewportX / viewport.Width) - 1) / projectionMatrix[0][0];
     rayOrigin.Y = -((2.0f * viewportY / viewport.Height) - 1) / projectionMatrix[1][1];
-    if (GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->IsOrtho())
+    if (FocusedViewportClient->IsOrtho())
     {
         rayOrigin.Z = 0.0f;  // 오쏘 모드에서는 unproject 시 near plane 위치를 기준
     }
@@ -270,10 +271,11 @@ void AEditorPlayer::ScreenToViewSpace(int screenX, int screenY, const FMatrix& v
 
 int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneComponent* obj, float& hitDistance, int& intersectCount)
 {
+    auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     FMatrix WorldMatrix = obj->GetWorldMatrix();
-	FMatrix ViewMatrix = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
+	FMatrix ViewMatrix = FocusedViewportClient->GetViewMatrix();
     
-    bool bIsOrtho = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->IsOrtho();
+    bool bIsOrtho = FocusedViewportClient->IsOrtho();
     
 
     if (bIsOrtho)
@@ -285,7 +287,7 @@ int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneCompon
         // 오쏘에서는 픽킹 원점은 unproject된 픽셀의 위치
         FVector rayOrigin = worldPickPos;
         // 레이 방향은 카메라의 정면 방향 (평행)
-        FVector orthoRayDir = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->ViewTransformOrthographic.GetForwardVector().GetSafeNormal();
+        FVector orthoRayDir = FocusedViewportClient->ViewTransformOrthographic.GetForwardVector().GetSafeNormal();
 
         // 객체의 로컬 좌표계로 변환
         FMatrix LocalMatrix = FMatrix::Inverse(WorldMatrix);
@@ -312,7 +314,7 @@ int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneCompon
 void AEditorPlayer::PickedObjControl()
 {
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-    FEditorViewportClient* ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
+    FEditorViewportClient* ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient().get();
     if (Engine && Engine->GetSelectedActor() && ActiveViewport->GetPickedGizmoComponent())
     {
         POINT currentMousePos;
@@ -356,7 +358,7 @@ void AEditorPlayer::PickedObjControl()
 
 void AEditorPlayer::ControlRotation(USceneComponent* pObj, UGizmoBaseComponent* Gizmo, int32 deltaX, int32 deltaY)
 {
-    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     const FViewportCameraTransform* ViewTransform = ActiveViewport->GetViewportType() == LVT_Perspective
                                                         ? &ActiveViewport->ViewTransformPerspective
                                                         : &ActiveViewport->ViewTransformOrthographic;
@@ -402,7 +404,7 @@ void AEditorPlayer::ControlTranslation(USceneComponent* pObj, UGizmoBaseComponen
 {
     float DeltaX = static_cast<float>(deltaX);
     float DeltaY = static_cast<float>(deltaY);
-    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     const FViewportCameraTransform* ViewTransform = ActiveViewport->GetViewportType() == LVT_Perspective
                                                         ? &ActiveViewport->ViewTransformPerspective
                                                         : &ActiveViewport->ViewTransformOrthographic;
@@ -458,7 +460,7 @@ void AEditorPlayer::ControlScale(USceneComponent* pObj, UGizmoBaseComponent* Giz
 {
     float DeltaX = static_cast<float>(deltaX);
     float DeltaY = static_cast<float>(deltaY);
-    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     const FViewportCameraTransform* ViewTransform = ActiveViewport->GetViewportType() == LVT_Perspective
                                                         ? &ActiveViewport->ViewTransformPerspective
                                                         : &ActiveViewport->ViewTransformOrthographic;

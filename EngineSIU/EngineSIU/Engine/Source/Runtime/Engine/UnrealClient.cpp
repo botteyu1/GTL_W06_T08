@@ -44,44 +44,44 @@ void FViewport::ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc)
     viewport.MaxDepth = 1.0f;
 }
 
-void FViewport::ResizeViewport(FRect Top, FRect Bottom, FRect Left, FRect Right)
+void FViewport::ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right)
 {
     switch (viewLocation)
     {
     case EViewScreenLocation::TopLeft:
-        viewport.TopLeftX = Left.leftTopX;
-        viewport.TopLeftY = Top.leftTopY;
-        viewport.Width = Left.width;
-        viewport.Height = Top.height;
+        viewport.TopLeftX = Left.Left;
+        viewport.TopLeftY = Top.Top;
+        viewport.Width = Left.GetWidth();
+        viewport.Height = Top.GetHeight();
         break;
     case EViewScreenLocation::TopRight:
-        viewport.TopLeftX = Right.leftTopX;
-        viewport.TopLeftY = Top.leftTopY;
-        viewport.Width = Right.width;
-        viewport.Height = Top.height;
+        viewport.TopLeftX = Right.Left;
+        viewport.TopLeftY = Top.Top;
+        viewport.Width = Right.GetWidth();
+        viewport.Height = Top.GetHeight();
         break;
     case EViewScreenLocation::BottomLeft:
-        viewport.TopLeftX = Left.leftTopX;
-        viewport.TopLeftY = Bottom.leftTopY;
-        viewport.Width = Left.width;
-        viewport.Height = Bottom.height;
+        viewport.TopLeftX = Left.Left;
+        viewport.TopLeftY = Bottom.Top;
+        viewport.Width = Left.GetWidth();
+        viewport.Height = Bottom.GetHeight();
         break;
     case EViewScreenLocation::BottomRight:
-        viewport.TopLeftX = Right.leftTopX;
-        viewport.TopLeftY = Bottom.leftTopY;
-        viewport.Width = Right.width;
-        viewport.Height = Bottom.height;
+        viewport.TopLeftX = Right.Left;
+        viewport.TopLeftY = Bottom.Top;
+        viewport.Width = Right.GetWidth();
+        viewport.Height = Bottom.GetHeight();
         break;
     default:
         break;
     }
 }
 
-void FViewport::ResizeViewport(FRect newRect)
+void FViewport::ResizeViewport(FSlateRect newRect)
 {
-    viewport.TopLeftX = newRect.leftTopX;
-    viewport.TopLeftY = newRect.leftTopY;
-    viewport.Width = newRect.width;
-    viewport.Height = newRect.height;
+    viewport.TopLeftX = newRect.Left;
+    viewport.TopLeftY = newRect.Top;
+    viewport.Width = newRect.GetWidth();
+    viewport.Height = newRect.GetHeight();
 }
 

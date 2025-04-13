@@ -1,13 +1,12 @@
 #pragma once
-#include <sstream>
-#include "Define.h"
+#include "Container/Array.h"
 #include "Container/Map.h"
 
-class SSplitterH;
-class SSplitterV;
-class UWorld;
-class FEditorViewportClient;
 
+class FEditorViewportClient;
+class UWorld;
+class SSplitterV;
+class SSplitterH;
 
 class SLevelEditor
 {
@@ -31,7 +30,7 @@ private:
     SSplitterH* HSplitter;
     SSplitterV* VSplitter;
     UWorld* World;
-    std::shared_ptr<FEditorViewportClient> ViewportClients[4];
+    TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients;
     std::shared_ptr<FEditorViewportClient> ActiveViewportClient;
 
     bool bLButtonDown = false;
@@ -44,8 +43,8 @@ private:
     float EditorHeight;
 
 public:
-    std::shared_ptr<FEditorViewportClient>* GetViewports() { return ViewportClients; }
-    std::shared_ptr<FEditorViewportClient> GetActiveViewportClient() const
+    TArray<std::shared_ptr<FEditorViewportClient>> GetViewportClients() { return ViewportClients; }
+    std::shared_ptr<FEditorViewportClient> GetFocusedViewportClient() const
     {
         return ActiveViewportClient;
     }

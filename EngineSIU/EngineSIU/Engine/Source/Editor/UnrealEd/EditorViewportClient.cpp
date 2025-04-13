@@ -1,15 +1,13 @@
 #include "EditorViewportClient.h"
-#include "fstream"
-#include "sstream"
-#include "ostream"
-#include "Math/JungleMath.h"
-#include "UnrealClient.h"
-#include "World/World.h"
-#include "GameFramework/Actor.h"
-#include "Engine/EditorEngine.h"
 
-#include "UObject/ObjectFactory.h"
+#include <fstream>
+
+#include "UnrealClient.h"
 #include "BaseGizmos/TransformGizmo.h"
+#include "Engine/EditorEngine.h"
+#include "Engine/Engine.h"
+#include "Math/JungleMath.h"
+
 
 FVector FEditorViewportClient::Pivot = FVector(0.0f, 0.0f, 0.0f);
 float FEditorViewportClient::orthoSize = 10.0f;
@@ -25,10 +23,6 @@ FEditorViewportClient::FEditorViewportClient()
 FEditorViewportClient::~FEditorViewportClient()
 {
     Release();
-}
-
-void FEditorViewportClient::Draw(FViewport* Viewport)
-{
 }
 
 void FEditorViewportClient::Initialize(int32 viewportIndex)
@@ -55,6 +49,12 @@ void FEditorViewportClient::Release() const
 {
     delete Viewport;
 }
+
+// void FEditorViewportClient::Draw()
+// {
+//     // Renderer.PrepareRender();
+//     // Renderer.Render(ActiveViewportClient);
+// }
 
 void FEditorViewportClient::Input()
 {
@@ -163,7 +163,7 @@ void FEditorViewportClient::ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchain
     UpdateProjectionMatrix();
     UpdateViewMatrix();
 }
-void FEditorViewportClient::ResizeViewport(FRect Top, FRect Bottom, FRect Left, FRect Right)
+void FEditorViewportClient::ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right)
 {
     if (Viewport) {
         Viewport->ResizeViewport(Top, Bottom, Left, Right);
