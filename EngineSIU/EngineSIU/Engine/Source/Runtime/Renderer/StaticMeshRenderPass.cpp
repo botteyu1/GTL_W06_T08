@@ -205,7 +205,7 @@ void FStaticMeshRenderPass::UpdateShaders()
 
 	Stride = sizeof(FStaticMeshVertex);
 
-    ShaderManager->ReloadShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
+    ShaderManager->ReloadModifiedShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
         StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), nullptr,
         L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS", nullptr);
 
@@ -255,7 +255,7 @@ void FStaticMeshRenderPass::UpdateShaders()
 		{ NULL, NULL }
 	};
 
-    ShaderManager->ReloadShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
+    ShaderManager->ReloadModifiedShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
         StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines,
         L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
 	
@@ -418,6 +418,11 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
     {
         SetUberShader(!bIsUber);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
+    }
+
+    if (bAutoUpdate)
+    {
+        UpdateShaders();
     }
     if (!(Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))) return;
 

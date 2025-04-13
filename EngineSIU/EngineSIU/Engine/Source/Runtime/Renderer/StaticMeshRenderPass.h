@@ -56,6 +56,8 @@ public:
     void UpdateShaders();
 
     bool IsUber() const { return bIsUber; }
+
+    void SetAutoUpdate(bool bValue) { bAutoUpdate = bValue; }
 private:
     TArray<UStaticMeshComponent*> StaticMeshObjs;
 
@@ -74,4 +76,6 @@ private:
     FDXDShaderManager* ShaderManager;
 
     bool bIsUber = false;
+
+    bool bAutoUpdate = false;
 };

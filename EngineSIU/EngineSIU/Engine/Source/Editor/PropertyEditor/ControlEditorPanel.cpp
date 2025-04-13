@@ -268,9 +268,14 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
         }
 
-        if (ImGui::Button("Recompile Shader(P)"))
+        if (ImGui::Button("Recompile(P)"))
         {
             GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
+        }
+        static bool IsAutoUpdate = false;
+        if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->SetAutoUpdate(IsAutoUpdate);
         }
 
 

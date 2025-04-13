@@ -69,6 +69,10 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
 
     PixelShaders[Key] = NewPixelShader;
 
+    // modified time 기록
+    std::filesystem::path FilePath = FileName;
+    PixelShaderModifiedTime[NewPixelShader] = std::filesystem::last_write_time(FilePath);
+
     return S_OK;
 }
 
@@ -109,6 +113,10 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     VertexShaders[Key] = NewVertexShader;
 
     VertexShaderCSO->Release();
+
+    // modified time 기록
+    std::filesystem::path FilePath = FileName;
+    VertexShaderModifiedTime[NewVertexShader] = std::filesystem::last_write_time(FilePath);
 
     return S_OK;
 }
@@ -189,6 +197,10 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     InputLayouts[Key] = NewInputLayout;
 
     VertexShaderCSO->Release();
+
+    // modified time 기록
+    std::filesystem::path FilePath = FileName;
+    VertexShaderModifiedTime[NewVertexShader] = std::filesystem::last_write_time(FilePath);
 
     return S_OK;
 }
@@ -401,6 +413,55 @@ HRESULT FDXDShaderManager::ReloadShaders(const std::wstring& VertexKey, const st
         SafeRelease(PreviousPixelShader);
         UE_LOG(LogLevel::Display, "Successfully reloaded vertex / pixel shader");
         return hr;
+    }
+}
+
+HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines, const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines)
+{
+    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey) || !InputLayouts.Contains(VertexKey))
+    {
+        UE_LOG(LogLevel::Warning, "Invalid Key : Parameter might be different with parameters at init time.");
+        return S_FALSE;
+    }
+    // vertex pixel 모두 다 조사
+    bool IsModified = false;
+    {
+        std::filesystem::path filePath = VertexFileName;
+        auto ModTime = std::filesystem::last_write_time(filePath);
+
+        if (VertexShaderModifiedTime.Contains(VertexShaders[VertexKey]))
+        {
+            auto LastModTime = VertexShaderModifiedTime[VertexShaders[VertexKey]];
+            if (ModTime != LastModTime)
+            {
+                IsModified = true;
+                VertexShaderModifiedTime[VertexShaders[VertexKey]] = ModTime;
+            }
+        }
+    }
+    if(!IsModified)
+    {
+        std::filesystem::path filePath = PixelFileName;
+        auto ModTime = std::filesystem::last_write_time(filePath);
+
+        if (PixelShaderModifiedTime.Contains(PixelShaders[PixelKey]))
+        {
+            auto LastModTime = PixelShaderModifiedTime[PixelShaders[PixelKey]];
+            if (ModTime != LastModTime)
+            {
+                IsModified = true;
+                PixelShaderModifiedTime[PixelShaders[PixelKey]] = ModTime;
+            }
+        }
+    }
+    if (IsModified)
+    {
+        UE_LOG(LogLevel::Display, "Shader file is modified. Recompiling shader.");
+        return ReloadShaders(VertexKey, VertexFileName, VertexEntryPoint, Layout, LayoutSize, VertexDefines, PixelKey, PixelFileName, PixelEntryPoint, PixelDefines);
+    }
+    else
+    {
+        return S_FALSE;
     }
 }
 
