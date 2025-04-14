@@ -91,7 +91,6 @@ public:
     //virtual void Draw() override;
 
     void Input();
-    void ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc);
     void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
 
     bool IsSelected(POINT InPoint) const;

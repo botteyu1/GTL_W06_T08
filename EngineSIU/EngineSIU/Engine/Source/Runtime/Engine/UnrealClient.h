@@ -21,7 +21,7 @@ public:
     FViewport(EViewScreenLocation _viewLocation) : viewLocation(_viewLocation) {}
 
     void Initialize();
-    void ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc);
+    void InitializeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc);
     void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
     void ResizeViewport(FSlateRect newRect);
 
