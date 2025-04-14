@@ -40,7 +40,13 @@ cbuffer MaterialConstants : register(b3)
 }
 cbuffer FlagConstants : register(b4)
 {
-    bool IsLit;
+    // 0 : Unlit
+    // 1 : lit
+    // 2 : depth
+    // 3 : normal
+    // 4 : position
+    // 15 까지 reserved
+    int RenderFlag;
     float3 flagPad0;
 }
 

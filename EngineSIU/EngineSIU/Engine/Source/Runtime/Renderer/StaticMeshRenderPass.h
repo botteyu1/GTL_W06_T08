@@ -19,6 +19,14 @@ struct FStaticMaterial;
 
 class FStaticMeshRenderPass : public IRenderPass
 {
+    static enum class Flag
+    {
+        Unlit = 0,
+        Lit = 1,
+        Depth = 2,
+        Position = 3,
+        Normal = 4,
+    };
 public:
     FStaticMeshRenderPass();
     
@@ -36,7 +44,7 @@ public:
     
     void UpdatePerObjectConstant(const FMatrix& Model, const FMatrix& View, const FMatrix& Projection, const FVector4& UUIDColor, bool Selected) const;
   
-    void UpdateLitUnlitConstant(int isLit) const;
+    void UpdateFlag(FStaticMeshRenderPass::Flag InFlag) const;
 
     void RenderPrimitive(OBJ::FStaticMeshRenderData* RenderData, TArray<FStaticMaterial*> Materials, TArray<UMaterial*> OverrideMaterials, int SelectedSubMeshIndex) const;
     

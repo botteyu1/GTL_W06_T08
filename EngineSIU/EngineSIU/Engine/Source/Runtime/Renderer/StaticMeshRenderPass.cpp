@@ -116,20 +116,29 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex evi)
     {
     case VMI_LitGouraud:
         UpdateShaders(1, 0, 0, true);
-        UpdateLitUnlitConstant(1);
+        UpdateFlag(FStaticMeshRenderPass::Flag::Lit);
         break;
     case VMI_LitLambert:
         UpdateShaders(0, 1, 0, true);
-        UpdateLitUnlitConstant(1);
+        UpdateFlag(FStaticMeshRenderPass::Flag::Lit);
         break;
     case VMI_LitBlinnPhong:
         UpdateShaders(0, 0, 1, true);
-        UpdateLitUnlitConstant(1);
+        UpdateFlag(FStaticMeshRenderPass::Flag::Lit);
         break;
     case EViewModeIndex::VMI_Wireframe:
     case EViewModeIndex::VMI_Unlit:
         UpdateShaders(0, 0, 0, true);
-        UpdateLitUnlitConstant(0);
+        UpdateFlag(FStaticMeshRenderPass::Flag::Unlit);
+        break;
+    case VMI_WorldNormal:
+        UpdateFlag(FStaticMeshRenderPass::Flag::Normal);
+        break;
+    case VMI_WorldPos:
+        UpdateFlag(FStaticMeshRenderPass::Flag::Position);
+        break;
+    case VMI_SceneDepth:
+        UpdateFlag(FStaticMeshRenderPass::Flag::Depth);
         break;
     }
 }
@@ -305,7 +314,7 @@ void FStaticMeshRenderPass::PrepareRenderState() const
                                   TEXT("FCameraConstantBuffer"),
                                   TEXT("FSceneLightBuffer"),
                                   TEXT("FMaterialConstants"),
-                                  TEXT("FLitUnlitConstants"),
+                                  TEXT("FFlagConstants"),
                                   TEXT("FSubMeshConstants"),
                                   TEXT("FTextureConstants")
     };
@@ -321,11 +330,11 @@ void FStaticMeshRenderPass::UpdatePerObjectConstant(const FMatrix& Model, const 
    
 }
 
-void FStaticMeshRenderPass::UpdateLitUnlitConstant(int isLit) const
+void FStaticMeshRenderPass::UpdateFlag(FStaticMeshRenderPass::Flag InFlag) const
 {
-    FLitUnlitConstants Data;
-    Data.isLit = isLit;
-    BufferManager->UpdateConstantBuffer(TEXT("FLitUnlitConstants"), Data);
+    FFlagConstants Data;
+    Data.RenderFlag = static_cast<int>(InFlag);
+    BufferManager->UpdateConstantBuffer(TEXT("FFlagConstants"), Data);
 }
 
 

@@ -120,11 +120,40 @@ PS_OUT Uber_PS(VS_OUT Input)
 
     BaseColor *= Material.DiffuseColor.rgb;
 
+    // flag 되어있으면 미리 return
+    if (RenderFlag == 0)
+    {
+        Output.color = float4(BaseColor, 1);
+        return Output;
+    }
+    // depth
+    else if (RenderFlag == 2)
+    {
+        float z = Input.position.z / Input.position.w;
+        Output.color = float4(z, z, z, 1);
+        return Output;
+    }
+    // worldpos
+    else if (RenderFlag == 3)
+    {
+        Output.color = float4(Input.worldPos / 100 + 0.5, 1);
+        //Output.color = float4(1, 1, 1, 1);
+        return Output;
+    }
+    // normal
+    else if (RenderFlag == 4)
+    {
+        Output.color = float4(Normal/2 + 0.5, 1);
+        return Output;
+    }
+    
+    
     float3 TotalColor = float3(0, 0, 0);
     float3 DiffuseColor;
     float3 Direction;
     float Attenuation;
 
+    
 #if LIGHTING_MODEL_GOURAUD
 
     float3 FinalColor = BaseColor * Input.color.rgb;
@@ -199,12 +228,6 @@ PS_OUT Uber_PS(VS_OUT Input)
     TotalColor += AmbientLight.Color * AmbientLight.Intensity;
 
     Output.color = float4(BaseColor * TotalColor, 1);
-
-    if (!IsLit)
-    {
-        Output.color = float4(BaseColor, 1);
-        return Output;
-    }
     
     // 선택
     if (isSelected)

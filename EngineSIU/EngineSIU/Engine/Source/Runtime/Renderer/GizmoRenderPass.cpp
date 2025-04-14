@@ -106,7 +106,7 @@ void FGizmoRenderPass::PrepareRenderState() const
     TArray<FString> PSBufferKeys = {
                                   TEXT("FPerObjectConstantBuffer"),
                                    TEXT("FMaterialConstants"),
-                                  TEXT("FLitUnlitConstants")
+                                  TEXT("FFlagConstants")
     };
 
     BufferManager->BindConstantBuffers(PSBufferKeys, 0, EShaderStage::Pixel);

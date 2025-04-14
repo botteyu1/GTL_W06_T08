@@ -74,7 +74,7 @@ public:
     FFogRenderPass* FogRenderPass = nullptr;
     FEditorRenderPass* EditorRenderPass = nullptr;
 
-    bool IsSceneDepth = false;
+    //bool IsSceneDepth = false;
 };
 
 template<typename T>

@@ -52,7 +52,7 @@ cbuffer MaterialConstants : register(b3)
 }
 cbuffer FlagConstants : register(b4)
 {
-    bool IsLit;
+    int RenderFlag;
     float3 flagPad0;
 }
 
@@ -173,21 +173,36 @@ PS_OUTPUT mainPS(PS_INPUT input)
     
     float3 baseColor = DiffuseColor;
 
-    if (IsLit)
-    {
-        float3 lightRgb = Lighting(input.worldPos, Normal).rgb;
-        float3 litColor = baseColor * lightRgb;
-        output.color = float4(litColor, 1);
-    }
-    else
+    if (RenderFlag == 0)
     {
         output.color = float4(baseColor, 1);
-        
+        return output;
     }
+    // depth
+    else if (RenderFlag == 2)
+    {
+        output.color = float4(1, 1, 1, 1);
+        float z = input.position.z / input.position.w;
+        output.color = float4(z,z,z, 1);
+        return output;
+    }
+    // worldpos
+    else if (RenderFlag == 3)
+    {
+        output.color = float4(input.worldPos/100 + 0.5 , 1);
+        //output.color = float4(1, 1, 1, 1);
+        return output;
+    }
+    // normal
+    else if (RenderFlag == 4)
+    {
+        output.color = float4(Normal / 2 + 0.5, 1);
+        return output;
+    }
+    
     if (isSelected)
     {
         output.color += float4(0.02, 0.02, 0.02, 1);
-
     }
     return output;
 }

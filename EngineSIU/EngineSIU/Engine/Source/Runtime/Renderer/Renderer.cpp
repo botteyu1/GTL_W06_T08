@@ -53,10 +53,10 @@ void FRenderer::Release()
 void FRenderer::ChangeViewMode(EViewModeIndex evi)
 {
     StaticMeshRenderPass->ChangeViewMode(evi);
-    if (evi == EViewModeIndex::VMI_SceneDepth)
-        IsSceneDepth = true;
-    else
-        IsSceneDepth = false;
+    //if (evi == EViewModeIndex::VMI_SceneDepth)
+    //    IsSceneDepth = true;
+    //else
+    //    IsSceneDepth = false;
 }
 
 //------------------------------------------------------------------------------
@@ -85,8 +85,8 @@ void FRenderer::CreateConstantBuffers()
     UINT lightingBufferSize = sizeof(FSceneLightBuffer);
     BufferManager->CreateBufferGeneric<FSceneLightBuffer>("FSceneLightBuffer", nullptr, lightingBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
-    UINT litUnlitBufferSize = sizeof(FLitUnlitConstants);
-    BufferManager->CreateBufferGeneric<FLitUnlitConstants>("FLitUnlitConstants", nullptr, litUnlitBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+    UINT litUnlitBufferSize = sizeof(FFlagConstants);
+    BufferManager->CreateBufferGeneric<FFlagConstants>("FFlagConstants", nullptr, litUnlitBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT ScreenConstantsBufferSize = sizeof(FScreenConstants);
     BufferManager->CreateBufferGeneric<FScreenConstants>("FScreenConstants", nullptr, ScreenConstantsBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
@@ -131,17 +131,17 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     BillboardRenderPass->Render(Viewport);
     
 
-    if (IsSceneDepth)
-    {
-        DepthBufferDebugPass->RenderDepthBuffer(Viewport);
-    }
+    //if (IsSceneDepth)
+    //{
+    //    DepthBufferDebugPass->RenderDepthBuffer(Viewport);
+    //}
 
-    if (!IsSceneDepth)
-    {
+    //if (!IsSceneDepth)
+    //{
         DepthBufferDebugPass->UpdateDepthBufferSRV();
         
         FogRenderPass->RenderFog(Viewport, DepthBufferDebugPass->GetDepthSRV());
-    }
+    //}
     //LineRenderPass->Render(ActiveViewport);
     if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
     {
