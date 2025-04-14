@@ -270,7 +270,23 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
 
         if (ImGui::Button("Recompile(P)"))
         {
-            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, false);
+
+            EViewModeIndex mode = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMode();
+            switch (mode)
+            {
+            case VMI_LitGouraud:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, true);
+                break;
+            case VMI_LitLambert:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 1, 0, true);
+                break;
+            case VMI_LitBlinnPhong:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 0, 1, true);
+                break;
+            default:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, true);
+                break;
+            }
         }
         static bool IsAutoUpdate = false;
         if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))

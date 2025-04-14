@@ -145,8 +145,8 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
     //LineRenderPass->Render(ActiveViewport);
     if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
     {
-        GizmoRenderPass->Render(ActiveViewport);
         EditorRenderPass->Render(ActiveViewport);
+        GizmoRenderPass->Render(ActiveViewport);
     }
     ClearRenderArr();
 }
