@@ -92,7 +92,7 @@ private:
     const uint32 ConstantBufferSizeAABB = 8;
     const uint32 ConstantBufferSizeSphere = 1;
     const uint32 ConstantBufferSizeCone = 2;
-    const uint32 NumSegments = 64; // hlsl에서도 수정필요
+    const uint32 NumSegments = 16; // Shaderconstants.h의 defines[]에서도 수정필요
     FConstantBufferDebugGrid CurrentGridSettings;
 
     const std::wstring ShaderPath = L"Shaders/EditorShader.hlsl";
