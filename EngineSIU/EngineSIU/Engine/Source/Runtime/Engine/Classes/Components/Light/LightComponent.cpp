@@ -16,11 +16,25 @@ UObject* ULightComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 
-    NewComponent->Intensity = this->Intensity;
-    NewComponent->LightColor = this->LightColor;
-    NewComponent->bVisible = this->bVisible;
+    NewComponent->AABB = AABB;
     
     return NewComponent;
+}
+
+void ULightComponent::GetProperties(TMap<FString, FString>& OutProperties) const
+{
+    Super::GetProperties(OutProperties);
+    OutProperties.Add(TEXT("AABB_min"), AABB.min.ToString());
+    OutProperties.Add(TEXT("AABB_max"), AABB.max.ToString());
+}
+
+void ULightComponent::SetProperties(const TMap<FString, FString>& InProperties)
+{
+    Super::SetProperties(InProperties);
+    const FString* AABBminStr = InProperties.Find(TEXT("AABB_min"));
+    if (AABBminStr) AABB.min.InitFromString(*AABBminStr);
+    const FString* AABBmaxStr = InProperties.Find(TEXT("AABB_max"));
+    if (AABBmaxStr) AABB.max.InitFromString(*AABBmaxStr);
 }
 
 void ULightComponent::InitializeLight()
