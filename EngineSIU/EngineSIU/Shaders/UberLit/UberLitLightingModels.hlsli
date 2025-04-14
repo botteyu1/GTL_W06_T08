@@ -53,6 +53,8 @@ void CalculateSpotLight(float3 SpotLightDirection, float3 LightPosition, float3 
     float ConeAttenuation = saturate((CosAngle - Outer) / (Inner - Outer));
     ConeAttenuation = pow(ConeAttenuation, Falloff);
 
+
+    
     EffectiveLightDirection = LightDirection;
-    FinalAttenuation = Attenuation * ConeAttenuation;
+    FinalAttenuation = (CosAngle < 0.0f) ? 0.0 : Attenuation * ConeAttenuation;
 }
