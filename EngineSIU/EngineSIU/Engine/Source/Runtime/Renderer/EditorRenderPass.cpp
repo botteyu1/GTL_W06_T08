@@ -455,7 +455,7 @@ void FEditorRenderPass::CreateBuffers()
     // xz plane
     //float deltaAngle = 2.0f * 3.1415926535897932f / (float)NumSegments;
     //float offsetAngle = deltaAngle * NumSegments / 8; // 45도 부터 시작
-    for (int i = 0; i < NumSegments/4 + 1; i++)
+    for (int i = 0; i < NumSegments + 1; i++)
     {
         //float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
         //float x = cos(angle) * sqrt(2.f);
@@ -465,13 +465,13 @@ void FEditorRenderPass::CreateBuffers()
         ConeVertices.Add({ x, 0, z });
     }
     uint32 vertexOffset1 = NumSegments + vertexOffset0;
-    for (int i = 0; i < NumSegments/4; i++)
+    for (int i = 0; i < NumSegments; i++)
     {
         ConeIndices.Add(vertexOffset1 + i);
         ConeIndices.Add(vertexOffset1 + (i + 1));
     }
     // yz plane
-    for (int i = 0; i < NumSegments / 4 + 1; i++)
+    for (int i = 0; i < NumSegments + 1; i++)
     {
         //float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
         //float y = cos(angle) * sqrt(2.f);
@@ -480,8 +480,8 @@ void FEditorRenderPass::CreateBuffers()
         float z = 0;
         ConeVertices.Add({ 0, y, z });
     }
-    uint32 vertexOffset2 = NumSegments / 4 + 1 + vertexOffset1;
-    for (int i = 0; i < NumSegments / 4; i++)
+    uint32 vertexOffset2 = NumSegments + 1 + vertexOffset1;
+    for (int i = 0; i < NumSegments; i++)
     {
         ConeIndices.Add(vertexOffset2 + i);
         ConeIndices.Add(vertexOffset2 + (i + 1));
@@ -500,7 +500,7 @@ void FEditorRenderPass::CreateBuffers()
     hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Cone.Vertex);
 
     bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.ByteWidth = ConeIndices.Num() * sizeof(FVector);
+    bufferDesc.ByteWidth = ConeIndices.Num() * sizeof(UINT);
 
     initData.pSysMem = ConeIndices.GetData();
 
@@ -694,7 +694,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
 
     RenderAABBInstanced();
     RenderPointlightInstanced();
-    //RenderSpotlightInstanced();
+    RenderSpotlightInstanced();
     RenderAxis();
     RenderGrid(ActiveViewport);
 
@@ -1009,11 +1009,11 @@ void FEditorRenderPass::RenderSpotlightInstanced()
         b.ApexPosiiton = SpotComp->GetWorldLocation();
         b.Radius = SpotComp->GetAttenuationRadius();
         b.Direction = SpotComp->GetForwardVector();
-        b.Angle = SpotComp->GetInnerConeAngle();
+        b.Angle = FMath::DegreesToRadians(SpotComp->GetInnerConeAngle());
         b.Color = InnerColor;
         BufferAll.Add(b);
 
-        b.Angle = SpotComp->GetOuterConeAngle();
+        b.Angle = FMath::DegreesToRadians(SpotComp->GetOuterConeAngle());
         b.Color = OuterColor;
         BufferAll.Add(b);
     }
@@ -1039,7 +1039,7 @@ void FEditorRenderPass::RenderSpotlightInstanced()
         if (SubBuffer.Num() > 0)
         {
             UdpateConstantbufferSpotlightInstanced(SubBuffer);
-            DeviceContext->DrawIndexedInstanced(Resources.Primitives.Cone.NumIndices, 1, 0, 0, 0);
+            DeviceContext->DrawIndexedInstanced(Resources.Primitives.Cone.NumIndices, 2, 0, 0, 0);
         }
     }
 }

@@ -215,19 +215,19 @@ PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint vertexID : SV_VertexID, uint insta
         localPos3 = localPos3 * float3(1.f, cos(SegmentAngle), sin(SegmentAngle));
     }
     // xz plane의 구
-    else if (vertexID < NUM_SEGMENTS + 1 + NUM_SEGMENTS / 4 + 1)
+    else if (vertexID < NUM_SEGMENTS + 1 + NUM_SEGMENTS + 1)
     {
         SegmentIndex = (vertexID - (NUM_SEGMENTS + 1));
-        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS / 4) * (2 * Angle);
+        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS) * (2 * Angle);
         float angleOffset = -Angle;
         localPos3 = float3(cos(angleOffset + SegmentAngle), 0, sin(angleOffset + SegmentAngle));
         localPos3 = localPos3 * float3(radius, radius, radius) * 1;
     }
     // yz plane의 구
-    else if (vertexID < NUM_SEGMENTS + 1 + 2 * (NUM_SEGMENTS / 4 + 1))
+    else if (vertexID < NUM_SEGMENTS + 1 + 2 * (NUM_SEGMENTS + 1))
     {
-        SegmentIndex = (vertexID - (NUM_SEGMENTS + 1 + NUM_SEGMENTS / 4 + 1));
-        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS / 4) * (2 * Angle);
+        SegmentIndex = (vertexID - (NUM_SEGMENTS + 1 + NUM_SEGMENTS + 1));
+        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS) * (2 * Angle);
         float angleOffset = -Angle;
         localPos3 = float3(cos(angleOffset + SegmentAngle), sin(angleOffset + SegmentAngle), 0);
         localPos3 = localPos3 * float3(radius, radius, radius) * 1;
