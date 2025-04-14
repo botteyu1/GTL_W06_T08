@@ -562,13 +562,26 @@ void FLoaderOBJ::CalculateTangent(FStaticMeshVertex& PivotVertex, const FStaticM
     const float t1 = Vertex1.V - PivotVertex.V;
     const float s2 = Vertex2.U - PivotVertex.U;
     const float t2 = Vertex2.V - PivotVertex.V;
+
+    float denominator = (s1 * t2 - s2 * t1);
+    if (FMath::Abs(denominator) < SMALL_NUMBER)
+    {
+        // 유효하지 않은 경우, 기본값을 사용하거나 생략
+        PivotVertex.TangentX = 1.f;
+        PivotVertex.TangentY = 0.f;
+        PivotVertex.TangentZ = 0.f;
+        return;
+    }
+
+    const float f = 1.f / denominator;
+    
     const float E1x = Vertex1.X - PivotVertex.X;
     const float E1y = Vertex1.Y - PivotVertex.Y;
     const float E1z = Vertex1.Z - PivotVertex.Z;
     const float E2x = Vertex2.X - PivotVertex.X;
     const float E2y = Vertex2.Y - PivotVertex.Y;
     const float E2z = Vertex2.Z - PivotVertex.Z;
-    const float f = 1.f / (s1 * t2 - s2 * t1);
+
     const float Tx = f * (t2 * E1x - t1 * E2x);
     const float Ty = f * (t2 * E1y - t1 * E2y);
     const float Tz = f * (t2 * E1z - t1 * E2z);
