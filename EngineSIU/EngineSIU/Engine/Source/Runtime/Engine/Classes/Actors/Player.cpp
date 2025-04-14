@@ -42,7 +42,7 @@ void AEditorPlayer::Input()
 
             //    UE_LOG(LogLevel::Display, *obj->GetName());
             //}
-            ScreenToClient(GEngineLoop.hWnd, &mousePos);
+            ScreenToClient(GEngineLoop.AppWnd, &mousePos);
 
             FVector pickPosition;
 
@@ -68,96 +68,53 @@ void AEditorPlayer::Input()
             ActiveViewport->SetPickedGizmoComponent(nullptr);
         }
     }
-    if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-    {
-        if (!bSpaceDown)
-        {
-            AddControlMode();
-            bSpaceDown = true;
-        }
-    }
-    else
-    {
-        if (bSpaceDown)
-        {
-            bSpaceDown = false;
-        }
-    }
-    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
-    {
-        if (!bRightMouseDown)
-        {
-            bRightMouseDown = true;
-        }
-    }
-    else
-    {
-        bRightMouseDown = false;
 
-        if (GetAsyncKeyState('Q') & 0x8000)
-        {
-            //GetWorld()->SetPickingObj(nullptr);
-        }
-        if (GetAsyncKeyState('W') & 0x8000)
-        {
-            cMode = CM_TRANSLATION;
-        }
-        if (GetAsyncKeyState('E') & 0x8000)
-        {
-            cMode = CM_ROTATION;
-        }
-        if (GetAsyncKeyState('R') & 0x8000)
-        {
-            cMode = CM_SCALE;
-        }
-    }
-
-    if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
-    {
-        if (!bDeleteDown)
-        {
-            UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-            if (Engine)
-            {
-                USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
-                AActor* SelectedActor = Engine->GetSelectedActor();
-
-                if (SelectedComponent)
-                {
-                    AActor* Owner = SelectedComponent->GetOwner();
-            
-                    if (Owner && Owner->GetRootComponent() != SelectedComponent)
-                    {
-                        UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedComponent->GetName());
-                        Engine->DeselectComponent(SelectedComponent);
-                        SelectedComponent->DestroyComponent();
-                    }
-                    else if (SelectedActor)
-                    {
-                        UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
-                        Engine->DeselectActor(SelectedActor);
-                        Engine->DeselectComponent(SelectedComponent);
-                        Engine->ActiveWorld->DestroyActor(SelectedActor);
-                    }
-                }
-                else if (SelectedActor)
-                {
-                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
-                    Engine->DeselectActor(SelectedActor);
-                    Engine->DeselectComponent(SelectedComponent);
-                    Engine->ActiveWorld->DestroyActor(SelectedActor);
-                }
-            }
-            bDeleteDown = true;
-        }
-    }
-    else
-    {
-        if (bDeleteDown)
-        {
-            bDeleteDown = false;
-        }
-    }
+    //if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
+    //{
+    //    if (!bDeleteDown)
+    //    {
+    //        UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    //        if (Engine)
+    //        {
+    //            USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+    //            AActor* SelectedActor = Engine->GetSelectedActor();
+    //
+    //            if (SelectedComponent)
+    //            {
+    //                AActor* Owner = SelectedComponent->GetOwner();
+    //        
+    //                if (Owner && Owner->GetRootComponent() != SelectedComponent)
+    //                {
+    //                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedComponent->GetName());
+    //                    Engine->DeselectComponent(SelectedComponent);
+    //                    SelectedComponent->DestroyComponent();
+    //                }
+    //                else if (SelectedActor)
+    //                {
+    //                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
+    //                    Engine->DeselectActor(SelectedActor);
+    //                    Engine->DeselectComponent(SelectedComponent);
+    //                    Engine->ActiveWorld->DestroyActor(SelectedActor);
+    //                }
+    //            }
+    //            else if (SelectedActor)
+    //            {
+    //                UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
+    //                Engine->DeselectActor(SelectedActor);
+    //                Engine->DeselectComponent(SelectedComponent);
+    //                Engine->ActiveWorld->DestroyActor(SelectedActor);
+    //            }
+    //        }
+    //        bDeleteDown = true;
+    //    }
+    //}
+    //else
+    //{
+    //    if (bDeleteDown)
+    //    {
+    //        bDeleteDown = false;
+    //    }
+    //}
 }
 
 void AEditorPlayer::ProcessGizmoIntersection(UStaticMeshComponent* iter, const FVector& pickPosition, FEditorViewportClient* InActiveViewport, bool& isPickedGizmo)
@@ -376,6 +333,21 @@ int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneCompon
         FVector rayDirection = (transformedPick - pickRayOrigin).GetSafeNormal();
         
         intersectCount = obj->CheckRayIntersection(pickRayOrigin, rayDirection, hitDistance);
+
+        if (intersectCount > 0)
+        {
+            FVector LocalHitPoint = pickRayOrigin + rayDirection * hitDistance;
+
+            FVector WorldHitPoint = WorldMatrix.TransformPosition(LocalHitPoint);
+
+            FVector WorldRayOrigin;
+            FMatrix InverseView = FMatrix::Inverse(ViewMatrix);
+            WorldRayOrigin = InverseView.TransformPosition(cameraOrigin);
+
+            float WorldDistance = FVector::Distance(WorldRayOrigin, WorldHitPoint);
+
+            hitDistance = WorldDistance;
+        }
         return intersectCount;
     }
 }

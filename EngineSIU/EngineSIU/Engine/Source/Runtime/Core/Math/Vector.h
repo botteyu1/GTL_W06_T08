@@ -57,6 +57,9 @@ public:
         return *this;
     }
 
+    bool operator==(const FVector2D& Vector2D) const = default;
+    bool operator!=(const FVector2D& Vector2D) const = default;
+
     /**
     * Get a textual representation of the vector.
     *
