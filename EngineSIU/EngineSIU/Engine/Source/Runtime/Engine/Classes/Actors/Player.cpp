@@ -68,53 +68,6 @@ void AEditorPlayer::Input()
             ActiveViewport->SetPickedGizmoComponent(nullptr);
         }
     }
-
-    //if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
-    //{
-    //    if (!bDeleteDown)
-    //    {
-    //        UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-    //        if (Engine)
-    //        {
-    //            USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
-    //            AActor* SelectedActor = Engine->GetSelectedActor();
-    //
-    //            if (SelectedComponent)
-    //            {
-    //                AActor* Owner = SelectedComponent->GetOwner();
-    //        
-    //                if (Owner && Owner->GetRootComponent() != SelectedComponent)
-    //                {
-    //                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedComponent->GetName());
-    //                    Engine->DeselectComponent(SelectedComponent);
-    //                    SelectedComponent->DestroyComponent();
-    //                }
-    //                else if (SelectedActor)
-    //                {
-    //                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
-    //                    Engine->DeselectActor(SelectedActor);
-    //                    Engine->DeselectComponent(SelectedComponent);
-    //                    Engine->ActiveWorld->DestroyActor(SelectedActor);
-    //                }
-    //            }
-    //            else if (SelectedActor)
-    //            {
-    //                UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
-    //                Engine->DeselectActor(SelectedActor);
-    //                Engine->DeselectComponent(SelectedComponent);
-    //                Engine->ActiveWorld->DestroyActor(SelectedActor);
-    //            }
-    //        }
-    //        bDeleteDown = true;
-    //    }
-    //}
-    //else
-    //{
-    //    if (bDeleteDown)
-    //    {
-    //        bDeleteDown = false;
-    //    }
-    //}
 }
 
 void AEditorPlayer::ProcessGizmoIntersection(UStaticMeshComponent* iter, const FVector& pickPosition, FEditorViewportClient* InActiveViewport, bool& isPickedGizmo)

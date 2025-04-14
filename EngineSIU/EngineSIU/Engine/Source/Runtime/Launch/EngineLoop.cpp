@@ -5,80 +5,11 @@
 #include "D3D11RHI/GraphicDevice.h"
 #include "Engine/EditorEngine.h"
 #include "LevelEditor/SLevelEditor.h"
-#include "Slate/Widgets/Layout/SSplitter.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
-#include "World/World.h"
 
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-//static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-//{
-//    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
-//    {
-//        return true;
-//    }
-//    int zDelta;
-//    switch (message)
-//    {
-//    case WM_DESTROY:
-//        PostQuitMessage(0);
-//        break;
-//    case WM_SIZE:
-//        if (wParam != SIZE_MINIMIZED)
-//        {
-//            auto LevelEditor = GEngineLoop.GetLevelEditor();
-//            if (LevelEditor)
-//            {
-//                FEngineLoop::GraphicDevice.OnResize(hWnd);
-//                //UGraphicsDevice 객체의 OnResize 함수 호출
-//                LevelEditor->ResizeLevelEditor();
-//            }
-//        }
-//        Console::GetInstance().OnResize(hWnd);
-//        // ControlPanel::GetInstance().OnResize(hWnd);
-//        // PropertyPanel::GetInstance().OnResize(hWnd);
-//        // Outliner::GetInstance().OnResize(hWnd);
-//        // ViewModeDropdown::GetInstance().OnResize(hWnd);
-//        // ShowFlags::GetInstance().OnResize(hWnd);
-//        if (GEngineLoop.GetUnrealEditor())
-//        {
-//            GEngineLoop.GetUnrealEditor()->OnResize(hWnd);
-//        }
-//        break;
-//    case WM_MOUSEWHEEL:
-//        if (ImGui::GetIO().WantCaptureMouse)
-//            return 0;
-//        zDelta = GET_WHEEL_DELTA_WPARAM(wParam); // 휠 회전 값 (+120 / -120)
-//        if (GEngineLoop.GetLevelEditor())
-//        {
-//            auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
-//            if (FocusedViewportClient->IsPerspective())
-//            {
-//                if (FocusedViewportClient->GetIsOnRBMouseClick())
-//                {
-//                    FocusedViewportClient->SetCameraSpeedScalar(
-//                        static_cast<float>(FocusedViewportClient->GetCameraSpeedScalar() + zDelta * 0.01)
-//                    );
-//                }
-//                else
-//                {
-//                    FocusedViewportClient->CameraMoveForward(zDelta * 0.1f);
-//                }
-//            }
-//            else
-//            {
-//                FEditorViewportClient::SetOthoSize(-zDelta * 0.01f);
-//            }
-//        }
-//        break;
-//    default:
-//        return DefWindowProc(hWnd, message, wParam, lParam);
-//    }
-//
-//    return 0;
-//}
 
 FGraphicsDevice FEngineLoop::GraphicDevice;
 FRenderer FEngineLoop::Renderer;
@@ -130,7 +61,7 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     LevelEditor->Initialize();
 
     UnrealEditor = new UnrealEd();
-    UnrealEditor->Initialize(hWnd);
+    UnrealEditor->Initialize(AppWnd);
     
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
@@ -300,7 +231,6 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
         {
             GEngineLoop.GetUnrealEditor()->OnResize(hWnd);
         }
-        ViewportTypePanel::GetInstance().OnResize(hWnd);
         break;
     default:
         GEngineLoop.AppMessageHandler->ProcessMessage(hWnd, Msg, wParam, lParam);

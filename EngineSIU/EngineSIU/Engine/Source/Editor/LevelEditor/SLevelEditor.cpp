@@ -66,12 +66,6 @@ void SLevelEditor::Initialize()
             break;
         }
 
-//        GetFocusedViewportClient()->Input();
-//for (auto const& Viewport : ViewportClients)
-//{
-//    Viewport->Tick(deltaTime);
-//}
-
         // 마우스 이벤트가 일어난 위치의 뷰포트를 선택
         if (bMultiViewportMode)
         {
@@ -107,25 +101,7 @@ void SLevelEditor::Initialize()
                 ResizeViewports();
             }
         }
-
-        //if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
-        //{
-        //    if (!bRButtonDown)
-        //    {
-        //        bRButtonDown = true;
-        //        POINT pt;
-        //        GetCursorPos(&pt);
-        //        GetCursorPos(&lastMousePos);
-        //        ScreenToClient(GEngineLoop.hWnd, &pt);
-        //
-        //        SelectViewport(pt);
-        //    }
-        //}
-        //else
-        //{
-        //    bRButtonDown = false;
-        //}
-
+        
         // 멀티 뷰포트일 때, 커서 변경 로직
         if (
             bMultiViewportMode
@@ -192,6 +168,8 @@ void SLevelEditor::Initialize()
 
     Handler->OnRawMouseInputDelegate.AddLambda([this](const FPointerEvent& InMouseEvent)
     {
+        auto FocusedViewportClient = GetFocusedViewportClient();
+        
         // Mouse Move 이벤트 일때만 실행
         if (
             InMouseEvent.GetInputEvent() == IE_Axis
@@ -201,7 +179,7 @@ void SLevelEditor::Initialize()
             // 에디터 카메라 이동 로직
             if (bIsPressedMouseRightButton)
             {
-                ActiveViewportClient->MouseMove(InMouseEvent);
+                FocusedViewportClient->MouseMove(InMouseEvent);
             }
         }
 
@@ -209,12 +187,12 @@ void SLevelEditor::Initialize()
         else if (InMouseEvent.GetEffectingButton() == EKeys::MouseWheelAxis)
         {
             // 카메라 속도 조절
-            if (bIsPressedMouseRightButton && ActiveViewportClient->IsPerspective())
+            if (bIsPressedMouseRightButton && FocusedViewportClient->IsPerspective())
             {
-                const float CurrentSpeed = ActiveViewportClient->GetCameraSpeedScalar();
+                const float CurrentSpeed = FocusedViewportClient->GetCameraSpeedScalar();
                 const float Adjustment = FMath::Sign(InMouseEvent.GetWheelDelta()) * FMath::Loge(CurrentSpeed + 1.0f) * 0.5f;
 
-                ActiveViewportClient->SetCameraSpeedScalar(CurrentSpeed + Adjustment);
+                FocusedViewportClient->SetCameraSpeedScalar(CurrentSpeed + Adjustment);
             }
         }
     });
@@ -223,14 +201,16 @@ void SLevelEditor::Initialize()
     {
         if (ImGui::GetIO().WantCaptureMouse) return;
 
+        auto FocusedViewportClient = GetFocusedViewportClient();
+        
         // 뷰포트에서 앞뒤 방향으로 화면 이동
-        if (ActiveViewportClient->IsPerspective())
+        if (FocusedViewportClient->IsPerspective())
         {
             if (!bIsPressedMouseRightButton)
             {
-                const FVector CameraLoc = ActiveViewportClient->ViewTransformPerspective.GetLocation();
-                const FVector CameraForward = ActiveViewportClient->ViewTransformPerspective.GetForwardVector();
-                ActiveViewportClient->ViewTransformPerspective.SetLocation(
+                const FVector CameraLoc = FocusedViewportClient->ViewTransformPerspective.GetLocation();
+                const FVector CameraForward = FocusedViewportClient->ViewTransformPerspective.GetForwardVector();
+                FocusedViewportClient->ViewTransformPerspective.SetLocation(
                     CameraLoc + CameraForward * InMouseEvent.GetWheelDelta() * 50.0f
                 );
             }
@@ -243,12 +223,12 @@ void SLevelEditor::Initialize()
 
     Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& InKeyEvent)
     {
-        ActiveViewportClient->InputKey(InKeyEvent);
+        GetFocusedViewportClient()->InputKey(InKeyEvent);
     });
 
     Handler->OnKeyUpDelegate.AddLambda([this](const FKeyEvent& InKeyEvent)
     {
-        ActiveViewportClient->InputKey(InKeyEvent);
+        GetFocusedViewportClient()->InputKey(InKeyEvent);
     });
 }
 

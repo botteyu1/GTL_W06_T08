@@ -1,6 +1,7 @@
 #pragma once
 #include "Container/Array.h"
 #include "Container/Map.h"
+#include "Math/Vector.h"
 
 
 class FEditorViewportClient;

@@ -189,25 +189,24 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
     return nIntersections;
 }
 
-
-//void UStaticMeshComponent::UpdateAABB()
-//{
-//    if (staticMesh == nullptr)
-//        return;
-//    FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
-//    FVector max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-//    for (const FStaticMeshVertex& Vertex : staticMesh->GetRenderData()->Vertices)
-//    {
-//        FVector VertexWorld = FVector(Vertex.X, Vertex.Y, Vertex.Z);
-//        VertexWorld = GetWorldMatrix().TransformPosition(VertexWorld);
-//        min.X = std::min(min.X, VertexWorld.X);
-//        min.Y = std::min(min.Y, VertexWorld.Y);
-//        min.Z = std::min(min.Z, VertexWorld.Z);
-//        max.X = std::max(max.X, VertexWorld.X);
-//        max.Y = std::max(max.Y, VertexWorld.Y);
-//        max.Z = std::max(max.Z, VertexWorld.Z);
-//    }
-//    WorldBoundingBox.max = max;
-//    WorldBoundingBox.min = min;
-//}
+void UStaticMeshComponent::UpdateAABB()
+{
+    if (staticMesh == nullptr)
+        return;
+    FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+    FVector max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+    for (const FStaticMeshVertex& Vertex : staticMesh->GetRenderData()->Vertices)
+    {
+        FVector VertexWorld = FVector(Vertex.X, Vertex.Y, Vertex.Z);
+        VertexWorld = GetWorldMatrix().TransformPosition(VertexWorld);
+        min.X = std::min(min.X, VertexWorld.X);
+        min.Y = std::min(min.Y, VertexWorld.Y);
+        min.Z = std::min(min.Z, VertexWorld.Z);
+        max.X = std::max(max.X, VertexWorld.X);
+        max.Y = std::max(max.Y, VertexWorld.Y);
+        max.Z = std::max(max.Z, VertexWorld.Z);
+    }
+    WorldBoundingBox.max = max;
+    WorldBoundingBox.min = min;
+}
 

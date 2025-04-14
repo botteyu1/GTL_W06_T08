@@ -10,7 +10,6 @@
 
 #include "UObject/ObjectFactory.h"
 #include "BaseGizmos/TransformGizmo.h"
-#include "Engine/EditorEngine.h"
 #include "Engine/Engine.h"
 #include "Math/JungleMath.h"
 
@@ -107,77 +106,77 @@ void FEditorViewportClient::InputKey(const FKeyEvent& InKeyEvent)
         switch (InKeyEvent.GetCharacter())
         {
         case 'A':
-        {
-            if (InKeyEvent.GetInputEvent() == IE_Pressed)
             {
-                PressedKeys.Add(EKeys::A);
+                if (InKeyEvent.GetInputEvent() == IE_Pressed)
+                {
+                    PressedKeys.Add(EKeys::A);
+                }
+                else if (InKeyEvent.GetInputEvent() == IE_Released)
+                {
+                    PressedKeys.Remove(EKeys::A);
+                }
+                break;
             }
-            else if (InKeyEvent.GetInputEvent() == IE_Released)
-            {
-                PressedKeys.Remove(EKeys::A);
-            }
-            break;
-        }
         case 'D':
-        {
-            if (InKeyEvent.GetInputEvent() == IE_Pressed)
             {
-                PressedKeys.Add(EKeys::D);
+                if (InKeyEvent.GetInputEvent() == IE_Pressed)
+                {
+                    PressedKeys.Add(EKeys::D);
+                }
+                else if (InKeyEvent.GetInputEvent() == IE_Released)
+                {
+                    PressedKeys.Remove(EKeys::D);
+                }
+                break;
             }
-            else if (InKeyEvent.GetInputEvent() == IE_Released)
-            {
-                PressedKeys.Remove(EKeys::D);
-            }
-            break;
-        }
         case 'W':
-        {
-            if (InKeyEvent.GetInputEvent() == IE_Pressed)
             {
-                PressedKeys.Add(EKeys::W);
+                if (InKeyEvent.GetInputEvent() == IE_Pressed)
+                {
+                    PressedKeys.Add(EKeys::W);
+                }
+                else if (InKeyEvent.GetInputEvent() == IE_Released)
+                {
+                    PressedKeys.Remove(EKeys::W);
+                }
+                break;
             }
-            else if (InKeyEvent.GetInputEvent() == IE_Released)
-            {
-                PressedKeys.Remove(EKeys::W);
-            }
-            break;
-        }
         case 'S':
-        {
-            if (InKeyEvent.GetInputEvent() == IE_Pressed)
             {
-                PressedKeys.Add(EKeys::S);
+                if (InKeyEvent.GetInputEvent() == IE_Pressed)
+                {
+                    PressedKeys.Add(EKeys::S);
+                }
+                else if (InKeyEvent.GetInputEvent() == IE_Released)
+                {
+                    PressedKeys.Remove(EKeys::S);
+                }
+                break;
             }
-            else if (InKeyEvent.GetInputEvent() == IE_Released)
-            {
-                PressedKeys.Remove(EKeys::S);
-            }
-            break;
-        }
         case 'E':
-        {
-            if (InKeyEvent.GetInputEvent() == IE_Pressed)
             {
-                PressedKeys.Add(EKeys::E);
+                if (InKeyEvent.GetInputEvent() == IE_Pressed)
+                {
+                    PressedKeys.Add(EKeys::E);
+                }
+                else if (InKeyEvent.GetInputEvent() == IE_Released)
+                {
+                    PressedKeys.Remove(EKeys::E);
+                }
+                break;
             }
-            else if (InKeyEvent.GetInputEvent() == IE_Released)
-            {
-                PressedKeys.Remove(EKeys::E);
-            }
-            break;
-        }
         case 'Q':
-        {
-            if (InKeyEvent.GetInputEvent() == IE_Pressed)
             {
-                PressedKeys.Add(EKeys::Q);
+                if (InKeyEvent.GetInputEvent() == IE_Pressed)
+                {
+                    PressedKeys.Add(EKeys::Q);
+                }
+                else if (InKeyEvent.GetInputEvent() == IE_Released)
+                {
+                    PressedKeys.Remove(EKeys::Q);
+                }
+                break;
             }
-            else if (InKeyEvent.GetInputEvent() == IE_Released)
-            {
-                PressedKeys.Remove(EKeys::Q);
-            }
-            break;
-        }
         default:
             break;
         }
@@ -188,20 +187,20 @@ void FEditorViewportClient::InputKey(const FKeyEvent& InKeyEvent)
         switch (InKeyEvent.GetCharacter())
         {
         case 'W':
-        {
-            EdPlayer->SetMode(CM_TRANSLATION);
-            break;
-        }
+            {
+                EdPlayer->SetMode(CM_TRANSLATION);
+                break;
+            }
         case 'E':
-        {
-            EdPlayer->SetMode(CM_ROTATION);
-            break;
-        }
+            {
+                EdPlayer->SetMode(CM_ROTATION);
+                break;
+            }
         case 'R':
-        {
-            EdPlayer->SetMode(CM_SCALE);
-            break;
-        }
+            {
+                EdPlayer->SetMode(CM_SCALE);
+                break;
+            }
         default:
             break;
         }
@@ -215,52 +214,86 @@ void FEditorViewportClient::InputKey(const FKeyEvent& InKeyEvent)
         switch (InKeyEvent.GetCharacter())
         {
         case 'F':
-        {
-            const UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-            if (const AActor* PickedActor = Engine->GetSelectedActor())
             {
-                FViewportCameraTransform& ViewTransform = ViewTransformPerspective;
-                ViewTransform.SetLocation(
-                    // TODO: 10.0f 대신, 정점의 min, max의 거리를 구해서 하면 좋을 듯
-                    PickedActor->GetActorLocation() - (ViewTransform.GetForwardVector() * 10.0f)
-                );
+                UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+                USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+                AActor* SelectedActor = Engine->GetSelectedActor();
+
+                USceneComponent* TargetComponent = nullptr;
+
+                if (SelectedComponent != nullptr)
+                {
+                    TargetComponent = SelectedComponent;
+                }
+                else if (SelectedActor != nullptr)
+                {
+                    TargetComponent = SelectedActor->GetRootComponent();
+                }
+        
+                if (TargetComponent)
+                {
+                    FViewportCameraTransform& ViewTransform = ViewTransformPerspective;
+                    ViewTransform.SetLocation(
+                        // TODO: 10.0f 대신, 정점의 min, max의 거리를 구해서 하면 좋을 듯
+                        TargetComponent->GetWorldLocation() - (ViewTransform.GetForwardVector() * 10.0f)
+                    );
+                }
+                break;
             }
-            break;
-        }
         case 'M':
-        {
-            FEngineLoop::GraphicDevice.OnResize(GEngineLoop.AppWnd);
-            SLevelEditor* LevelEd = GEngineLoop.GetLevelEditor();
-            LevelEd->SetEnableMultiViewport(!LevelEd->IsMultiViewport());
-            break;
-        }
+            {
+                FEngineLoop::GraphicDevice.OnResize(GEngineLoop.AppWnd);
+                SLevelEditor* LevelEd = GEngineLoop.GetLevelEditor();
+                LevelEd->SetEnableMultiViewport(!LevelEd->IsMultiViewport());
+                break;
+            }
         default:
             break;
         }
 
         // Virtual Key
         UEditorEngine* EdEngine = CastChecked<UEditorEngine>(GEngine);
-        switch (InKeyEvent.GetKeyCode())
-        {
-        case VK_DELETE:
-        {
-            if (AActor* SelectedActor = EdEngine->GetSelectedActor())
-            {
-                EdEngine->DeselectActor(SelectedActor);
-                GEngine->ActiveWorld->DestroyActor(SelectedActor);
-            }
-            break;
-        }
-        case VK_SPACE:
+        if (InKeyEvent.GetKeyCode() == VK_SPACE)
         {
             EdEngine->GetEditorPlayer()->AddControlMode();
-            break;
         }
-        default:
-            break;
+        // TODO: 임시 Delete, 위치 변경 필요
+        else if (((GetKeyState(VK_DELETE)) & 0x8000) && ((GetKeyState(VK_RSHIFT)) & 0x8000))
+        {
+            UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+            if (Engine)
+            {
+                USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
+                AActor* SelectedActor = Engine->GetSelectedActor();
+            
+                if (SelectedComponent)
+                {
+                    AActor* Owner = SelectedComponent->GetOwner();
+            
+                    if (Owner && Owner->GetRootComponent() != SelectedComponent)
+                    {
+                        UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedComponent->GetName());
+                        Engine->DeselectComponent(SelectedComponent);
+                        SelectedComponent->DestroyComponent();
+                    }
+                    else if (SelectedActor)
+                    {
+                        UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
+                        Engine->DeselectActor(SelectedActor);
+                        Engine->DeselectComponent(SelectedComponent);
+                        Engine->ActiveWorld->DestroyActor(SelectedActor);
+                    }
+                }
+                else if (SelectedActor)
+                {
+                    UE_LOG(LogLevel::Display, "Delete Component - %s", *SelectedActor->GetName());
+                    Engine->DeselectActor(SelectedActor);
+                    Engine->DeselectComponent(SelectedComponent);
+                    Engine->ActiveWorld->DestroyActor(SelectedActor);
+                }
+            }
         }
     }
-    return;
 }
 
 void FEditorViewportClient::MouseMove(const FPointerEvent& InMouseEvent)
@@ -276,34 +309,6 @@ void FEditorViewportClient::MouseMove(const FPointerEvent& InMouseEvent)
     {
         PivotMoveRight(DeltaX);
         PivotMoveUp(DeltaY);
-    }
-
-    // Focus Selected Actor
-    // if (GetAsyncKeyState('F') & 0x8000)
-    // {
-       //  UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        // USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
-        // AActor* SelectedActor = Engine->GetSelectedActor();
-
-        // USceneComponent* TargetComponent = nullptr;
-    
-        // if (SelectedComponent != nullptr)
-        // {
-           //  TargetComponent = SelectedComponent;
-        // }
-        // else if (SelectedActor != nullptr)
-        // {
-           //  TargetComponent = SelectedActor->GetRootComponent();
-        // }
-        // 
-        // if (TargetComponent)
-        // {
-        //     FViewportCameraTransform& ViewTransform = ViewTransformPerspective;
-        //     ViewTransform.SetLocation(
-        //         // TODO: 10.0f 대신, 정점의 min, max의 거리를 구해서 하면 좋을 듯
-        //         TargetComponent->GetWorldLocation() - (ViewTransform.GetForwardVector() * 10.0f)
-        //     );
-        // }
     }
 }
 
@@ -324,20 +329,7 @@ void FEditorViewportClient::ResizeViewport(FSlateRect Top, FSlateRect Bottom, FS
 
 bool FEditorViewportClient::IsSelected(const FVector2D& InPoint) const
 {
-    const float TopLeftX = Viewport->GetViewport().TopLeftX;
-    const float TopLeftY = Viewport->GetViewport().TopLeftY;
-    const float Width = Viewport->GetViewport().Width;
-    const float Height = Viewport->GetViewport().Height;
-
-    if (
-        InPoint.X >= TopLeftX
-        && InPoint.X <= TopLeftX + Width
-        && InPoint.Y >= TopLeftY
-        && InPoint.Y <= TopLeftY + Height
-    ) {
-        return true;
-    }
-    return false;
+    return Viewport->GetFSlateRect().Contains(InPoint);
 }
 
 
