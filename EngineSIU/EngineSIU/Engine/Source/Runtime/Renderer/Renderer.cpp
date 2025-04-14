@@ -118,35 +118,35 @@ void FRenderer::ClearRenderArr()
     FogRenderPass->ClearRenderArr();
 }
 
-void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewport)
+void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    Graphics->DeviceContext->RSSetViewports(1, &ActiveViewport->GetD3DViewport());
+    Graphics->DeviceContext->RSSetViewports(1, &Viewport->GetD3DViewport());
 
-    Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
+    Graphics->ChangeRasterizer(Viewport->GetViewMode());
 
-    // ChangeViewMode(ActiveViewport->GetViewMode());
+    // ChangeViewMode(Viewport->GetViewMode());
 
-    UpdateLightBufferPass->Render(ActiveViewport);
-    StaticMeshRenderPass->Render(ActiveViewport);
-    BillboardRenderPass->Render(ActiveViewport);
+    UpdateLightBufferPass->Render(Viewport);
+    StaticMeshRenderPass->Render(Viewport);
+    BillboardRenderPass->Render(Viewport);
     
 
     if (IsSceneDepth)
     {
-        DepthBufferDebugPass->RenderDepthBuffer(ActiveViewport);
+        DepthBufferDebugPass->RenderDepthBuffer(Viewport);
     }
 
     if (!IsSceneDepth)
     {
         DepthBufferDebugPass->UpdateDepthBufferSRV();
         
-        FogRenderPass->RenderFog(ActiveViewport, DepthBufferDebugPass->GetDepthSRV());
+        FogRenderPass->RenderFog(Viewport, DepthBufferDebugPass->GetDepthSRV());
     }
     //LineRenderPass->Render(ActiveViewport);
     if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
     {
-        EditorRenderPass->Render(ActiveViewport);
-        GizmoRenderPass->Render(ActiveViewport);
+        EditorRenderPass->Render(Viewport);
+        GizmoRenderPass->Render(Viewport);
     }
     ClearRenderArr();
 }

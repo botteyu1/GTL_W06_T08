@@ -1,12 +1,14 @@
 #include "SLevelEditor.h"
+
 #include <fstream>
-#include <ostream>
-#include <sstream>
-#include "EngineLoop.h"
+
 #include "UnrealClient.h"
 #include "Slate/Widgets/Layout/SSplitter.h"
-#include "SlateCore/Widgets/SWindow.h"
 #include "UnrealEd/EditorViewportClient.h"
+
+extern FEngineLoop GEngineLoop;
+
+#define VIEWPORTNUM 4
 
 SLevelEditor::SLevelEditor()
     : HSplitter(nullptr)
@@ -21,17 +23,19 @@ void SLevelEditor::Initialize()
     EditorWidth = FEngineLoop::GraphicDevice.screenWidth;
     EditorHeight = FEngineLoop::GraphicDevice.screenHeight;
     
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < VIEWPORTNUM; i++)
     {
-        ViewportClients[i] = std::make_shared<FEditorViewportClient>();
-        ViewportClients[i]->Initialize(i);
+        std::shared_ptr<FEditorViewportClient> EditorViewportClient = std::make_shared<FEditorViewportClient>();
+        EditorViewportClient->Initialize(i);
+        ViewportClients.Add(EditorViewportClient);
     }
-    ActiveViewportClient = ViewportClients[0];
+    FocusedIndex = 0;
+    
     VSplitter = new SSplitterV();
-    VSplitter->Initialize(FRect(0.0f, EditorHeight * 0.5f - 10, EditorHeight, 20));
+    VSplitter->Initialize(FSlateRect(0.0f, EditorHeight * 0.5f - 10, EditorHeight, 20));
     VSplitter->OnDrag(FPoint(0, 0));
     HSplitter = new SSplitterH();
-    HSplitter->Initialize(FRect(EditorWidth * 0.5f - 10, 0.0f, 20, EditorWidth));
+    HSplitter->Initialize(FSlateRect(EditorWidth * 0.5f - 10, 0.0f, 20, EditorWidth));
     HSplitter->OnDrag(FPoint(0, 0));
     LoadConfig();
 
@@ -56,8 +60,8 @@ void SLevelEditor::Tick(double deltaTime)
         Input();
     }
 
-    ActiveViewportClient->Input();
-    for (std::shared_ptr<FEditorViewportClient> Viewport : ViewportClients)
+    GetFocusedViewportClient()->Input();
+    for (auto const& Viewport : ViewportClients)
     {
         Viewport->Tick(deltaTime);
     }
@@ -102,11 +106,7 @@ void SLevelEditor::Input()
             if (VSplitter->IsPressing() || HSplitter->IsPressing())
             {
                 FEngineLoop::GraphicDevice.OnResize(GEngineLoop.hWnd);
-                ResizeViewports();
-                if (GEngineLoop.GetLevelEditor())
-                {
-                    GEngineLoop.GetLevelEditor()->ResizeLevelEditor();
-                }
+                ResizeLevelEditor();
             }
             lastMousePos = currentMousePos;
         }
@@ -145,11 +145,11 @@ void SLevelEditor::Release()
 
 void SLevelEditor::SelectViewport(POINT point)
 {
-    for (int i = 0; i < 4; i++)
+    for (const auto& ViewportClient : ViewportClients)
     {
-        if (ViewportClients[i]->IsSelected(point))
+        if (ViewportClient->IsSelected(point))
         {
-            SetViewportClient(i);
+            SetViewportClient(ViewportClient);
             break;
         }
     }
@@ -171,18 +171,17 @@ void SLevelEditor::ResizeLevelEditor()
 
 void SLevelEditor::ResizeViewports()
 {
-    if (bMultiViewportMode) {
-        if (GetViewports()[0]) {
-            for (int i = 0;i < 4;++i)
-            {
-                GetViewports()[i]->ResizeViewport(VSplitter->SideLT->Rect, VSplitter->SideRB->Rect,
-                    HSplitter->SideLT->Rect, HSplitter->SideRB->Rect);
-            }
+    if (bMultiViewportMode)
+    {
+        for (const auto& ViewportClient : ViewportClients)
+        {
+            ViewportClient->ResizeViewport(VSplitter->SideLT->Rect, VSplitter->SideRB->Rect,
+                HSplitter->SideLT->Rect, HSplitter->SideRB->Rect);
         }
     }
     else
     {
-        ActiveViewportClient->GetViewport()->ResizeViewport(FRect(0.0f, 0.0f, EditorWidth, EditorHeight));
+        GetFocusedViewportClient()->GetViewport()->ResizeViewport(FSlateRect(0.0f, 0.0f, EditorWidth, EditorHeight));
     }
 }
 
@@ -200,16 +199,16 @@ bool SLevelEditor::IsMultiViewport() const
 void SLevelEditor::LoadConfig()
 {
     auto config = ReadIniFile(IniFilePath);
-    ActiveViewportClient->Pivot.X = GetValueFromConfig(config, "OrthoPivotX", 0.0f);
-    ActiveViewportClient->Pivot.Y = GetValueFromConfig(config, "OrthoPivotY", 0.0f);
-    ActiveViewportClient->Pivot.Z = GetValueFromConfig(config, "OrthoPivotZ", 0.0f);
-    ActiveViewportClient->orthoSize = GetValueFromConfig(config, "OrthoZoomSize", 10.0f);
+    GetFocusedViewportClient()->Pivot.X = GetValueFromConfig(config, "OrthoPivotX", 0.0f);
+    GetFocusedViewportClient()->Pivot.Y = GetValueFromConfig(config, "OrthoPivotY", 0.0f);
+    GetFocusedViewportClient()->Pivot.Z = GetValueFromConfig(config, "OrthoPivotZ", 0.0f);
+    GetFocusedViewportClient()->orthoSize = GetValueFromConfig(config, "OrthoZoomSize", 10.0f);
 
     SetViewportClient(GetValueFromConfig(config, "ActiveViewportIndex", 0));
     bMultiViewportMode = GetValueFromConfig(config, "bMutiView", false);
-    for (size_t i = 0; i < 4; i++)
+    for (const auto& ViewportClient : ViewportClients)
     {
-        ViewportClients[i]->LoadConfig(config);
+        ViewportClient->LoadConfig(config);
     }
     if (HSplitter)
         HSplitter->LoadConfig(config);
@@ -225,19 +224,19 @@ void SLevelEditor::SaveConfig()
         HSplitter->SaveConfig(config);
     if (VSplitter)
         VSplitter->SaveConfig(config);
-    for (size_t i = 0; i < 4; i++)
+    for (const auto& ViewportClient : ViewportClients)
     {
-        ViewportClients[i]->SaveConfig(config);
+        ViewportClient->SaveConfig(config);
     }
-    ActiveViewportClient->SaveConfig(config);
+    GetFocusedViewportClient()->SaveConfig(config);
     config["bMutiView"] = std::to_string(bMultiViewportMode);
-    config["ActiveViewportIndex"] = std::to_string(ActiveViewportClient->ViewportIndex);
-    config["ScreenWidth"] = std::to_string(ActiveViewportClient->ViewportIndex);
-    config["ScreenHeight"] = std::to_string(ActiveViewportClient->ViewportIndex);
-    config["OrthoPivotX"] = std::to_string(ActiveViewportClient->Pivot.X);
-    config["OrthoPivotY"] = std::to_string(ActiveViewportClient->Pivot.Y);
-    config["OrthoPivotZ"] = std::to_string(ActiveViewportClient->Pivot.Z);
-    config["OrthoZoomSize"] = std::to_string(ActiveViewportClient->orthoSize);
+    config["ActiveViewportIndex"] = std::to_string(GetFocusedViewportClient()->ViewportIndex);
+    config["ScreenWidth"] = std::to_string(GetFocusedViewportClient()->ViewportIndex);
+    config["ScreenHeight"] = std::to_string(GetFocusedViewportClient()->ViewportIndex);
+    config["OrthoPivotX"] = std::to_string(GetFocusedViewportClient()->Pivot.X);
+    config["OrthoPivotY"] = std::to_string(GetFocusedViewportClient()->Pivot.Y);
+    config["OrthoPivotZ"] = std::to_string(GetFocusedViewportClient()->Pivot.Z);
+    config["OrthoZoomSize"] = std::to_string(GetFocusedViewportClient()->orthoSize);
     WriteIniFile(IniFilePath, config);
 }
 

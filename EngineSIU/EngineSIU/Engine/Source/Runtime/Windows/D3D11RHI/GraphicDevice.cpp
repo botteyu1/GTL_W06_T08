@@ -3,7 +3,8 @@
 #include <Components/ExponentialHeightFogComponent.h>
 #include <UObject/UObjectIterator.h>
 #include <Engine/Engine.h>
-#include "PropertyEditor/ShowFlags.h"
+
+#include "UnrealEd/EditorViewportClient.h"
 
 void FGraphicsDevice::Initialize(HWND hWindow)
 {

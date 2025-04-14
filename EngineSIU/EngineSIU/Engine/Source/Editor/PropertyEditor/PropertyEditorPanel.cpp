@@ -29,11 +29,11 @@ void PropertyEditorPanel::Render()
     }
     
     /* Pre Setup */
-    float PanelWidth = (Width) * 0.2f - 6.0f;
-    float PanelHeight = (Height) * 0.65f;
+    float PanelWidth = (Rect.GetWidth()) * 0.2f - 6.0f;
+    float PanelHeight = (Rect.GetHeight()) * 0.65f;
 
-    float PanelPosX = (Width) * 0.8f + 5.0f;
-    float PanelPosY = (Height) * 0.3f + 15.0f;
+    float PanelPosX = (Rect.GetWidth()) * 0.8f + 5.0f;
+    float PanelPosY = (Rect.GetHeight()) * 0.3f + 15.0f;
 
     ImVec2 MinSize(140, 370);
     ImVec2 MaxSize(FLT_MAX, 900);
@@ -802,8 +802,10 @@ void PropertyEditorPanel::OnResize(HWND hWnd)
 {
     RECT clientRect;
     GetClientRect(hWnd, &clientRect);
-    Width = clientRect.right - clientRect.left;
-    Height = clientRect.bottom - clientRect.top;
+    Rect.Left = clientRect.left;
+    Rect.Right = clientRect.right;
+    Rect.Top = clientRect.top;
+    Rect.Bottom = clientRect.bottom;
 }
 
 

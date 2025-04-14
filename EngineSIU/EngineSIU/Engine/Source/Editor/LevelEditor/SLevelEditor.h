@@ -1,13 +1,12 @@
 #pragma once
-#include <sstream>
-#include "Define.h"
+#include "Container/Array.h"
 #include "Container/Map.h"
 
-class SSplitterH;
-class SSplitterV;
-class UWorld;
-class FEditorViewportClient;
 
+class FEditorViewportClient;
+class UWorld;
+class SSplitterV;
+class SSplitterH;
 
 class SLevelEditor
 {
@@ -29,9 +28,10 @@ private:
     SSplitterH* HSplitter;
     SSplitterV* VSplitter;
     UWorld* World;
-    std::shared_ptr<FEditorViewportClient> ViewportClients[4];
-    std::shared_ptr<FEditorViewportClient> ActiveViewportClient;
+    TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients;
 
+    int32 FocusedIndex;
+    
     bool bLButtonDown = false;
     bool bRButtonDown = false;
     
@@ -42,19 +42,18 @@ private:
     float EditorHeight;
 
 public:
-    std::shared_ptr<FEditorViewportClient>* GetViewports() { return ViewportClients; }
-    std::shared_ptr<FEditorViewportClient> GetActiveViewportClient() const
+    inline TArray<std::shared_ptr<FEditorViewportClient>> GetViewportClients() { return ViewportClients; }
+    inline std::shared_ptr<FEditorViewportClient> GetFocusedViewportClient() const { return ViewportClients[FocusedIndex]; }
+
+    inline void SetViewportClient(const std::shared_ptr<FEditorViewportClient>& viewportClient)
     {
-        return ActiveViewportClient;
+        int32 FindIndex = ViewportClients.Find(viewportClient);
+        if (FindIndex != -1)
+        {
+            FocusedIndex = FindIndex;
+        }
     }
-    void SetViewportClient(const std::shared_ptr<FEditorViewportClient>& viewportClient)
-    {
-        ActiveViewportClient = viewportClient;
-    }
-    void SetViewportClient(int index)
-    {
-        ActiveViewportClient = ViewportClients[index];
-    }
+    inline void SetViewportClient(int index) { FocusedIndex = index; }
 
     //Save And Load
 private:
