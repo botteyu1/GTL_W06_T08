@@ -72,6 +72,7 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
     float3 ResultColor = float3(0, 0, 0);
     ResultColor += AmbientLight.Color * AmbientLight.Intensity;
     
+    
     float3 ViewDirection = normalize(CameraPosition - VertexPosition);
     
     /***********************

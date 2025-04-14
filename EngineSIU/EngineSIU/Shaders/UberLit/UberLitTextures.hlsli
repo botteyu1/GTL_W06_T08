@@ -9,4 +9,5 @@ Texture2D EmissiveTexture : register(t4);
 Texture2D RoughnessTexture : register(t5);
 Texture2D NormalTexture : register(t6);
 
+
 SamplerState Sampler : register(s0);

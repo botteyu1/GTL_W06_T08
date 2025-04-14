@@ -120,9 +120,12 @@ PS_OUT Uber_PS(VS_OUT Input)
 
     BaseColor *= Material.DiffuseColor.rgb;
 
+    
     float3 TotalColor = float3(0, 0, 0);
+    
     float3 DiffuseColor;
     float3 Direction;
+    
     float Attenuation;
 
 #if LIGHTING_MODEL_GOURAUD

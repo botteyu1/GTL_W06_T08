@@ -1,5 +1,6 @@
 #include "DXDShaderManager.h"
 #include "Define.h"
+#include "DXDInclude.h"
 
 
 FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
@@ -44,10 +45,14 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
     if (DXDDevice == nullptr)
         return S_FALSE;
 
+    
+    FDXDInclude includeManager(FileName);
+
     ID3DBlob* PsBlob = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
 
-    hr = D3DCompileFromFile(FileName.c_str(), Defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "ps_5_0", shaderFlags, 0, &PsBlob, &ErrorBlob);
+
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "ps_5_0", shaderFlags, 0, &PsBlob, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -69,9 +74,16 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
 
     PixelShaders[Key] = NewPixelShader;
 
+    
+    const std::set<std::wstring>& dependencies = includeManager.GetIncludedFiles();
+
     // modified time 기록
-    std::filesystem::path FilePath = FileName;
-    PixelShaderModifiedTime[NewPixelShader] = std::filesystem::last_write_time(FilePath);
+    RecordShaderDependencies(Key, FileName, dependencies);
+
+    
+    
+    //std::filesystem::path FilePath = FileName;
+    //PixelShaderModifiedTime[NewPixelShader] = std::filesystem::last_write_time(FilePath);
 
     return S_OK;
 }
@@ -90,8 +102,10 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
 
     ID3DBlob* VertexShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
+    
+    FDXDInclude includeManager(FileName);
 
-    hr = D3DCompileFromFile(FileName.c_str(), Defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob);
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -115,8 +129,10 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     VertexShaderCSO->Release();
 
     // modified time 기록
-    std::filesystem::path FilePath = FileName;
-    VertexShaderModifiedTime[NewVertexShader] = std::filesystem::last_write_time(FilePath);
+    const std::set<std::wstring>& dependencies = includeManager.GetIncludedFiles();
+
+    // modified time 기록
+    RecordShaderDependencies(Key, FileName, dependencies);
 
     return S_OK;
 }
@@ -167,7 +183,9 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     ID3DBlob* VertexShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
 
-    hr = D3DCompileFromFile(FileName.c_str(), Defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "vs_5_0", shaderFlags, 0, &VertexShaderCSO, &ErrorBlob);
+    
+    FDXDInclude includeManager(FileName);
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "vs_5_0", shaderFlags, 0, &VertexShaderCSO, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -199,8 +217,10 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     VertexShaderCSO->Release();
 
     // modified time 기록
-    std::filesystem::path FilePath = FileName;
-    VertexShaderModifiedTime[NewVertexShader] = std::filesystem::last_write_time(FilePath);
+    const std::set<std::wstring>& dependencies = includeManager.GetIncludedFiles();
+
+    // modified time 기록
+    RecordShaderDependencies(Key, FileName, dependencies);
 
     return S_OK;
 }
@@ -427,33 +447,35 @@ HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, 
     // vertex pixel 모두 다 조사
     bool IsModified = false;
     {
-        std::filesystem::path filePath = VertexFileName;
-        auto ModTime = std::filesystem::last_write_time(filePath);
-
-        if (VertexShaderModifiedTime.Contains(VertexShaders[VertexKey]))
-        {
-            auto LastModTime = VertexShaderModifiedTime[VertexShaders[VertexKey]];
-            if (ModTime != LastModTime)
-            {
-                IsModified = true;
-                VertexShaderModifiedTime[VertexShaders[VertexKey]] = ModTime;
-            }
-        }
+        IsModified = CheckShaderModified(VertexKey);
+        // std::filesystem::path filePath = VertexFileName;
+        // auto ModTime = std::filesystem::last_write_time(filePath);
+        //
+        // if (VertexShaderModifiedTime.Contains(VertexShaders[VertexKey]))
+        // {
+        //     auto LastModTime = VertexShaderModifiedTime[VertexShaders[VertexKey]];
+        //     if (ModTime != LastModTime)
+        //     {
+        //         IsModified = true;
+        //         VertexShaderModifiedTime[VertexShaders[VertexKey]] = ModTime;
+        //     }
+        // }
     }
     if(!IsModified)
     {
-        std::filesystem::path filePath = PixelFileName;
-        auto ModTime = std::filesystem::last_write_time(filePath);
-
-        if (PixelShaderModifiedTime.Contains(PixelShaders[PixelKey]))
-        {
-            auto LastModTime = PixelShaderModifiedTime[PixelShaders[PixelKey]];
-            if (ModTime != LastModTime)
-            {
-                IsModified = true;
-                PixelShaderModifiedTime[PixelShaders[PixelKey]] = ModTime;
-            }
-        }
+        IsModified = CheckShaderModified(PixelKey);
+        // std::filesystem::path filePath = PixelFileName;
+        // auto ModTime = std::filesystem::last_write_time(filePath);
+        //
+        // if (PixelShaderModifiedTime.Contains(PixelShaders[PixelKey]))
+        // {
+        //     auto LastModTime = PixelShaderModifiedTime[PixelShaders[PixelKey]];
+        //     if (ModTime != LastModTime)
+        //     {
+        //         IsModified = true;
+        //         PixelShaderModifiedTime[PixelShaders[PixelKey]] = ModTime;
+        //     }
+        // }
     }
     if (IsModified)
     {
@@ -465,6 +487,85 @@ HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, 
         return S_FALSE;
     }
 }
+
+void FDXDShaderManager::RecordShaderDependencies(const std::wstring& ShaderKey, const std::wstring& MainShaderFileName,
+    const std::set<std::wstring>& Dependencies)
+{
+    TMap<std::wstring, std::filesystem::file_time_type> currentFileTimes;
+    std::error_code ec; // 오류 코드를 받기 위한 변수
+
+    // 1. 메인 셰이더 파일 시간 기록
+    auto mainFileTime = std::filesystem::last_write_time(MainShaderFileName, ec);
+    if (!ec) // 오류가 없으면
+    {
+        currentFileTimes[MainShaderFileName] = mainFileTime;
+    }
+    else
+    {
+        // 오류 발생 시 어떻게 처리할지 결정 (예: 맵에 추가하지 않거나, 특정 기본값 사용)
+    }
+
+    // 2. 의존성 파일 시간 기록
+    for (const auto& dependencyPath : Dependencies)
+    {
+        ec.clear(); // 다음 호출을 위해 오류 코드 초기화
+        auto dependencyFileTime = std::filesystem::last_write_time(dependencyPath, ec);
+        if (!ec)
+        {
+            currentFileTimes[dependencyPath] = dependencyFileTime;
+        }
+        else
+        {
+            // 오류 처리
+        }
+    }
+
+    // 3. 결과를 매니저의 주 의존성 맵에 저장 (기존 항목 덮어쓰기 또는 추가)
+    ShaderDependenciesModifiedTime[ShaderKey] = currentFileTimes;
+}
+
+bool FDXDShaderManager::CheckShaderModified(const std::wstring& ShaderKey) const
+{
+    // 1. 저장된 의존성 정보 가져오기
+    if (!ShaderDependenciesModifiedTime.Contains(ShaderKey))
+    {
+        // 일단 false 반환 (수정 안 됨)으로 처리.
+        return false;
+    }
+
+    const TMap<std::wstring, std::filesystem::file_time_type>& storedDependencies = ShaderDependenciesModifiedTime[ShaderKey];
+
+    if (storedDependencies.IsEmpty())
+    {
+        // 의존성 정보는 있으나 비어있는 경우 
+        return false;
+    }
+
+    // 2. 각 의존성 파일의 현재 수정 시간 확인 및 비교
+    std::error_code ec; // 오류 코드
+    for (const auto& pair : storedDependencies)
+    {
+        const std::wstring& filePath = pair.Key;
+        const std::filesystem::file_time_type storedTime = pair.Value;
+
+        ec.clear(); // 오류 코드 초기화
+        auto currentTime = std::filesystem::last_write_time(filePath, ec);
+
+        if (ec) // 파일 접근 오류 (삭제되었거나 권한 없음 등)
+        {
+            return true; // 오류 발생 시 수정된 것으로 간주하여 리로드 유도
+        }
+
+        if (currentTime != storedTime) // 저장된 시간과 현재 시간이 다르면
+        {
+            return true; // 수정됨
+        }
+    }
+
+    // 3. 모든 파일이 수정되지 않았음
+    return false;
+}
+
 
 template<typename T>
 void FDXDShaderManager::SafeRelease(T*& comObject)

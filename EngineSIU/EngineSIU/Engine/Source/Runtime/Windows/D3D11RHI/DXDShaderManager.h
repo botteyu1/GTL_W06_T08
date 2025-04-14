@@ -3,6 +3,8 @@
 #define _TCHAR_DEFINED
 #include <d3d11.h>
 #include <d3dcompiler.h>
+#include <set>
+
 #include "Container/Map.h"
 
 
@@ -58,9 +60,31 @@ private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
 	TMap<std::wstring, ID3D11VertexShader*> VertexShaders;
 	TMap<std::wstring, ID3D11PixelShader*> PixelShaders;
+    
+    //
+    // TMap<ID3D11VertexShader*, std::filesystem::file_time_type> VertexShaderModifiedTime;
+    // TMap<ID3D11PixelShader*, TMap<std::wstring, std::filesystem::file_time_type>> PixelShaderModifiedTime; // 헤더파일 포함
+    
+    TMap<std::wstring, TMap<std::wstring, std::filesystem::file_time_type>> ShaderDependenciesModifiedTime;
 
-    TMap<ID3D11VertexShader*, std::filesystem::file_time_type> VertexShaderModifiedTime;
-    TMap<ID3D11PixelShader*, std::filesystem::file_time_type> PixelShaderModifiedTime;
+    /**
+ * @brief 셰이더와 그 의존성 파일들의 최종 수정 시간을 기록합니다.
+ * @param ShaderKey 셰이더를 식별하는 고유 키 (예: VertexKey 또는 PixelKey).
+ * @param MainShaderFileName 컴파일된 주 셰이더 파일의 전체 경로.
+ * @param Dependencies 컴파일 시 포함된 모든 의존성 파일 경로의 집합.
+ */
+    void RecordShaderDependencies(
+        const std::wstring& ShaderKey,
+        const std::wstring& MainShaderFileName,
+        const std::set<std::wstring>& Dependencies);
+
+    /**
+    * @brief 주어진 셰이더 키에 연결된 의존성 파일들의 수정 여부를 확인합니다.
+    * @param ShaderKey 확인할 셰이더의 키 (VertexKey 또는 PixelKey).
+    * @return 의존성 파일 중 하나라도 수정되었거나 접근할 수 없으면 true, 그렇지 않으면 false.
+    */
+    bool CheckShaderModified(const std::wstring& ShaderKey) const;
+    
 
     template<typename T>
     void SafeRelease(T*& comObject);

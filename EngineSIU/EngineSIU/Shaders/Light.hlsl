@@ -238,6 +238,8 @@ float3 CalculateDirectionalLight(float3 vPosition, float3 vNormal)
     // Specular = gDirectional.DirectionalColor * Spec;
     
     return gDirectional[0].Intensity * (Diffuse + Specular);
+    
+    
 }
 
 float4 Lighting(float3 vPosition, float3 vNormal)

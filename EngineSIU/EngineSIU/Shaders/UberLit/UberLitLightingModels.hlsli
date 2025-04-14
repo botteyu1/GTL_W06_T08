@@ -12,7 +12,6 @@ void CalculatePointLight(float3 LightPosition, float3 VertexPosition, float Atte
 
     float CalcAttenuation = saturate(1.0f - Distance / AttenuationRadius);
     CalcAttenuation = pow(CalcAttenuation, Falloff);
-
     EffectiveLightDirection = LightDirection;
     FinalAttenuation = CalcAttenuation;
 }

@@ -62,6 +62,7 @@ struct FAmbientLight
     float Intensity;
 };
 
+
 struct FDirectionalLight
 {
     float3 Color;
