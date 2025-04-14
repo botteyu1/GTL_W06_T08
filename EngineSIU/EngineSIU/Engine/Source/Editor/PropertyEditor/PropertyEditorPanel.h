@@ -64,8 +64,6 @@ private:
         requires std::derived_from<T, UActorComponent>
     T* GetTargetComponent(AActor* SelectedActor, USceneComponent* SelectedComponent);
 private:
-    float Width = 0, Height = 0;
-
     /* Material Property */
     int SelectedMaterialIndex = -1;
     int CurMaterialIndex = -1;

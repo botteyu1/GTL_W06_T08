@@ -1,34 +1,26 @@
 #include "WorldControlEditorPanel.h"
 
-#include "World/World.h"
-
-#include "Actors/Player.h"
-#include "Actors/LightActor.h"
-#include "Actors/FireballActor.h"
-
-#include "Components/Light/LightComponent.h"
-#include "Components/Light/PointLightComponent.h"
-#include "Components/Light/SpotLightComponent.h"
-#include "Components/SphereComp.h"
-#include "Components/ParticleSubUVComponent.h"
-#include "Components/TextComponent.h"
-#include "Components/ProjectileMovementComponent.h"
-
-#include "Engine/FLoaderOBJ.h"
-#include "Engine/StaticMeshActor.h"
-#include "LevelEditor/SLevelEditor.h"
-#include "PropertyEditor/ShowFlags.h"
-#include "UnrealEd/EditorViewportClient.h"
-#include "tinyfiledialogs/tinyfiledialogs.h"
-
+#include "Actors/AmbientLightActor.h"
 #include "Actors/Cube.h"
+#include "Actors/DirectionalLightActor.h"
+#include "Actors/FireballActor.h"
+#include "Actors/HeightFogActor.h"
+#include "Actors/LightActor.h"
+#include "Actors/SpotLightActor.h"
+
+#include "Components/ParticleSubUVComponent.h"
+#include "Components/SphereComp.h"
+#include "Components/TextComponent.h"
 
 #include "Engine/EditorEngine.h"
-#include <Actors/HeightFogActor.h>
+#include "Engine/Engine.h"
+#include "Engine/FLoaderOBJ.h"
 
-#include "Actors/AmbientLightActor.h"
-#include "Actors/DirectionalLightActor.h"
-#include "Actors/SpotLightActor.h"
+#include "GameFramework/Actor.h"
+#include "Renderer/StaticMeshRenderPass.h"
+#include "tinyfiledialogs/tinyfiledialogs.h"
+#include "UObject/ObjectTypes.h"
+#include "World/World.h"
 
 void WorldControlEditorPanel::Render()
 {
@@ -37,11 +29,12 @@ void WorldControlEditorPanel::Render()
     ImFont* IconFont = io.Fonts->Fonts[FEATHER_FONT];
     ImVec2 IconSize = ImVec2(32, 32);
 
-    float PanelWidth = (Width) * 0.8f;
-    float PanelHeight = 45.0f;
+    Rect.Left = 1;
+    Rect.Top = 1;
+    Rect.SetHeight(45);
 
-    float PanelPosX = 1.0f;
-    float PanelPosY = 1.0f;
+    float PanelWidth = (Rect.GetWidth()) * 0.8f;
+    float PanelHeight = Rect.GetHeight();
 
     ImVec2 MinSize(300, 50);
     ImVec2 MaxSize(FLT_MAX, 50);
@@ -50,7 +43,7 @@ void WorldControlEditorPanel::Render()
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
 
     /* Panel Position */
-    ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(Rect.Left, Rect.Top), ImGuiCond_Always);
 
     /* Panel Size */
     ImGui::SetNextWindowSize(ImVec2(PanelWidth, PanelHeight), ImGuiCond_Always);
@@ -59,13 +52,17 @@ void WorldControlEditorPanel::Render()
     ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground;
 
     /* Render Start */
-    ImGui::Begin("Control Panel", nullptr, PanelFlags);
+    ImGui::Begin("World Control Panel", nullptr, PanelFlags);
 
     CreateMenuButton(IconSize, IconFont);
 
     ImGui::SameLine();
 
-    CreateAddPrimitive(IconSize, IconFont);
+    CreateShaderButton(IconSize, IconFont);
+    
+    ImGui::SameLine();
+
+    CreateAddPrimitiveButton(IconSize, IconFont);
 
     ImGui::SameLine();
     
@@ -87,26 +84,8 @@ void WorldControlEditorPanel::Render()
     ImGui::End();
 }
 
-void WorldControlEditorPanel::CreateAddPrimitive(ImVec2 ButtonSize, ImFont* IconFont) const
-{
-    // static bool IsUber;
-    // IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
-    // if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
-    // {
-    //     GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
-    // }
-
-    // if (ImGui::Button("Recompile(P)"))
-    // {
-    //     GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
-    // }
-    // static bool IsAutoUpdate = false;
-    // if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))
-    // {
-    //     GEngineLoop.Renderer.StaticMeshRenderPass->SetAutoUpdate(IsAutoUpdate);
-    // }
-
-    
+void WorldControlEditorPanel::CreateAddPrimitiveButton(ImVec2 ButtonSize, ImFont* IconFont) const
+{    
     ImGui::PushFont(IconFont);
     if (ImGui::Button("\ue9c8", ButtonSize))
     {
@@ -366,6 +345,37 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
     }
 }
 
+void WorldControlEditorPanel::CreateShaderButton(ImVec2 ButtonSize, ImFont* IconFont)
+{
+    ImGui::PushFont(IconFont);
+    if (ImGui::Button("\ue9c4", ButtonSize)) // Slider
+    {
+        ImGui::OpenPopup("SliderControl##");
+    }
+    ImGui::PopFont();
+
+    if (ImGui::BeginPopup("SliderControl##"))
+    {
+        static bool IsUber;
+        IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
+        if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
+        }
+
+        if (ImGui::Button("Recompile(P)"))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
+        }
+        static bool IsAutoUpdate = false;
+        if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->SetAutoUpdate(IsAutoUpdate);
+        }
+        ImGui::EndPopup();
+    }
+}
+
 void WorldControlEditorPanel::CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFont) const
 {
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
@@ -397,6 +407,8 @@ void WorldControlEditorPanel::OnResize(HWND hWnd)
 {
     RECT clientRect;
     GetClientRect(hWnd, &clientRect);
-    Width = clientRect.right - clientRect.left;
-    Height = clientRect.bottom - clientRect.top;
+    Rect.Left = clientRect.left;
+    Rect.Right = clientRect.right;
+    Rect.Top = clientRect.top;
+    Rect.Bottom = clientRect.bottom;
 }

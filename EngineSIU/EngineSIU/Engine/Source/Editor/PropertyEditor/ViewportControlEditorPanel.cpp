@@ -1,7 +1,5 @@
 #include "ViewportControlEditorPanel.h"
 
-#include "Editor/PropertyEditor/ShowFlags.h"
-#include "Editor/LevelEditor/SLevelEditor.h"
 #include "Editor/UnrealEd/EditorViewportClient.h"
 
 #include "Engine/EditorEngine.h"
@@ -9,6 +7,7 @@
 #include "Engine/Classes/Actors/Player.h"
 #include "Engine/Classes/Actors/LightActor.h"
 #include "Engine/Classes/Components/TextComponent.h"
+#include "LevelEditor/SLevelEditor.h"
 
 void ViewportControlEditorPanel::Render()
 {
@@ -17,11 +16,12 @@ void ViewportControlEditorPanel::Render()
     ImFont* IconFont = io.Fonts->Fonts[FEATHER_FONT];
     ImVec2 IconSize = ImVec2(32, 32);
 
-    float PanelWidth = (Width) * 0.8f;
-    float PanelHeight = 45.0f;
+    Rect.Left = 1;
+    Rect.Top = 50;
+    Rect.SetHeight(45);
 
-    float PanelPosX = 1.0f;
-    float PanelPosY = 1.0f;
+    float PanelWidth = Rect.GetWidth() * 0.8f;
+    float PanelHeight = (Rect.GetHeight()) * 0.3f;
 
     ImVec2 MinSize(300, 50);
     ImVec2 MaxSize(FLT_MAX, 50);
@@ -30,7 +30,7 @@ void ViewportControlEditorPanel::Render()
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
 
     /* Panel Position */
-    ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(Rect.Left, Rect.Top), ImGuiCond_Always);
 
     /* Panel Size */
     ImGui::SetNextWindowSize(ImVec2(PanelWidth, PanelHeight), ImGuiCond_Always);
@@ -39,7 +39,7 @@ void ViewportControlEditorPanel::Render()
     ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground;
 
     /* Render Start */
-    ImGui::Begin("Control Panel", nullptr, PanelFlags);
+    ImGui::Begin("Viewport Control Panel", nullptr, PanelFlags);
 
     CreateFlagButton();
 
@@ -49,7 +49,7 @@ void ViewportControlEditorPanel::Render()
 
     ImGui::SameLine();
 
-    CreateSRTButton(IconSize);
+    CreateSRTButton(IconSize, IconFont);
 
     ImGui::End();
 }
@@ -130,8 +130,7 @@ void ViewportControlEditorPanel::CreateFlagButton() const
 
     ImGui::SameLine();
 
-    const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
-    
+    const char* ViewModeNames[] = { "Lit_Gouraud", "Lit_Lambert", "Lit_BlinnPhong", "Unlit", "Wireframe", "SceneDepth" };    
     int rawViewMode = (int)ActiveViewport->GetViewMode();
     int safeIndex = (rawViewMode >= 0) ? (rawViewMode % 4) : 0;
     FString ViewModeControl = ViewModeNames[safeIndex];
@@ -194,8 +193,13 @@ void ViewportControlEditorPanel::CreateFlagButton() const
 }
 
 // code is so dirty / Please refactor
-void ViewportControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
+void ViewportControlEditorPanel::CreateSRTButton(ImVec2 IconSize, ImFont* IconFont) const
 {
+    ImGui::PushFont(IconFont);
+    float ContentWidth = ImGui::GetWindowContentRegionMax().x;
+
+    ImGui::SetCursorPosX(ContentWidth - (IconSize.x * 3.0f + 16.0f));
+    
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
     AEditorPlayer* Player = Engine->GetEditorPlayer();
 
@@ -207,7 +211,7 @@ void ViewportControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
     {
         ImGui::PushStyleColor(ImGuiCol_Button, ActiveColor);
     }
-    if (ImGui::Button("\ue9bc", ButtonSize)) // Move
+    if (ImGui::Button("\ue9bc", IconSize)) // Move
     {
         Player->SetMode(CM_TRANSLATION);
     }
@@ -222,7 +226,7 @@ void ViewportControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
     {
         ImGui::PushStyleColor(ImGuiCol_Button, ActiveColor);
     }
-    if (ImGui::Button("\ue9d3", ButtonSize)) // Rotate
+    if (ImGui::Button("\ue9d3", IconSize)) // Rotate
     {
         Player->SetMode(CM_ROTATION);
     }
@@ -237,7 +241,7 @@ void ViewportControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
     {
         ImGui::PushStyleColor(ImGuiCol_Button, ActiveColor);
     }
-    if (ImGui::Button("\ue9ab", ButtonSize)) // Scale
+    if (ImGui::Button("\ue9ab", IconSize)) // Scale
     {
         Player->SetMode(CM_SCALE);
     }
@@ -245,6 +249,8 @@ void ViewportControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
     {
         ImGui::PopStyleColor();
     }
+
+    ImGui::PopFont();
 }
 
 
@@ -269,6 +275,8 @@ void ViewportControlEditorPanel::OnResize(HWND hWnd)
 {
     RECT clientRect;
     GetClientRect(hWnd, &clientRect);
-    Width = clientRect.right - clientRect.left;
-    Height = clientRect.bottom - clientRect.top;
+    Rect.Left = clientRect.left;
+    Rect.Right = clientRect.right;
+    Rect.Top = clientRect.top;
+    Rect.Bottom = clientRect.bottom;
 }

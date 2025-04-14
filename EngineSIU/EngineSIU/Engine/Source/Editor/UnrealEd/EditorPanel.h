@@ -36,16 +36,19 @@ public:
         // Rect.Max = pos + Size;
     //}
 
-public:
+     
+    
+    //void SetPivot(FVector2D InPivot) { Pivot = InPivot; }
+
+protected:
     
     FSlateRect Rect = FSlateRect(0, 0, 0, 0);
-    FVector2D AnchorMax = FVector2D(0.5, 0.5);
-    FVector2D AnchorMin = FVector2D(0.5, 0.5);
-    FVector2D Pivot = FVector2D(0.5, 0.5);
+    //FVector2D AnchorMin = FVector2D(0.5, 0.5);
+    //FVector2D AnchorMax = FVector2D(0.5, 0.5);
+    //FVector2D Pivot = FVector2D(0.5, 0.5);
     
     //FVector2D AnchoredPosition;
     // FVector2D SizeDelta;
     // FVector2D OffsetMin;
     // FVector2D OffsetMax;
-    
 };

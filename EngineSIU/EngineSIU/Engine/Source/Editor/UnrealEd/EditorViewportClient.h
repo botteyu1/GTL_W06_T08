@@ -3,7 +3,6 @@
 
 #include "Define.h"
 #include "Container/Map.h"
-#include "UObject/ObjectMacros.h"
 #include "ViewportClient.h"
 #include "EngineLoop.h"
 #include "EngineBaseTypes.h"
@@ -103,10 +102,12 @@ protected:
     float GridSize;
 
 public:
-    FViewport* Viewport;
     int32 ViewportIndex;
     FViewport* GetViewport() const { return Viewport; }
     D3D11_VIEWPORT& GetD3DViewport() const;
+
+private:
+    FViewport* Viewport;
 
 public:
     //카메라
@@ -123,11 +124,13 @@ public:
     static FVector Pivot;
     static float orthoSize;
     ELevelViewportType ViewportType;
-    uint64 ShowFlag;
     EViewModeIndex ViewMode;
 
     FMatrix View;
     FMatrix Projection;
+
+private:
+    uint64 ShowFlag;
 
 public: //Camera Movement
     void CameraMoveForward(float InValue);

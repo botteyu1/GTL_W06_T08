@@ -9,14 +9,15 @@
 void UnrealEd::Initialize(HWND hWnd)
 {
     auto WorldControlPanel = std::make_shared<WorldControlEditorPanel>();
-    //WorldControlPanel->Rect.
     AddEditorPanel("WorldControlPanel", WorldControlPanel);
 
     // On Add Viewport ->
     // On Remove Viewport ->
     // On Resize Viewport ->
+
+    // if ViewportIsValid -> Render
     auto ViewportControlPanel = std::make_shared<ViewportControlEditorPanel>();
-    AddEditorPanel("ViewportControlPanel", ViewportControlPanel);
+    AddEditorPanel("ViewportControlPanel, {ViewportNum}", ViewportControlPanel);
     
     auto OutlinerPanel = std::make_shared<OutlinerEditorPanel>();
     AddEditorPanel("OutlinerPanel", OutlinerPanel);

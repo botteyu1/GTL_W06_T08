@@ -12,10 +12,7 @@ public:
 private:
     void CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont);
     void CreateFlagButton() const;
-    void CreateSRTButton(ImVec2 ButtonSize) const;
+    void CreateSRTButton(ImVec2 IconSize, ImFont* IconFont) const;
 
     uint64 ConvertSelectionToFlags(const bool selected[]) const;
-    
-private:
-    float Width = 300, Height = 100;
 };

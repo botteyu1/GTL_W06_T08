@@ -18,8 +18,6 @@
 #include "BaseGizmos/GizmoBaseComponent.h"
 #include "Engine/EditorEngine.h"
 
-#include "PropertyEditor/ShowFlags.h"
-
 #include "UnrealEd/EditorViewportClient.h"
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()

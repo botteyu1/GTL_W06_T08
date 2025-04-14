@@ -3,7 +3,6 @@
 #include "UnrealClient.h"
 #include "World/World.h"
 #include "LevelEditor/SLevelEditor.h"
-#include "PropertyEditor/ViewportTypePanel.h"
 #include "Slate/Widgets/Layout/SSplitter.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
@@ -47,7 +46,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         {
             GEngineLoop.GetUnrealEditor()->OnResize(hWnd);
         }
-        ViewportTypePanel::GetInstance().OnResize(hWnd);
         break;
     case WM_MOUSEWHEEL:
         if (ImGui::GetIO().WantCaptureMouse)
@@ -107,15 +105,12 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     /* must be initialized before window. */
     WindowInit(hInstance);
 
-    UnrealEditor = new UnrealEd();
-
     bufferManager = new FDXDBufferManager();
 
     UIMgr = new UImGuiManager;
 
     LevelEditor = new SLevelEditor();
 
-    UnrealEditor->Initialize(hWnd);
 
     GraphicDevice.Initialize(hWnd);
 
@@ -131,6 +126,9 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
     LevelEditor->Initialize();
 
+    UnrealEditor = new UnrealEd();
+    UnrealEditor->Initialize(hWnd);
+    
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
 

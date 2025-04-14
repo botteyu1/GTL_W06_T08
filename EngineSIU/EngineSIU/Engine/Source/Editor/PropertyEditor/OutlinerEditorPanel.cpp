@@ -8,12 +8,14 @@ void OutlinerEditorPanel::Render()
 {
     /* Pre Setup */
     ImGuiIO& io = ImGui::GetIO();
-    
-    float PanelWidth = (Width) * 0.2f - 6.0f;
-    float PanelHeight = (Height) * 0.3f;
 
-    float PanelPosX = (Width) * 0.8f + 5.0f;
+
+    float PanelWidth = (Rect.GetWidth()) * 0.2f - 6.0f;
+    float PanelHeight = (Rect.GetHeight()) * 0.3f;
+    
+    float PanelPosX = (Rect.GetWidth()) * 0.8f + 5.0f;
     float PanelPosY = 5.0f;
+    
 
     ImVec2 MinSize(140, 100);
     ImVec2 MaxSize(FLT_MAX, 500);
@@ -98,6 +100,8 @@ void OutlinerEditorPanel::OnResize(HWND hWnd)
 {
     RECT clientRect;
     GetClientRect(hWnd, &clientRect);
-    Width = clientRect.right - clientRect.left;
-    Height = clientRect.bottom - clientRect.top;
+    Rect.Left = clientRect.left;
+    Rect.Right = clientRect.right;
+    Rect.Top = clientRect.top;
+    Rect.Bottom = clientRect.bottom;
 }

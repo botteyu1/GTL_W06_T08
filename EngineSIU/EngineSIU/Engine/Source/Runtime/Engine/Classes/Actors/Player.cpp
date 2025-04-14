@@ -9,7 +9,6 @@
 #include "LevelEditor/SLevelEditor.h"
 #include "Math/JungleMath.h"
 #include "Math/MathUtility.h"
-#include "PropertyEditor/ShowFlags.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
 #include "Engine/EditorEngine.h"
@@ -221,11 +220,19 @@ bool AEditorPlayer::PickGizmo(FVector& pickPosition, FEditorViewportClient* InAc
 
 void AEditorPlayer::PickActor(const FVector& pickPosition)
 {
-    if (!(ShowFlags::GetInstance().currentFlags & EEngineShowFlags::SF_Primitives))
-    {
-        return;
-    }
+    auto LevelEditor = GEngineLoop.GetLevelEditor();
 
+    for (const auto& ViewportClient : LevelEditor->GetViewportClients())
+    {
+        if (ViewportClient->GetViewport()->GetFSlateRect().Contains(FVector2D(pickPosition.X, pickPosition.Y)))
+        {
+            if (!(ViewportClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives)))
+            {
+                return;
+            }        
+        }
+    }
+    
     USceneComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
@@ -290,6 +297,19 @@ void AEditorPlayer::ScreenToViewSpace(int screenX, int screenY, const FMatrix& v
 
 int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneComponent* obj, float& hitDistance, int& intersectCount)
 {
+    auto LevelEditor = GEngineLoop.GetLevelEditor();
+
+    for (const auto& ViewportClient : LevelEditor->GetViewportClients())
+    {
+        if (ViewportClient->GetViewport()->GetFSlateRect().Contains(FVector2D(pickPosition.X, pickPosition.Y)))
+        {
+            if (!(ViewportClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
+            {
+                return 0;
+            }        
+        }
+    }
+    
     auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     FMatrix WorldMatrix = obj->GetWorldMatrix();
 	FMatrix ViewMatrix = FocusedViewportClient->GetViewMatrix();

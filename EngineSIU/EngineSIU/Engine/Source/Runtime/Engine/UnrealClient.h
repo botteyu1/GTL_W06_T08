@@ -31,4 +31,9 @@ private:
 public:
     D3D11_VIEWPORT& GetViewport() { return viewport; }
     void SetViewport(const D3D11_VIEWPORT& _viewport) { viewport = _viewport; }
+
+    FSlateRect GetFSlateRect() const
+    {
+        return FSlateRect(viewport.TopLeftX, viewport.TopLeftY, viewport.TopLeftX + viewport.Width, viewport.TopLeftY + viewport.Height);
+    }
 };

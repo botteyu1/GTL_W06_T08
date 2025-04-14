@@ -29,8 +29,9 @@ private:
     SSplitterV* VSplitter;
     UWorld* World;
     TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients;
-    std::shared_ptr<FEditorViewportClient> ActiveViewportClient;
 
+    int32 FocusedIndex;
+    
     bool bLButtonDown = false;
     bool bRButtonDown = false;
     
@@ -41,19 +42,18 @@ private:
     float EditorHeight;
 
 public:
-    TArray<std::shared_ptr<FEditorViewportClient>> GetViewportClients() { return ViewportClients; }
-    std::shared_ptr<FEditorViewportClient> GetFocusedViewportClient() const
+    inline TArray<std::shared_ptr<FEditorViewportClient>> GetViewportClients() { return ViewportClients; }
+    inline std::shared_ptr<FEditorViewportClient> GetFocusedViewportClient() const { return ViewportClients[FocusedIndex]; }
+
+    inline void SetViewportClient(const std::shared_ptr<FEditorViewportClient>& viewportClient)
     {
-        return ActiveViewportClient;
+        int32 FindIndex = ViewportClients.Find(viewportClient);
+        if (FindIndex != -1)
+        {
+            FocusedIndex = FindIndex;
+        }
     }
-    void SetViewportClient(const std::shared_ptr<FEditorViewportClient>& viewportClient)
-    {
-        ActiveViewportClient = viewportClient;
-    }
-    void SetViewportClient(int index)
-    {
-        ActiveViewportClient = ViewportClients[index];
-    }
+    inline void SetViewportClient(int index) { FocusedIndex = index; }
 
     //Save And Load
 private:

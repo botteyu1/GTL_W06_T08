@@ -13,11 +13,10 @@ public:
 
 private:
     void CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont);
-    void CreateAddPrimitive(ImVec2 ButtonSize, ImFont* IconFont) const;
+    void CreateShaderButton(ImVec2 ButtonSize, ImFont* IconFont);
+    void CreateAddPrimitiveButton(ImVec2 ButtonSize, ImFont* IconFont) const;
     void CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFont) const;
     
 private:
-    float Width = 300, Height = 100;
-
     bool bOpenMenu = false;
 };

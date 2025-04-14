@@ -198,7 +198,6 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\EditorEngine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Engine.cpp" />
     <ClCompile Include="Engine\Source\Editor\LevelEditor\SLevelEditor.cpp" />
-    <ClCompile Include="Engine\Source\Editor\PropertyEditor\ViewportTypePanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\ImGuiWidget.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\UnrealEdEventRouter.cpp" />
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\UObject\Casts.cpp" />
@@ -251,7 +250,6 @@
     <ClCompile Include="Engine\Source\ThirdParty\include\ImGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="Engine\Source\ThirdParty\include\ImGUI\imgui_tables.cpp" />
     <ClCompile Include="Engine\Source\ThirdParty\include\ImGUI\imgui_widgets.cpp" />
-    <ClCompile Include="Engine\Source\Editor\PropertyEditor\ShowFlags.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\SkySphereComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\TransformGizmo.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Launch\Launch.cpp" />
@@ -325,7 +323,6 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ViewportClient.h" />
     <ClInclude Include="Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
-    <ClInclude Include="Engine\Source\Editor\PropertyEditor\ViewportTypePanel.h" />
     <ClInclude Include="Engine\Source\Editor\UnrealEd\ImGuiWidget.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\UObject\Casts.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\UObject\NameTypes.h" />
@@ -404,7 +401,6 @@
     <ClInclude Include="Engine\Source\ThirdParty\include\ImGUI\imstb_truetype.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\IWindowToggleable.h" />
     <ClInclude Include="Engine\Source\ThirdParty\JSON\json.hpp" />
-    <ClInclude Include="Engine\Source\Editor\PropertyEditor\ShowFlags.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\SkySphereComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Texture.h" />
     <ClInclude Include="Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\TransformGizmo.h" />
