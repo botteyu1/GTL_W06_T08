@@ -6,7 +6,7 @@
 #include "PropertyEditor/PropertyEditorPanel.h"
 #include "PropertyEditor/WorldControlEditorPanel.h"
 
-void UnrealEd::Initialize()
+void UnrealEd::Initialize(HWND hWnd)
 {
     auto WorldControlPanel = std::make_shared<WorldControlEditorPanel>();
     //WorldControlPanel->Rect.
@@ -23,6 +23,8 @@ void UnrealEd::Initialize()
     
     auto PropertyPanel = std::make_shared<PropertyEditorPanel>();
     AddEditorPanel("PropertyPanel", PropertyPanel);
+
+    OnResize(hWnd);
 }
 
 void UnrealEd::Render() const

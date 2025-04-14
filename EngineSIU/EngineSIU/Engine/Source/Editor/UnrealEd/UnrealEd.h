@@ -9,7 +9,7 @@ class UnrealEd
 public:
     UnrealEd() = default;
     ~UnrealEd() = default;
-    void Initialize();
+    void Initialize(HWND hWnd);
     
      void Render() const;
      void OnResize(HWND hWnd) const;
