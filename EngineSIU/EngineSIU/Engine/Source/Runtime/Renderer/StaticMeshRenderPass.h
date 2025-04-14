@@ -26,6 +26,7 @@ class FStaticMeshRenderPass : public IRenderPass
         Depth = 2,
         Position = 3,
         Normal = 4,
+        Attenuation = 5,
     };
 public:
     FStaticMeshRenderPass();

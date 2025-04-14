@@ -121,6 +121,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     BaseColor *= Material.DiffuseColor.rgb;
 
     // flag 되어있으면 미리 return
+    // unlit
     if (RenderFlag == 0)
     {
         Output.color = float4(BaseColor, 1);
@@ -137,7 +138,6 @@ PS_OUT Uber_PS(VS_OUT Input)
     else if (RenderFlag == 3)
     {
         Output.color = float4(Input.worldPos / 100 + 0.5, 1);
-        //Output.color = float4(1, 1, 1, 1);
         return Output;
     }
     // normal
@@ -146,7 +146,6 @@ PS_OUT Uber_PS(VS_OUT Input)
         Output.color = float4(Normal/2 + 0.5, 1);
         return Output;
     }
-    
     
     float3 TotalColor = float3(0, 0, 0);
     float3 DiffuseColor;
@@ -227,6 +226,11 @@ PS_OUT Uber_PS(VS_OUT Input)
     // Ambient Light
     TotalColor += AmbientLight.Color * AmbientLight.Intensity;
 
+    if (RenderFlag == 5)
+    {
+        Output.color = float4(TotalColor, 1);
+        return Output;
+    }
     Output.color = float4(BaseColor * TotalColor, 1);
     
     // 선택

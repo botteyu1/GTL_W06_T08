@@ -140,6 +140,10 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex evi)
     case VMI_SceneDepth:
         UpdateFlag(FStaticMeshRenderPass::Flag::Depth);
         break;
+    case VMI_Attenuation:
+        UpdateShaders(0, 0, 1, true);
+        UpdateFlag(FStaticMeshRenderPass::Flag::Attenuation);
+        break;
     }
 }
 
@@ -414,7 +418,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
             GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 0, 1, false);
             break;
         default:
-            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, false);
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 0, 1, false);
             break;
         }
     }

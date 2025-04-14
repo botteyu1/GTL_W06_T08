@@ -12,6 +12,7 @@ enum EViewModeIndex : uint8
     VMI_SceneDepth,
     VMI_WorldNormal,
     VMI_WorldPos,
+    VMI_Attenuation,
 };
 
 namespace EEngineShowFlags
