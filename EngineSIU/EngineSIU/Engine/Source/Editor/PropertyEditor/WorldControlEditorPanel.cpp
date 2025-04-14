@@ -17,8 +17,10 @@
 #include "Engine/FLoaderOBJ.h"
 
 #include "GameFramework/Actor.h"
+#include "LevelEditor/SLevelEditor.h"
 #include "Renderer/StaticMeshRenderPass.h"
 #include "tinyfiledialogs/tinyfiledialogs.h"
+#include "UnrealEd/EditorViewportClient.h"
 #include "UObject/ObjectTypes.h"
 #include "World/World.h"
 
@@ -363,9 +365,25 @@ void WorldControlEditorPanel::CreateShaderButton(ImVec2 ButtonSize, ImFont* Icon
             GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
         }
 
-        if (ImGui::Button("Recompile(P)"))
+        if (ImGui::Button("Recompile(Shift + P)"))
         {
-            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
+
+            EViewModeIndex mode = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient()->GetViewMode();
+            switch (mode)
+            {
+            case VMI_LitGouraud:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, true);
+                break;
+            case VMI_LitLambert:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 1, 0, true);
+                break;
+            case VMI_LitBlinnPhong:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 0, 1, true);
+                break;
+            default:
+                GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, true);
+                break;
+            }
         }
         static bool IsAutoUpdate = false;
         if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))

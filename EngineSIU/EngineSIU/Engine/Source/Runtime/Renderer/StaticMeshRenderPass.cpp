@@ -392,7 +392,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
   
     if (bAutoUpdate)
     {
-        EViewModeIndex mode = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMode();
+        EViewModeIndex mode = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient()->GetViewMode();
         switch (mode)
         {
         case VMI_LitGouraud:
