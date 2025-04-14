@@ -24,8 +24,8 @@ public:
     float GetFalloff() { return LightData.Falloff; }
 
     void SetAttenuationRadius(float AttenuationRadius) { LightData.AttenuationRadius = AttenuationRadius; }
-    void SetInnerConeAngle(float InnerConeAngle) { LightData.InnerConeAngle = InnerConeAngle; }
-    void SetOuterConeAngle(float OuterConeAngle) { LightData.OuterConeAngle = OuterConeAngle; }
+    void SetInnerConeAngle(float InnerConeAngle);
+    void SetOuterConeAngle(float OuterConeAngle);
     void SetFalloff(float Falloff) { LightData.Falloff = Falloff; }
 
 protected:

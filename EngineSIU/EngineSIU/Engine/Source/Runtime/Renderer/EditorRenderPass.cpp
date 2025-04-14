@@ -1005,17 +1005,20 @@ void FEditorRenderPass::RenderSpotlightInstanced()
     TArray<FConstantBufferDebugCone> BufferAll;
     for (USpotLightComponent* SpotComp : Resources.Components.SpotLight)
     {
-        FConstantBufferDebugCone b;
-        b.ApexPosiiton = SpotComp->GetWorldLocation();
-        b.Radius = SpotComp->GetAttenuationRadius();
-        b.Direction = SpotComp->GetForwardVector();
-        b.Angle = FMath::DegreesToRadians(SpotComp->GetInnerConeAngle());
-        b.Color = InnerColor;
-        BufferAll.Add(b);
+        if (SpotComp == Cast<UEditorEngine>(GEngine)->GetSelectedComponent())
+        {
+            FConstantBufferDebugCone b;
+            b.ApexPosiiton = SpotComp->GetWorldLocation();
+            b.Radius = SpotComp->GetAttenuationRadius();
+            b.Direction = SpotComp->GetForwardVector();
+            b.Angle = FMath::DegreesToRadians(SpotComp->GetInnerConeAngle());
+            b.Color = InnerColor;
+            BufferAll.Add(b);
 
-        b.Angle = FMath::DegreesToRadians(SpotComp->GetOuterConeAngle());
-        b.Color = OuterColor;
-        BufferAll.Add(b);
+            b.Angle = FMath::DegreesToRadians(SpotComp->GetOuterConeAngle());
+            b.Color = OuterColor;
+            BufferAll.Add(b);
+        }
     }
 
     PrepareConstantbufferSpotlight();

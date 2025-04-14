@@ -92,6 +92,18 @@ void USpotLightComponent::TickComponent(float DeltaTime)
     LightData.Position = GetWorldLocation();
 }
 
+void USpotLightComponent::SetInnerConeAngle(float InnerConeAngle)
+{ 
+    LightData.InnerConeAngle = InnerConeAngle; 
+    LightData.OuterConeAngle = std::max(LightData.InnerConeAngle, LightData.OuterConeAngle);
+}
+
+void USpotLightComponent::SetOuterConeAngle(float OuterConeAngle)
+{ 
+    LightData.OuterConeAngle = OuterConeAngle; 
+    LightData.InnerConeAngle = std::min(LightData.InnerConeAngle, LightData.OuterConeAngle);
+}
+
 void* USpotLightComponent::GetLightDefinition()
 {
     return &LightData;
