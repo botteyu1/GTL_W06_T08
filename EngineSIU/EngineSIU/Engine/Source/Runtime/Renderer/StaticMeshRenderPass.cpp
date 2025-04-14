@@ -129,6 +129,7 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex evi)
         break;
     case EViewModeIndex::VMI_Wireframe:
     case EViewModeIndex::VMI_Unlit:
+        UpdateShaders(0, 0, 0);
         UpdateLitUnlitConstant(0);
         break;
     }
