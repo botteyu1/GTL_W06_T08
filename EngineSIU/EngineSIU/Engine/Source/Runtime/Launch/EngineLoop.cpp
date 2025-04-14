@@ -132,6 +132,7 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
+    GEngine->LoadLevel("Saved/AutoSaves.scene");
 
     return 0;
 }
@@ -252,6 +253,7 @@ void FEngineLoop::Input()
 
 void FEngineLoop::Exit()
 {
+    GEngine->SaveLevel("Saved/AutoSaves.scene");
     LevelEditor->Release();
     UIMgr->Shutdown();
     delete UIMgr;
