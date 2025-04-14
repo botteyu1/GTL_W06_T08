@@ -270,7 +270,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
 
         if (ImGui::Button("Recompile(P)"))
         {
-            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, false);
         }
         static bool IsAutoUpdate = false;
         if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))
