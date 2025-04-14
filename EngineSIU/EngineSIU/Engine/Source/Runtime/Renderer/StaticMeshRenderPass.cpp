@@ -393,7 +393,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
 {
     if ((GetAsyncKeyState('P') & 0x0001) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
     {
-        UpdateShaders(1, 0, 0, true);
+        UpdateShaders(0,0,1, true);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
     }
 
