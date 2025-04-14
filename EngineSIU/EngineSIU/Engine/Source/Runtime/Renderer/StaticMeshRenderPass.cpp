@@ -77,15 +77,21 @@ HRESULT FStaticMeshRenderPass::CreateShader()
 
     InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
 
+    // refactoring here
     std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
     std::string strPoint = std::to_string(NUM_MAX_POINTLIGHT);
     std::string strSpot = std::to_string(NUM_MAX_SPOTLIGHT);
-
+    std::string strGouraud = std::to_string(1);
+    std::string strLambert = std::to_string(0);
+    std::string strPhong = std::to_string(0);
     const D3D_SHADER_MACRO UberDefines[] =
     {
         { "NUM_MAX_DIRLIGHT",   strDir.c_str() },
         { "NUM_MAX_POINTLIGHT", strPoint.c_str() },
         { "NUM_MAX_SPOTLIGHT",  strSpot.c_str() },
+        {"LIGHTING_MODEL_GOURAUD", strGouraud.c_str() },
+        {"LIGHTING_MODEL_LAMBERT", strLambert.c_str() },
+        {"LIGHTING_MODEL_PHONG", strPhong.c_str() },
         { NULL, NULL }
     };
 
@@ -105,15 +111,25 @@ void FStaticMeshRenderPass::ReleaseShader()
 
 }
 
-void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex evi) const
+void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex evi)
 {
     switch (evi)
     {
-    case EViewModeIndex::VMI_Lit:
+    case VMI_LitGouraud:
+        UpdateShaders(1, 0, 0);
+        UpdateLitUnlitConstant(1);
+        break;
+    case VMI_LitLambert:
+        UpdateShaders(0, 1, 0);
+        UpdateLitUnlitConstant(1);
+        break;
+    case VMI_LitBlinnPhong:
+        UpdateShaders(0, 0, 1);
         UpdateLitUnlitConstant(1);
         break;
     case EViewModeIndex::VMI_Wireframe:
     case EViewModeIndex::VMI_Unlit:
+        UpdateShaders(0, 0, 0);
         UpdateLitUnlitConstant(0);
         break;
     }
@@ -178,7 +194,7 @@ bool FStaticMeshRenderPass::SetUberShader(bool bValue)
 	}
 }
 
-void FStaticMeshRenderPass::UpdateShaders()
+void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, int32 PhongFlag)
 {
 	// 이전의 shader를 저장
 	ID3D11VertexShader* PreviousVertexShaderMesh = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
@@ -243,15 +259,22 @@ void FStaticMeshRenderPass::UpdateShaders()
  //       }
 	//}
 
+    // refactoring here
 	std::string strDir = std::to_string(NUM_MAX_DIRLIGHT);
 	std::string strPoint = std::to_string(NUM_MAX_POINTLIGHT);
 	std::string strSpot = std::to_string(NUM_MAX_SPOTLIGHT);
-
+    std::string strGouraud = std::to_string(GouraudFlag);
+    std::string strLambert = std::to_string(LambertFlag);
+    std::string strPhong = std::to_string(PhongFlag);
+    
 	const D3D_SHADER_MACRO UberDefines[] =
 	{
 		{ "NUM_MAX_DIRLIGHT",   strDir.c_str() },
 		{ "NUM_MAX_POINTLIGHT", strPoint.c_str() },
 		{ "NUM_MAX_SPOTLIGHT",  strSpot.c_str() },
+	    {"LIGHTING_MODEL_GOURAUD", strGouraud.c_str() },
+	    {"LIGHTING_MODEL_LAMBERT", strLambert.c_str() },
+	    {"LIGHTING_MODEL_PHONG", strPhong.c_str() },
 		{ NULL, NULL }
 	};
 
@@ -328,8 +351,10 @@ void FStaticMeshRenderPass::PrepareRenderState() const
     // 상수 버퍼 바인딩 예시
     ID3D11Buffer* PerObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FPerObjectConstantBuffer"));
     ID3D11Buffer* CameraConstantBuffer = BufferManager->GetConstantBuffer(TEXT("FCameraConstantBuffer"));
+    ID3D11Buffer* LightBuffer = BufferManager->GetConstantBuffer(TEXT("FSceneLightBuffer"));
     Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &PerObjectBuffer);
     Graphics->DeviceContext->VSSetConstantBuffers(1, 1, &CameraConstantBuffer);
+    Graphics->DeviceContext->VSSetConstantBuffers(2, 1, &LightBuffer);
 
     TArray<FString> PSBufferKeys = {
                                   TEXT("FCameraConstantBuffer"),
@@ -419,7 +444,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         SetUberShader(!bIsUber);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
     }
-
+  
     if (bAutoUpdate)
     {
         UpdateShaders();

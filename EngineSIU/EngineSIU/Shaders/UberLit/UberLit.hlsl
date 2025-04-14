@@ -1,6 +1,25 @@
 // UberLit.hlsl
 #include "UberLitConstants.hlsli"
 #include "UberLitTextures.hlsli"
+#include "UberLitLightingModels.hlsli"
+#include "UberLitShadingModels.hlsli"
+
+float LinearToSRGB(float val)
+{
+    float low  = 12.92 * val;
+    float high = 1.055 * pow(val, 1.0 / 2.4) - 0.055;
+    // linear가 임계값보다 큰지 판별 후 선형 보간
+    float t = step(0.0031308, val); // linear >= 0.0031308이면 t = 1, 아니면 t = 0
+    return lerp(low, high, t);
+}
+
+float3 LinearToSRGB(float3 color)
+{
+    color.r = LinearToSRGB(color.r);
+    color.g = LinearToSRGB(color.g);
+    color.b = LinearToSRGB(color.b);
+    return color;
+}
 
 VS_OUT Uber_VS(VS_IN input)
 {
@@ -30,35 +49,168 @@ VS_OUT Uber_VS(VS_IN input)
     output.TBN = TBN;
     
     output.texcoord = input.texcoord;
-    
-    return output;
 #if LIGHTING_MODEL_GOURAUD
-
-#elif LIGHTING_MODEL_LAMBERT
-
-#elif LIGHTING_MODEL_PHONG
-
+    float3 GouraudColor = ComputeGouraudShading(output.worldPos, output.normal, 1.0f,
+         AmbientLight, DirectionalLights, PointLights, SpotLights,
+         NumDirLights, NumPointLights, NumSpotLights);
+    output.color = float4(GouraudColor, 1);
 #endif
-    output.position = float4(1, 1, 1, 1);
     return output;
 }
 
-float4 Uber_PS(VS_OUT Input) : SV_TARGET
+PS_OUT Uber_PS(VS_OUT Input)
 {
-    float4 finalPixel = DiffuseTexture.Sample(Sampler, Input.texcoord);
-    // Ambient Light의 컬러를 계산
-    finalPixel += float4(AmbientLight.AmbientColor, 1.f) * AmbientLight.Intensity;
+    PS_OUT Output;
+    Output.UUID = UUID;
     
+    float3 BaseColor = float3(1, 1, 1);
+    float3 Normal = normalize(Input.normal);
+    float3 MatAmbientColor = float3(0, 0, 0);
+    float3 MatSpecularColor = float3(0, 0, 0);
+    float3 MatAlphaColor = float3(0, 0, 0);
+    float3 MatEmissiveColor = float3(0, 0, 0);
+    float3 MatRoughnessColor = float3(0, 0, 0);
+
+    float2 UV = Input.texcoord + UVOffset;
+    
+    // Diffuse
+    if (Material.TextureFlag & (1 << 0))
+    {
+        BaseColor = DiffuseTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Ambient
+    if (Material.TextureFlag & (1 << 1))
+    {
+        MatAmbientColor = AmbientTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Specular
+    if (Material.TextureFlag & (1 << 2))
+    {
+        MatSpecularColor = SpecularTexture.Sample(Sampler, UV).rgb;
+    }
+    
+    // Alpha
+    if (Material.TextureFlag & (1 << 3))
+    {
+        MatAlphaColor = AlphaTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Emissive
+    if (Material.TextureFlag & (1 << 4))
+    {
+        MatEmissiveColor = EmissiveTexture.Sample(Sampler, UV).rgb;
+    }
+
+    // Roughness
+    if (Material.TextureFlag & (1 << 5))
+    {
+        MatRoughnessColor = RoughnessTexture.Sample(Sampler, UV).rgb;
+    }
+    
+    // Normal (Bump)
+    if (Material.TextureFlag & (1 << 6))
+    {
+        float3 SampledNormal = NormalTexture.Sample(Sampler, UV).rgb;
+        SampledNormal = LinearToSRGB(SampledNormal);
+        Normal = normalize(2.f * SampledNormal - 1.f);
+        Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
+    }
+
+    BaseColor *= Material.DiffuseColor.rgb;
+
+    float3 TotalColor = float3(0, 0, 0);
+    float3 DiffuseColor;
+    float3 Direction;
+    float Attenuation;
+
 #if LIGHTING_MODEL_GOURAUD
 
+    float3 FinalColor = BaseColor * Input.color.rgb;
+    Output.color = float4(FinalColor, 1);
+    return Output;
+    
 #elif LIGHTING_MODEL_LAMBERT
-    finalPixel += CalculateAmbientLight(...);
-    for(It : PointLights)
+    for (int i = 0; i < NumPointLights; i++)
     {
-        finalPixel += CalculatePointLight(...);
+        CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
+        ComputeLambert(PointLights[i].Color, Direction, Normal, DiffuseColor);
+
+        DiffuseColor *= Attenuation;
+        TotalColor += PointLights[i].Intensity * DiffuseColor;
     }
+
+    for (int i = 0; i < NumSpotLights; i++)
+    {
+        CalculateSpotLight(SpotLights[i].Direction, SpotLights[i].Position, Input.worldPos,
+            SpotLights[i].AttenuationRadius, SpotLights[i].Falloff, SpotLights[i].InnerConeAngle, SpotLights[i].OuterConeAngle,
+            Direction, Attenuation);
+        ComputeLambert(SpotLights[i].Color, Direction, Normal, DiffuseColor);
+
+        DiffuseColor *= Attenuation;
+        TotalColor += SpotLights[i].Intensity * DiffuseColor;
+    }
+
+    // Directional
+    CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
+    ComputeLambert(DirectionalLights[0].Color, Direction, Normal, DiffuseColor);
+
+    TotalColor += DirectionalLights[0].Intensity * DiffuseColor;
 #elif LIGHTING_MODEL_PHONG
     // Specular Reflectance
+    float3 SpecularColor;
+    
+    for (int i = 0; i < NumPointLights; i++)
+    {
+        CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
+        ComputeBlinnPhong(PointLights[i].Color, Direction, normalize(CameraPosition - Input.worldPos), Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
+
+        DiffuseColor *= Material.DiffuseColor * Attenuation;
+        SpecularColor *= Material.SpecularColor * Attenuation;
+
+        TotalColor += PointLights[i].Intensity * (DiffuseColor + SpecularColor);
+    }
+
+    for (int i = 0; i < NumSpotLights; i++)
+    {
+        CalculateSpotLight(SpotLights[i].Direction, SpotLights[i].Position, Input.worldPos,
+            SpotLights[i].AttenuationRadius, SpotLights[i].Falloff, SpotLights[i].InnerConeAngle, SpotLights[i].OuterConeAngle,
+            Direction, Attenuation);
+        ComputeBlinnPhong(SpotLights[i].Color, Direction, normalize(CameraPosition - Input.worldPos), Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
+
+        DiffuseColor *= SpotLights[i].Intensity * Material.DiffuseColor * Attenuation;
+        SpecularColor *= SpotLights[i].Intensity * Material.SpecularColor * Attenuation;
+
+        TotalColor += DiffuseColor + SpecularColor;
+    }
+
+    // Directional
+    CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
+    ComputeBlinnPhong(DirectionalLights[0].Color, Direction, normalize(CameraPosition - Input.worldPos), Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
+
+    DiffuseColor *= Material.DiffuseColor;
+    SpecularColor *= Material.SpecularColor;
+
+    TotalColor += DirectionalLights[0].Intensity * (DiffuseColor + SpecularColor);
 #endif
-    return finalPixel;
+    
+    // Ambient Light
+    TotalColor += AmbientLight.Color * AmbientLight.Intensity;
+
+    Output.color = float4(BaseColor * TotalColor, 1);
+
+    if (!IsLit)
+    {
+        Output.color = float4(BaseColor, 1);
+        return Output;
+    }
+    
+    // 선택
+    if (isSelected)
+    {
+        Output.color += float4(0.02, 0.02, 0.02, 1);
+    }
+    
+    return Output;
 }

@@ -29,9 +29,10 @@ cbuffer cbLights : register(b2)
 
     FSpotLight SpotLights[NUM_MAX_SPOTLIGHT];
 
-    int NumDirectionalLights;
+    int NumDirLights;
     int NumPointLights;
     int NumSpotLights;
+    int Pad2;
 };
 cbuffer MaterialConstants : register(b3)
 {
