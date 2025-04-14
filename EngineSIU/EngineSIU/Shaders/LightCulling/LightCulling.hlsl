@@ -12,15 +12,16 @@ struct FTileLightIndex
     uint LightIndices[31];
 };
 
-cbuffer ScreenInfo : register(b13)
+cbuffer ScreenInfo : register(b10)
 {
-    matrix ProjInv;
-    matrix ViewMatrix;
+    row_major matrix ProjInv;
+    row_major matrix ViewMatrix;
     uint NumTileWidth;
     uint NumTileHeight;
     uint TileSize;
     uint ScreenWidth;
     uint ScreenHeight;
+    uint3 ScreenInfoPad;
 };
 
 StructuredBuffer<FPointLightBuffer> PointLightBufferList : register(t0);
@@ -148,5 +149,5 @@ float4 mainPS(PSInput input) : SV_Target
     float intensity = saturate(lightCount / 32.0f);
 
     // 빨간색 톤으로 intensity 표시
-    return float4(intensity, 0.0f, 0.0f, 1.0f);
+    return float4(1, tileIndex / (float) 5000, 0.0f, 1.0f);
 }

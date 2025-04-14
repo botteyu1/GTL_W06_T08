@@ -31,7 +31,6 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
 {
     UpdateLightList();
     UpdateScreenInfoBuffer(Viewport);
-
     Graphics->DeviceContext->CSSetShader(ComputeShader, nullptr, 0);
 
     ID3D11ShaderResourceView* srvs[] = { LightListSRV };
@@ -42,6 +41,7 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
 
     Graphics->DeviceContext->CSSetUnorderedAccessViews(1, 1, &TileLightListUAV, nullptr);
 
+    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Compute);
     // 디스패치: 각 타일 하나당 한 스레드 그룹
     Graphics->DeviceContext->Dispatch(NumTileWidth, NumTileHeight, 1);
 
@@ -56,6 +56,8 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
 
     ShaderManager->SetVertexShader(ShaderName, Graphics->DeviceContext);
     ShaderManager->SetPixelShader(ShaderName, Graphics->DeviceContext);
+    UpdateScreenInfoBuffer(Viewport);
+    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
     Graphics->DeviceContext->PSSetShaderResources(1, 1, &TileLightListSRV); // t1번 슬롯에 SRV 바인딩
     Graphics->DeviceContext->Draw(4, 0);
 
@@ -120,8 +122,18 @@ void FLightCullingPass::UpdateScreenInfoBuffer(std::shared_ptr<FEditorViewportCl
     info.TileSize = TileSize;
     info.ScreenWidth = Graphics->screenWidth;
     info.ScreenHeight = Graphics->screenHeight;
-    BufferManager->UpdateConstantBuffer("ScreenInfo", &info);
-    BufferManager->BindConstantBuffer("ScreenInfo", 13, EShaderStage::Compute);
+    BufferManager->UpdateConstantBuffer("ScreenInfo", info);
+    //D3D11_MAPPED_SUBRESOURCE mappedResource;
+    //HRESULT hr = DXDeviceContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    //if (FAILED(hr))
+    //{
+    //    UE_LOG(LogLevel::Error, TEXT("Buffer Map 실패, HRESULT: 0x%X"), hr);
+    //    return;
+    //}
+
+    //memcpy(mappedResource.pData, &data, sizeof(T));
+    //DXDeviceContext->Unmap(buffer, 0);
+
 }
 
 HRESULT FLightCullingPass::CreateGlobalLightList()
