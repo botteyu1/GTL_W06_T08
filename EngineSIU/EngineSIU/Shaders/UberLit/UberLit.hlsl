@@ -113,9 +113,11 @@ PS_OUT Uber_PS(VS_OUT Input)
     if (Material.TextureFlag & (1 << 6))
     {
         float3 SampledNormal = NormalTexture.Sample(Sampler, UV).rgb;
-        SampledNormal = LinearToSRGB(SampledNormal);
+        //SampledNormal = LinearToSRGB(SampledNormal); //노말 텍스쳐는 리니어 그대로 적용
         Normal = normalize(2.f * SampledNormal - 1.f);
         Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
+        //Output.color = float4(1.0f,1.0f,1.0f, 1);
+        //return Output;
     }
 
     BaseColor *= Material.DiffuseColor.rgb;

@@ -405,7 +405,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
             }
         }
 
-        if (Token == "map_Bump")
+        if (Token == "map_Bump" or Token == "map_bump")
         {
             FString BumpTextureName;
 
