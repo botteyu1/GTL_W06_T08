@@ -3,7 +3,6 @@
 #include "UnrealClient.h"
 #include "World/World.h"
 #include "LevelEditor/SLevelEditor.h"
-#include "PropertyEditor/ViewportTypePanel.h"
 #include "Slate/Widgets/Layout/SSplitter.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
@@ -47,7 +46,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         {
             GEngineLoop.GetUnrealEditor()->OnResize(hWnd);
         }
-        ViewportTypePanel::GetInstance().OnResize(hWnd);
         break;
     case WM_MOUSEWHEEL:
         if (ImGui::GetIO().WantCaptureMouse)
@@ -55,17 +53,18 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         zDelta = GET_WHEEL_DELTA_WPARAM(wParam); // 휠 회전 값 (+120 / -120)
         if (GEngineLoop.GetLevelEditor())
         {
-            if (GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->IsPerspective())
+            auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
+            if (FocusedViewportClient->IsPerspective())
             {
-                if (GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetIsOnRBMouseClick())
+                if (FocusedViewportClient->GetIsOnRBMouseClick())
                 {
-                    GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->SetCameraSpeedScalar(
-                        static_cast<float>(GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraSpeedScalar() + zDelta * 0.01)
+                    FocusedViewportClient->SetCameraSpeedScalar(
+                        static_cast<float>(FocusedViewportClient->GetCameraSpeedScalar() + zDelta * 0.01)
                     );
                 }
                 else
                 {
-                    GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->CameraMoveForward(zDelta * 0.1f);
+                    FocusedViewportClient->CameraMoveForward(zDelta * 0.1f);
                 }
             }
             else
@@ -106,15 +105,12 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     /* must be initialized before window. */
     WindowInit(hInstance);
 
-    UnrealEditor = new UnrealEd();
-
     bufferManager = new FDXDBufferManager();
 
     UIMgr = new UImGuiManager;
 
     LevelEditor = new SLevelEditor();
 
-    UnrealEditor->Initialize(hWnd);
 
     GraphicDevice.Initialize(hWnd);
 
@@ -130,6 +126,9 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
     LevelEditor->Initialize();
 
+    UnrealEditor = new UnrealEd();
+    UnrealEditor->Initialize(hWnd);
+    
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
     GEngine->LoadLevel("Saved/AutoSaves.scene");
@@ -140,13 +139,15 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
 void FEngineLoop::Render() const
 {
-    GraphicDevice.Prepare(LevelEditor->GetActiveViewportClient());
+    auto FocusedViewportClient = LevelEditor->GetFocusedViewportClient(); 
+    GraphicDevice.Prepare(FocusedViewportClient);
     if (LevelEditor->IsMultiViewport())
     {
-        std::shared_ptr<FEditorViewportClient> viewportClient = GetLevelEditor()->GetActiveViewportClient();
-        for (int i = 0; i < 4; ++i)
+        std::shared_ptr<FEditorViewportClient> OriginActiveViewportClient = FocusedViewportClient;
+        TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients = LevelEditor->GetViewportClients();;
+        for (auto& ViewportClient : ViewportClients)
         {
-            LevelEditor->SetViewportClient(i);
+            LevelEditor->SetViewportClient(ViewportClient);
             // graphicDevice.DeviceContext->RSSetViewports(1, &LevelEditor->GetViewports()[i]->GetD3DViewport());
             // graphicDevice.ChangeRasterizer(LevelEditor->GetActiveViewportClient()->GetViewMode());
             // renderer.ChangeViewMode(LevelEditor->GetActiveViewportClient()->GetViewMode());
@@ -154,9 +155,9 @@ void FEngineLoop::Render() const
             // renderer.UpdateLightBuffer();
             // RenderWorld();
             Renderer.PrepareRender();
-            Renderer.Render(LevelEditor->GetActiveViewportClient());
+            Renderer.Render(ViewportClient);
         }
-        GetLevelEditor()->SetViewportClient(viewportClient);
+        GetLevelEditor()->SetViewportClient(OriginActiveViewportClient);
     }
     else
     {
@@ -167,7 +168,7 @@ void FEngineLoop::Render() const
         // renderer.UpdateLightBuffer();
         // RenderWorld();
         Renderer.PrepareRender();
-        Renderer.Render(LevelEditor->GetActiveViewportClient());
+        Renderer.Render(FocusedViewportClient);
     }
 }
 

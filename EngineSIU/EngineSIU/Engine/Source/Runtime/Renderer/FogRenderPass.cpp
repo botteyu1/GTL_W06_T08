@@ -8,7 +8,6 @@
 #include <wchar.h>
 #include <UObject/UObjectIterator.h>
 #include <Engine/Engine.h>
-#include "PropertyEditor/ShowFlags.h"
 
 FFogRenderPass::FFogRenderPass()
     : Graphics(nullptr)

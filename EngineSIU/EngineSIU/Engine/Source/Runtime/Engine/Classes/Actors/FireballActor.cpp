@@ -12,11 +12,11 @@ AFireballActor::AFireballActor()
     FManagerOBJ::CreateStaticMesh("Contents/Sphere.obj");
 
 
-    SphereComp = AddComponent<USphereComp>();
+    SphereComp = AddComponent<USphereComp>("USphereComp_0");
     
     SphereComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
   
-    PointLightComponent = AddComponent<UPointLightComponent>();
+    PointLightComponent = AddComponent<UPointLightComponent>("PointLightComponent_0");
     
 
     PointLightComponent->SetAttenuationRadius(0.5f);
@@ -24,7 +24,7 @@ AFireballActor::AFireballActor()
     PointLightComponent->SetLightColor(FColor::Red);
     
     
-    ProjectileMovementComponent = AddComponent<UProjectileMovementComponent>();
+    ProjectileMovementComponent = AddComponent<UProjectileMovementComponent>("UProjectileMovementComponent_0");
     PointLightComponent->AttachToComponent(RootComponent);
 
     ProjectileMovementComponent->SetGravity(0);

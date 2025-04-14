@@ -10,7 +10,6 @@
 #include "UObject/Casts.h"
 
 #include "UnrealEd/EditorViewportClient.h"
-#include "PropertyEditor/ShowFlags.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/ParticleSubUVComponent.h"

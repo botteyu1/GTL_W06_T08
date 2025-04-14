@@ -6,6 +6,12 @@ class UPointLightComponent :public ULightComponent
 
     DECLARE_CLASS(UPointLightComponent, ULightComponent)
 public:
+
+    
+    virtual UObject* Duplicate(UObject* InOuter) override;
+    virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    virtual void SetProperties(const TMap<FString, FString>& InProperties) override;
+    
     UPointLightComponent();
     virtual ~UPointLightComponent() override;
 

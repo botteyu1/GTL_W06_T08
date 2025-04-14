@@ -9,6 +9,13 @@ public:
     USpotLightComponent();
     ~USpotLightComponent() override;
 
+    
+    virtual UObject* Duplicate(UObject* InOuter) override;
+
+    
+    void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    void SetProperties(const TMap<FString, FString>& InProperties) override;
+
     void TickComponent(float DeltaTime) override;
     
     float GetAttenuationRadius() { return LightData.AttenuationRadius; }
@@ -17,8 +24,8 @@ public:
     float GetFalloff() { return LightData.Falloff; }
 
     void SetAttenuationRadius(float AttenuationRadius) { LightData.AttenuationRadius = AttenuationRadius; }
-    void SetInnerConeAngle(float InnerConeAngle) { LightData.InnerConeAngle = InnerConeAngle; }
-    void SetOuterConeAngle(float OuterConeAngle) { LightData.OuterConeAngle = OuterConeAngle; }
+    void SetInnerConeAngle(float InnerConeAngle);
+    void SetOuterConeAngle(float OuterConeAngle);
     void SetFalloff(float Falloff) { LightData.Falloff = Falloff; }
 
 protected:

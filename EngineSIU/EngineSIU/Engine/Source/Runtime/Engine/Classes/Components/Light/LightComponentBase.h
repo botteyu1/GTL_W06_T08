@@ -10,7 +10,14 @@ class ULightComponentBase : public USceneComponent
 public:
     ULightComponentBase();
 
-public:   
+public:
+    
+    virtual UObject* Duplicate(UObject* InOuter) override;
+
+    
+    void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    void SetProperties(const TMap<FString, FString>& InProperties) override;
+    
     float GetIntensity() const { return Intensity; }
     FLinearColor GetLightColor() const { return LightColor; }
     bool IsVisible() const { return bVisible; }

@@ -9,7 +9,6 @@
 #include "LevelEditor/SLevelEditor.h"
 #include "Math/JungleMath.h"
 #include "Math/MathUtility.h"
-#include "PropertyEditor/ShowFlags.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
 #include "Engine/EditorEngine.h"
@@ -47,7 +46,7 @@ void AEditorPlayer::Input()
 
             FVector pickPosition;
 
-            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
             ScreenToViewSpace(mousePos.x, mousePos.y, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix(), pickPosition);
             bool res = PickGizmo(pickPosition, ActiveViewport.get());
             if (res == false)
@@ -65,7 +64,7 @@ void AEditorPlayer::Input()
         if (bLeftMouseDown)
         {
             bLeftMouseDown = false;
-            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+            std::shared_ptr<FEditorViewportClient> ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
             ActiveViewport->SetPickedGizmoComponent(nullptr);
         }
     }
@@ -113,7 +112,7 @@ void AEditorPlayer::Input()
         }
     }
 
-    if (GetAsyncKeyState(VK_DELETE) & 0x8000)
+    if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
     {
         if (!bDeleteDown)
         {
@@ -221,17 +220,27 @@ bool AEditorPlayer::PickGizmo(FVector& pickPosition, FEditorViewportClient* InAc
 
 void AEditorPlayer::PickActor(const FVector& pickPosition)
 {
-    if (!(ShowFlags::GetInstance().currentFlags & EEngineShowFlags::SF_Primitives))
-    {
-        return;
-    }
+    auto LevelEditor = GEngineLoop.GetLevelEditor();
 
+    for (const auto& ViewportClient : LevelEditor->GetViewportClients())
+    {
+        if (ViewportClient->GetViewport()->GetFSlateRect().Contains(FVector2D(pickPosition.X, pickPosition.Y)))
+        {
+            if (!(ViewportClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives)))
+            {
+                return;
+            }        
+        }
+    }
+    
     USceneComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
+
+    // primitive가 아닌 uscenecomponent부터 선택 (아이콘으로 나와서 항상 위에 표시되기 때문)
     for (auto iter : TObjectRange<USceneComponent>())
     {
-        if (iter && !iter->IsA<UGizmoBaseComponent>())
+        if (!iter->IsA<UPrimitiveComponent>())
         {
             float Distance = 0.0f;
             int currentIntersectCount = 0;
@@ -251,6 +260,34 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
             }
         }
     }
+
+    // 선택 안되었으면 primitive 확인
+    if (!Possible)
+    {
+        for (auto iter : TObjectRange<UPrimitiveComponent>())
+        {
+            if (iter && !iter->IsA<UGizmoBaseComponent>())
+            {
+                float Distance = 0.0f;
+                int currentIntersectCount = 0;
+                if (RayIntersectsObject(pickPosition, iter, Distance, currentIntersectCount))
+                {
+                    if (Distance < minDistance)
+                    {
+                        minDistance = Distance;
+                        maxIntersect = currentIntersectCount;
+                        Possible = iter;
+                    }
+                    else if (abs(Distance - minDistance) < FLT_EPSILON && currentIntersectCount > maxIntersect)
+                    {
+                        maxIntersect = currentIntersectCount;
+                        Possible = iter;
+                    }
+                }
+            }
+        }
+    }
+
     if (Possible)
     {
         Cast<UEditorEngine>(GEngine)->SelectActor(Possible->GetOwner());
@@ -270,14 +307,15 @@ void AEditorPlayer::AddCoordiMode()
 
 void AEditorPlayer::ScreenToViewSpace(int screenX, int screenY, const FMatrix& viewMatrix, const FMatrix& projectionMatrix, FVector& rayOrigin)
 {
-    D3D11_VIEWPORT viewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetD3DViewport();
+    auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
+    D3D11_VIEWPORT viewport = FocusedViewportClient->GetD3DViewport();
     
     float viewportX = screenX - viewport.TopLeftX;
     float viewportY = screenY - viewport.TopLeftY;
 
     rayOrigin.X = ((2.0f * viewportX / viewport.Width) - 1) / projectionMatrix[0][0];
     rayOrigin.Y = -((2.0f * viewportY / viewport.Height) - 1) / projectionMatrix[1][1];
-    if (GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->IsOrtho())
+    if (FocusedViewportClient->IsOrtho())
     {
         rayOrigin.Z = 0.0f;  // 오쏘 모드에서는 unproject 시 near plane 위치를 기준
     }
@@ -289,10 +327,24 @@ void AEditorPlayer::ScreenToViewSpace(int screenX, int screenY, const FMatrix& v
 
 int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneComponent* obj, float& hitDistance, int& intersectCount)
 {
-    FMatrix WorldMatrix = obj->GetWorldMatrix();
-	FMatrix ViewMatrix = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
+    auto LevelEditor = GEngineLoop.GetLevelEditor();
+
+    for (const auto& ViewportClient : LevelEditor->GetViewportClients())
+    {
+        if (ViewportClient->GetViewport()->GetFSlateRect().Contains(FVector2D(pickPosition.X, pickPosition.Y)))
+        {
+            if (!(ViewportClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
+            {
+                return 0;
+            }        
+        }
+    }
     
-    bool bIsOrtho = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->IsOrtho();
+    auto FocusedViewportClient = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
+    FMatrix WorldMatrix = obj->GetWorldMatrix();
+	FMatrix ViewMatrix = FocusedViewportClient->GetViewMatrix();
+    
+    bool bIsOrtho = FocusedViewportClient->IsOrtho();
     
 
     if (bIsOrtho)
@@ -304,7 +356,7 @@ int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneCompon
         // 오쏘에서는 픽킹 원점은 unproject된 픽셀의 위치
         FVector rayOrigin = worldPickPos;
         // 레이 방향은 카메라의 정면 방향 (평행)
-        FVector orthoRayDir = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->ViewTransformOrthographic.GetForwardVector().GetSafeNormal();
+        FVector orthoRayDir = FocusedViewportClient->ViewTransformOrthographic.GetForwardVector().GetSafeNormal();
 
         // 객체의 로컬 좌표계로 변환
         FMatrix LocalMatrix = FMatrix::Inverse(WorldMatrix);
@@ -331,7 +383,7 @@ int AEditorPlayer::RayIntersectsObject(const FVector& pickPosition, USceneCompon
 void AEditorPlayer::PickedObjControl()
 {
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-    FEditorViewportClient* ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
+    FEditorViewportClient* ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient().get();
     if (Engine && Engine->GetSelectedActor() && ActiveViewport->GetPickedGizmoComponent())
     {
         POINT currentMousePos;
@@ -375,7 +427,7 @@ void AEditorPlayer::PickedObjControl()
 
 void AEditorPlayer::ControlRotation(USceneComponent* pObj, UGizmoBaseComponent* Gizmo, int32 deltaX, int32 deltaY)
 {
-    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     const FViewportCameraTransform* ViewTransform = ActiveViewport->GetViewportType() == LVT_Perspective
                                                         ? &ActiveViewport->ViewTransformPerspective
                                                         : &ActiveViewport->ViewTransformOrthographic;
@@ -421,7 +473,7 @@ void AEditorPlayer::ControlTranslation(USceneComponent* pObj, UGizmoBaseComponen
 {
     float DeltaX = static_cast<float>(deltaX);
     float DeltaY = static_cast<float>(deltaY);
-    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     const FViewportCameraTransform* ViewTransform = ActiveViewport->GetViewportType() == LVT_Perspective
                                                         ? &ActiveViewport->ViewTransformPerspective
                                                         : &ActiveViewport->ViewTransformOrthographic;
@@ -477,7 +529,7 @@ void AEditorPlayer::ControlScale(USceneComponent* pObj, UGizmoBaseComponent* Giz
 {
     float DeltaX = static_cast<float>(deltaX);
     float DeltaY = static_cast<float>(deltaY);
-    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient();
+    const auto ActiveViewport = GEngineLoop.GetLevelEditor()->GetFocusedViewportClient();
     const FViewportCameraTransform* ViewTransform = ActiveViewport->GetViewportType() == LVT_Perspective
                                                         ? &ActiveViewport->ViewTransformPerspective
                                                         : &ActiveViewport->ViewTransformOrthographic;

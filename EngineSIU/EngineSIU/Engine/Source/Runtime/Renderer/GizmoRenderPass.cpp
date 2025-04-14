@@ -20,8 +20,6 @@
 
 #include "UnrealEd/EditorViewportClient.h"
 
-#include "PropertyEditor/ShowFlags.h"
-
 #include "EngineLoop.h"
 
 #include "UObject/ObjectTypes.h"

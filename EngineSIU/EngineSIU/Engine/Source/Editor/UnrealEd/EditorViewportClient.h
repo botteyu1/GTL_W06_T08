@@ -3,7 +3,6 @@
 
 #include "Define.h"
 #include "Container/Map.h"
-#include "UObject/ObjectMacros.h"
 #include "ViewportClient.h"
 #include "EngineLoop.h"
 #include "EngineBaseTypes.h"
@@ -11,6 +10,7 @@
 #define MIN_ORTHOZOOM				1.0							/* 2D ortho viewport zoom >= MIN_ORTHOZOOM */
 #define MAX_ORTHOZOOM				1e25
 
+class FSlateRect;
 class ATransformGizmo;
 class USceneComponent;
 
@@ -83,14 +83,14 @@ public:
     FEditorViewportClient();
     virtual ~FEditorViewportClient() override;
 
-    virtual void Draw(FViewport* Viewport) override;
     virtual UWorld* GetWorld() const override { return nullptr; }
     void Initialize(int32 viewportIndex);
     void Tick(float DeltaTime);
     void Release() const;
+    //virtual void Draw() override;
 
     void Input();
-    void ResizeViewport(FRect Top, FRect Bottom, FRect Left, FRect Right);
+    void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
 
     bool IsSelected(POINT InPoint) const;
 
@@ -102,10 +102,12 @@ protected:
     float GridSize;
 
 public:
-    FViewport* Viewport;
     int32 ViewportIndex;
     FViewport* GetViewport() const { return Viewport; }
     D3D11_VIEWPORT& GetD3DViewport() const;
+
+private:
+    FViewport* Viewport;
 
 public:
     //카메라
@@ -122,11 +124,13 @@ public:
     static FVector Pivot;
     static float orthoSize;
     ELevelViewportType ViewportType;
-    uint64 ShowFlag;
     EViewModeIndex ViewMode;
 
     FMatrix View;
     FMatrix Projection;
+
+private:
+    uint64 ShowFlag;
 
 public: //Camera Movement
     void CameraMoveForward(float InValue);
