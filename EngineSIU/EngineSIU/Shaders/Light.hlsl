@@ -1,12 +1,8 @@
 // light.hlsl
 
-#define MAX_LIGHTS 16
-#define MAX_POINT_LIGHTS 8
+// UBer는 밖에서 define되고있음
+#define MAX_POINT_LIGHTS 16
 #define MAX_SPOT_LIGHTS 8
-
-#define POINT_LIGHT         1
-#define SPOT_LIGHT          2
-#define DIRECTIONAL_LIGHT   3
 
 struct LIGHT
 {
@@ -36,9 +32,6 @@ struct Ambient
 {
     float3 AmbientColor;
     float Intensity;
-    
-    int bVisible;
-    float3 Pad0;
 };
 
 struct Directional
@@ -48,9 +41,6 @@ struct Directional
 
     float3 Direction;
     float Pad0;
-
-    int bVisible;
-    float3 Pad1;
 };
 
 struct PointLight
@@ -63,9 +53,6 @@ struct PointLight
 
     float Falloff;
     float3 Pad0;
-
-    int bVisible;
-    float3 Pad1;
 };
 
 struct SpotLight
@@ -73,16 +60,15 @@ struct SpotLight
     float3 Color;
     float Intensity;
 
+    float3 Position;
     float AttenuationRadius;
-    float InnerConeAngle;
-    float OuterConeAngle;
-    float Falloff;
 
     float3 Direction;
-    float Pad0;
-
-    float3 Position;
-    int bVisible;
+    float Falloff;
+    
+    float InnerConeAngle;
+    float OuterConeAngle;
+    float2 pad;
 };
 
 cbuffer cbLights : register(b2)
@@ -95,11 +81,10 @@ cbuffer cbLights : register(b2)
 
     SpotLight gSpot[MAX_SPOT_LIGHTS];
 
+    int gNumDirectionalLights; // =1
     int gNumPointLights;
-    float3 Pad0;
-
     int gNumSpotLights;
-    float3 Pad1;
+    int pad1;
 
     // Legacy
     // LIGHT gLights[MAX_LIGHTS];
@@ -213,20 +198,13 @@ float4 Lighting(float3 vPosition, float3 vNormal)
     [unroll(MAX_POINT_LIGHTS)]
     for (int i = 0; i < gNumPointLights; i++)
     {
-        if (gPoint[i].bVisible)
-        {
-            cColor += CalculatePointLight(i, vPosition, vNormal);
-
-        }
+        cColor += CalculatePointLight(i, vPosition, vNormal);
     }
 
     [unroll(MAX_SPOT_LIGHTS)]
     for (int i = 0; i < gNumSpotLights; i++)
     {
-        if (gSpot[i].bVisible)
-        {
-            cColor += CalculateSpotLight(i, vPosition, vNormal);
-        }
+        cColor += CalculateSpotLight(i, vPosition, vNormal);
     }
     
     // 전역 환경광 추가

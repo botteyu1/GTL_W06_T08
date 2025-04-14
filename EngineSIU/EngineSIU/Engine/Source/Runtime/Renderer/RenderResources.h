@@ -42,7 +42,7 @@ struct FRenderResources
 
     struct FConstantBufferContainer
     {
-        FConstantBuffersStaticMesh StaticMesh;
+        //FConstantBuffersStaticMesh StaticMesh;
         // texture관련 cb필요.
         //FConstantBuffersBatchLine BatchLine;
         //FConstantBuffersBatchLine BatchLine; // line text 추가해야함
@@ -79,6 +79,10 @@ struct FRenderResourcesDebug
         TArray<class USpotLightComponent*> SpotLight;
         TArray<class UPointLightComponent*> PointLight;
         TArray<class UExponentialHeightFogComponent*> Fog;
+        //class UDirectionalLightComponent* DirLight;
+        //class USpotLightComponent* SpotLight;
+        //class UPointLightComponent* PointLight;
+        //class UExponentialHeightFogComponent* Fog;
     } Components;
 
 

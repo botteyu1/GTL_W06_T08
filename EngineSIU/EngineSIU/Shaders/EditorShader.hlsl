@@ -143,9 +143,9 @@ float4 spherePS(PS_INPUT input) : SV_Target
 
 /////////////////////////////////////////////
 // Cone
-float3x3 CreateRotationMatrixFromZ(float3 targetDir)
+float3x3 CreateRotationMatrixFromX(float3 targetDir)
 {
-    float3 from = float3(0.0f, 0.0f, 1.0f); // 기준 방향
+    float3 from = float3(1, 0, 0); // 기준 방향 X축
     float3 to = normalize(targetDir); // 타겟 방향 정규화
 
     float cosTheta = dot(from, to);
@@ -160,7 +160,7 @@ float3x3 CreateRotationMatrixFromZ(float3 targetDir)
         );
     }
 
-    // 반대 방향인 경우: 180도 회전, 축은 X축이나 Y축 아무거나 가능
+    // 반대 방향인 경우: 180도 회전, 축은 Y축이나 Z축 아무거나 가능
     if (cosTheta < -0.9999f)
     {
         float3 up = float3(0.0f, 1.0f, 0.0f);
@@ -187,17 +187,60 @@ float3x3 CreateRotationMatrixFromZ(float3 targetDir)
     float3x3 R = I + s * K + (1 - cosTheta) * mul(K, K);
     return R;
 }
-PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint instanceID : SV_InstanceID)
+PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
     PS_INPUT output;
     
-    float3 pos = DataCone[instanceID].ApexPosiiton;
-    float ConeRadiusScale = DataCone[instanceID].Radius * tan(DataCone[instanceID].Angle); // cone의 밑면
-    float3 scale = float3(ConeRadiusScale.xx, DataCone[instanceID].Radius);
-    float3x3 rot = CreateRotationMatrixFromZ(DataCone[instanceID].Direction);
+    int SegmentIndex;
+    // cone의 옆면
+    float Angle = DataCone[instanceID].Angle;
+    float TangentAngle = tan(Angle);
+    float SinAngle = sin(Angle);
+    float CosAngle = cos(Angle);
+    float radius = DataCone[instanceID].Radius;
     
-    float3 localPos3 = input.position.xyz;
-    localPos3 = localPos3 * scale;
+    float3 localPos3;
+    // 원뿔의 빗면
+    if (vertexID == 0)
+    {
+        localPos3 = float3(0, 0, 0);
+    }
+    else if (vertexID < NUM_SEGMENTS + 1)
+    {
+        float ConeBaseRadius = radius * SinAngle;
+        float ConeHeight = radius * CosAngle;
+        SegmentIndex = (vertexID - 1);
+        float SegmentAngle = SegmentIndex / (float) NUM_SEGMENTS * 2.0f * 3.1415926535897932f;
+        localPos3 = float3(ConeHeight, ConeBaseRadius, ConeBaseRadius);
+        localPos3 = localPos3 * float3(1.f, cos(SegmentAngle), sin(SegmentAngle));
+    }
+    // xz plane의 구
+    else if (vertexID < NUM_SEGMENTS + 1 + NUM_SEGMENTS / 4 + 1)
+    {
+        SegmentIndex = (vertexID - (NUM_SEGMENTS + 1));
+        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS / 4) * (2 * Angle);
+        float angleOffset = -Angle;
+        localPos3 = float3(cos(angleOffset + SegmentAngle), 0, sin(angleOffset + SegmentAngle));
+        localPos3 = localPos3 * float3(radius, radius, radius) * 1;
+    }
+    // yz plane의 구
+    else if (vertexID < NUM_SEGMENTS + 1 + 2 * (NUM_SEGMENTS / 4 + 1))
+    {
+        SegmentIndex = (vertexID - (NUM_SEGMENTS + 1 + NUM_SEGMENTS / 4 + 1));
+        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS / 4) * (2 * Angle);
+        float angleOffset = -Angle;
+        localPos3 = float3(cos(angleOffset + SegmentAngle), sin(angleOffset + SegmentAngle), 0);
+        localPos3 = localPos3 * float3(radius, radius, radius) * 1;
+    }
+    // 원점
+    else
+    {
+        localPos3 = float3(0, 0, 0);
+    }
+
+    float3 pos = DataCone[instanceID].ApexPosiiton;
+    float3x3 rot = CreateRotationMatrixFromX(DataCone[instanceID].Direction);
+    
     localPos3 = mul(localPos3, rot);
     localPos3 = localPos3 + pos;
     
@@ -400,7 +443,7 @@ PS_INPUT arrowVS(VS_INPUT input)
     pos = mul(pos, ProjMatrix);
 
     output.position = pos;
-    output.color = float4(0.7, 0.7, 0.7, 1.0f);
+    output.color = ArrowColor;
 
     return output;
 }

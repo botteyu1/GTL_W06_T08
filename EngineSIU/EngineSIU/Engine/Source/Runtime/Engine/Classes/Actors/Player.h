@@ -37,6 +37,8 @@ private:
     bool bRightMouseDown = false;
     bool bSpaceDown = false;
 
+    bool bDeleteDown = false;
+
     POINT m_LastMousePos;
     ControlMode cMode = CM_TRANSLATION;
     CoordiMode cdMode = CDM_WORLD;

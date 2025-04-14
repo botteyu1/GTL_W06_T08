@@ -89,6 +89,24 @@ void WorldControlEditorPanel::Render()
 
 void WorldControlEditorPanel::CreateAddPrimitive(ImVec2 ButtonSize, ImFont* IconFont) const
 {
+    // static bool IsUber;
+    // IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
+    // if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
+    // {
+    //     GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
+    // }
+
+    // if (ImGui::Button("Recompile(P)"))
+    // {
+    //     GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
+    // }
+    // static bool IsAutoUpdate = false;
+    // if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))
+    // {
+    //     GEngineLoop.Renderer.StaticMeshRenderPass->SetAutoUpdate(IsAutoUpdate);
+    // }
+
+    
     ImGui::PushFont(IconFont);
     if (ImGui::Button("\ue9c8", ButtonSize))
     {

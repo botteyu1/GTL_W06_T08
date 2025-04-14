@@ -1,4 +1,6 @@
 #include "Components/SceneComponent.h"
+
+#include "GameFramework/Actor.h"
 #include "Math/Rotator.h"
 #include "Math/JungleMath.h"
 #include "UObject/Casts.h"
@@ -71,6 +73,56 @@ void USceneComponent::TickComponent(float DeltaTime)
 	Super::TickComponent(DeltaTime);
 }
 
+void USceneComponent::DestroyComponent(bool bPromoteChildren)
+{
+    TArray<USceneComponent*> ChildrenCopy = AttachChildren;
+    for (auto& Child : ChildrenCopy)
+    {
+        if (Child == nullptr)
+        {
+            continue;
+        }
+
+        if (bPromoteChildren)
+        {
+            Child->DestroyComponent(bPromoteChildren);
+        }
+        else
+        {
+            AActor* Owner = GetOwner();
+            if (AttachParent)
+            {
+                Child->DetachFromComponent(this);
+                // 자식 컴포넌트들을 부모에 어태치
+                Child->SetupAttachment(AttachParent);
+            }
+            else if (Owner != nullptr)
+            {
+                if (Owner->GetRootComponent())
+                {
+                    Child->DetachFromComponent(this);
+                    // 부모가 nullptr인 경우 Owner의 Root에라도 어태치
+                    Child->SetupAttachment(Owner->GetRootComponent());
+                }
+                else
+                {
+                    // 루트 컴포넌트도 없는 경우, 아무거나 하나를 루트로 지정해줌
+                    Owner->SetRootComponent(Child);       
+                }
+            }
+        }
+    }
+
+    AttachChildren.Empty();
+
+    if (AttachParent)
+    {
+        DetachFromComponent(AttachParent);
+    }
+    
+    UActorComponent::DestroyComponent(bPromoteChildren);
+}
+
 
 int USceneComponent::CheckRayIntersection(FVector& InRayOrigin, FVector& InRayDirection, float& pfNearHitDistance) const
 {
@@ -84,7 +136,7 @@ FVector USceneComponent::GetForwardVector() const
     Forward4 = FMatrix::TransformVector(Forward4, GetWorldMatrix());
     FVector Forward;
     Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
-    Forward = Forward.Normalize();
+    Forward.Normalize();
 
     return Forward;
 }
@@ -95,7 +147,7 @@ FVector USceneComponent::GetRightVector() const
     Right4 = FMatrix::TransformVector(Right4, GetWorldMatrix());
     FVector Right;
     Right = FVector(Right4.X, Right4.Y, Right4.Z);
-    Right = Right.Normalize();
+    Right.Normalize();
 
     return Right;
 }
@@ -106,7 +158,7 @@ FVector USceneComponent::GetUpVector() const
     Up4 = FMatrix::TransformVector(Up4, GetWorldMatrix());
     FVector Up;
     Up = FVector(Up4.X, Up4.Y, Up4.Z);
-    Up = Up.Normalize();
+    Up.Normalize();
 
     return Up;
 }
@@ -154,6 +206,36 @@ void USceneComponent::AttachToComponent(USceneComponent* InParent)
     {
         InParent->AttachChildren.Add(this);
     }
+}
+
+void USceneComponent::SetupAttachment(USceneComponent* InParent)
+{
+    if (
+        InParent != AttachParent                                  // 설정하려는 Parent가 기존의 Parent와 다르거나
+        && InParent != this                                       // InParent가 본인이 아니고
+        && InParent != nullptr                                    // InParent가 유효한 포인터 이며
+        && (
+            AttachParent == nullptr                               // AttachParent도 유효하며
+            || !AttachParent->AttachChildren.Contains(this)  // 한번이라도 SetupAttachment가 호출된적이 없는 경우
+        ) 
+    ) {
+        AttachParent = InParent;
+
+        // TODO: .AddUnique의 실행 위치를 RegisterComponent로 바꾸거나 해야할 듯
+        InParent->AttachChildren.AddUnique(this);
+    }
+}
+
+void USceneComponent::DetachFromComponent(USceneComponent* Target)
+{
+    // TODO: Detachment Rule 필요
+
+    if (!Target || !Target->AttachChildren.Contains(this))
+    {
+        return;
+    }
+
+    Target->AttachChildren.Remove(this);
 }
 
 FVector USceneComponent::GetWorldLocation() const
@@ -234,22 +316,4 @@ FMatrix USceneComponent::GetWorldMatrix() const
         RTMat = RTMat * ParentRTMat;
     }
     return ScaleMat * RTMat;
-}
-
-void USceneComponent::SetupAttachment(USceneComponent* InParent)
-{
-    if (
-        InParent != AttachParent                                  // 설정하려는 Parent가 기존의 Parent와 다르거나
-        && InParent != this                                       // InParent가 본인이 아니고
-        && InParent != nullptr                                    // InParent가 유효한 포인터 이며
-        && (
-            AttachParent == nullptr                               // AttachParent도 유효하며
-            || !AttachParent->AttachChildren.Contains(this)  // 한번이라도 SetupAttachment가 호출된적이 없는 경우
-        ) 
-    ) {
-        AttachParent = InParent;
-
-        // TODO: .AddUnique의 실행 위치를 RegisterComponent로 바꾸거나 해야할 듯
-        InParent->AttachChildren.AddUnique(this);
-    }
 }
