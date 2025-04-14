@@ -1,14 +1,10 @@
 #pragma once
+#include <filesystem>
 #define _TCHAR_DEFINED
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include "Container/Map.h"
 
-struct FVertexShaderData
-{
-	ID3DBlob* VertexShaderCSO;
-	ID3D11VertexShader* VertexShader;
-};
 
 class FDXDShaderManager
 {
@@ -25,6 +21,10 @@ public:
 	HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName);
 	HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines = nullptr);
 	HRESULT AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize);
+
+    void AddVertexShader(const std::wstring& Key, ID3D11VertexShader* VerteShader);
+    void AddVertexShader(const std::wstring& Key, ID3D11PixelShader* PixelShader);
+    void AddInputLayout(const std::wstring& Key, ID3D11InputLayout* InputLayout);
 	
 	HRESULT AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines = nullptr);
 
@@ -34,15 +34,36 @@ public:
 	ID3D11VertexShader* GetVertexShaderByKey(const std::wstring& Key) const;
 	ID3D11PixelShader* GetPixelShaderByKey(const std::wstring& Key) const;
 
+
+    void RemoveInputLayoutByKey(const std::wstring& Key);
+    void RemoveVertexShaderByKey(const std::wstring& Key);
+    void RemovePixelShaderByKey(const std::wstring& Key);
+
     void SetVertexShader(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const;
     void SetVertexShaderAndInputLayout(const std::wstring KeyName, ID3D11DeviceContext* DeviceContext) const;
     void SetPixelShader(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const;
     void SetInputLayout(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const;
 
+    HRESULT ReloadVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
+    HRESULT ReloadPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
+    HRESULT ReloadShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint, 
+        const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
+        const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines);
+
+    HRESULT ReloadModifiedShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint,
+        const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
+        const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines);
+
 private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
 	TMap<std::wstring, ID3D11VertexShader*> VertexShaders;
 	TMap<std::wstring, ID3D11PixelShader*> PixelShaders;
+
+    TMap<ID3D11VertexShader*, std::filesystem::file_time_type> VertexShaderModifiedTime;
+    TMap<ID3D11PixelShader*, std::filesystem::file_time_type> PixelShaderModifiedTime;
+
+    template<typename T>
+    void SafeRelease(T*& comObject);
 
 };
 

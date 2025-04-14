@@ -424,18 +424,20 @@ void FEditorRenderPass::CreateBuffers()
     // Cone 버퍼 생성
     // 0,0,0이 Apex
     // z=1이고, xy에서 r=1인 원이 밑변
-    constexpr uint32 NumSegments = 32;
     TArray<FVector> ConeVertices;
     ConeVertices.Add({0.0f, 0.0f, 0.0f}); // Apex
     for (int i = 0; i < NumSegments; i++)
     {
-        float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments;
-        float x = cos(angle);
-        float y = sin(angle);
+        // hlsl 내부에서 계산
+        //float angle = 2.0f * 3.1415926535897932f * i / (float)NuzmSegments;
+        //float x = cos(angle);
+        //float y = sin(angle);
+        float x = 0;
+        float y = 0;
         ConeVertices.Add({x, y, 1.0f}); // Bottom
     }
     TArray<uint32> ConeIndices;
-    constexpr uint32 vertexOffset0 = 1;
+    uint32 vertexOffset0 = 1;
     // apex -> 밑면으로 가는 line
     for (int i = 0; i < NumSegments; i++)
     {
@@ -451,16 +453,18 @@ void FEditorRenderPass::CreateBuffers()
 
     // cone을 덮는 sphere
     // xz plane
-    float deltaAngle = 2.0f * 3.1415926535897932f / (float)NumSegments;
-    float offsetAngle = deltaAngle * NumSegments / 8; // 45도 부터 시작
+    //float deltaAngle = 2.0f * 3.1415926535897932f / (float)NumSegments;
+    //float offsetAngle = deltaAngle * NumSegments / 8; // 45도 부터 시작
     for (int i = 0; i < NumSegments/4 + 1; i++)
     {
-        float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
-        float x = cos(angle) * sqrt(2.f);
-        float z = sin(angle) * sqrt(2.f);
+        //float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
+        //float x = cos(angle) * sqrt(2.f);
+        //float z = sin(angle) * sqrt(2.f);
+        float x = 0;
+        float z = 0;
         ConeVertices.Add({ x, 0, z });
     }
-    constexpr uint32 vertexOffset1 = NumSegments + vertexOffset0;
+    uint32 vertexOffset1 = NumSegments + vertexOffset0;
     for (int i = 0; i < NumSegments/4; i++)
     {
         ConeIndices.Add(vertexOffset1 + i);
@@ -469,12 +473,14 @@ void FEditorRenderPass::CreateBuffers()
     // yz plane
     for (int i = 0; i < NumSegments / 4 + 1; i++)
     {
-        float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
-        float y = cos(angle) * sqrt(2.f);
-        float z = sin(angle) * sqrt(2.f);
+        //float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
+        //float y = cos(angle) * sqrt(2.f);
+        //float z = sin(angle) * sqrt(2.f);
+        float y = 0;
+        float z = 0;
         ConeVertices.Add({ 0, y, z });
     }
-    constexpr uint32 vertexOffset2 = NumSegments / 4 + 1 + vertexOffset1;
+    uint32 vertexOffset2 = NumSegments / 4 + 1 + vertexOffset1;
     for (int i = 0; i < NumSegments / 4; i++)
     {
         ConeIndices.Add(vertexOffset2 + i);
@@ -557,13 +563,22 @@ void FEditorRenderPass::PrepareComponents()
     Resources.Components.PointLight.Empty();
     Resources.Components.SpotLight.Empty();
     Resources.Components.Fog.Empty();
+    //Resources.Components.DirLight = nullptr;
+    //Resources.Components.PointLight = nullptr;
+    //Resources.Components.SpotLight = nullptr;
+    //Resources.Components.Fog = nullptr;
     // gizmo 제외하고 넣기
 
     if (GEngine->ActiveWorld->WorldType != EWorldType::Editor)
     {
         return;
     }
-
+    
+    UEditorEngine* EditorEngine = Cast< UEditorEngine>(GEngine);
+    if (!EditorEngine)
+    {
+        return;
+    }
 
     for (const auto iter : TObjectRange<UStaticMeshComponent>())
     {
@@ -589,6 +604,7 @@ void FEditorRenderPass::PrepareComponents()
         }
     }
 
+
     for (const auto iter : TObjectRange<USpotLightComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
@@ -601,10 +617,33 @@ void FEditorRenderPass::PrepareComponents()
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
         {
-            Resources.Components.Fog.Add(iter);
+           Resources.Components.Fog.Add(iter);
         }
     }
 
+
+    //if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
+    //{
+    //    if (USceneComponent* SelectedComponent = EditorEngine->GetSelectedComponent())
+    //    {
+    //        if (SelectedComponent->IsA<UDirectionalLightComponent>())
+    //        {
+    //            Resources.Components.DirLight = Cast<UDirectionalLightComponent>(SelectedComponent);
+    //        }
+    //        else if (SelectedComponent->IsA<UPointLightComponent>())
+    //        {
+    //            Resources.Components.PointLight = Cast<UPointLightComponent>(SelectedComponent);
+    //        }
+    //        else if (SelectedComponent->IsA<USpotLightComponent>())
+    //        {
+    //            Resources.Components.SpotLight = Cast<USpotLightComponent>(SelectedComponent);
+    //        }
+    //        else if (SelectedComponent->IsA<UExponentialHeightFogComponent>())
+    //        {
+    //            Resources.Components.Fog = Cast<UExponentialHeightFogComponent>(SelectedComponent);
+    //        }
+    //    }
+    //}
 }
 
 void FEditorRenderPass::PrepareConstantbufferGlobal()
@@ -636,6 +675,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
         LazyLoad();
         isLoaded = true;
     }
+    UpdateShaders();
 
     PrepareRendertarget();
     PrepareComponents();
@@ -662,7 +702,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
     ID3D11DepthStencilState* DepthStateDisable = Graphics->DepthStencilStateTestWriteDisable;
     DeviceContext->OMSetDepthStencilState(DepthStateDisable, 0);
     RenderIcons(ActiveViewport);
-    //RenderArrows(World);
+    //RenderArrows();
     //RenderGizmos(World);
 }
 
@@ -864,6 +904,12 @@ void FEditorRenderPass::UdpateConstantbufferAABBInstanced(TArray<FConstantBuffer
 
 void FEditorRenderPass::RenderPointlightInstanced()
 {
+    UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+    if (!EditorEngine)
+    {
+        return;
+    }
+
     ShaderManager->SetVertexShaderAndInputLayout(ShaderNameSphere, DeviceContext);
     ShaderManager->SetPixelShader(ShaderNameSphere, DeviceContext);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -875,13 +921,17 @@ void FEditorRenderPass::RenderPointlightInstanced()
     // 위치랑 bounding box 크기 정보 가져오기
     TArray<FConstantBufferDebugSphere> BufferAll;
     for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
-    {        
-        FConstantBufferDebugSphere b;
-        b.Position = PointLightComp->GetWorldLocation();
-        b.Radius = PointLightComp->GetAttenuationRadius();
-        b.Color = FLinearColor(149.f / 255.f, 198.f / 255.f, 255.f / 255.f, 255.f / 255.f);
+    {
+        if (PointLightComp == EditorEngine->GetSelectedComponent())
+        {
+            FConstantBufferDebugSphere b;
+            b.Position = PointLightComp->GetWorldLocation();
+            b.Radius = PointLightComp->GetAttenuationRadius();
+            b.Color = FLinearColor(149.f / 255.f, 198.f / 255.f, 255.f / 255.f, 255.f / 255.f);
 
-        BufferAll.Add(b);
+            BufferAll.Add(b);
+            break;
+        }
     }
 
     PrepareConstantbufferPointlight();
@@ -939,8 +989,16 @@ void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstant
 
 void FEditorRenderPass::RenderSpotlightInstanced()
 {
-    ShaderManager->SetVertexShaderAndInputLayout(ShaderNameSphere, DeviceContext);
-    ShaderManager->SetPixelShader(ShaderNameSphere, DeviceContext);
+    UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+    if (!EditorEngine)
+    {
+        return;
+    }
+    // TODO : 현재 z값이 과도하게 크면 cone의 둥근 부분이 구형이 아님
+    // 따라서 따로 그려줘서 곡률이 일정하게 만들어야 할거같음
+    // 아니고 그냥 셰이더에서 할수있을거같기도 함...
+    ShaderManager->SetVertexShaderAndInputLayout(ShaderNameCone, DeviceContext);
+    ShaderManager->SetPixelShader(ShaderNameCone, DeviceContext);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
     UINT offset = 0;
@@ -953,17 +1011,24 @@ void FEditorRenderPass::RenderSpotlightInstanced()
     TArray<FConstantBufferDebugCone> BufferAll;
     for (USpotLightComponent* SpotComp : Resources.Components.SpotLight)
     {
-        FConstantBufferDebugCone b;
-        b.ApexPosiiton = SpotComp->GetWorldLocation();
-        b.Radius = SpotComp->GetAttenuationRadius();
-        b.Direction = SpotComp->GetForwardVector();
-        b.Angle = SpotComp->GetInnerConeAngle();
-        b.Color = InnerColor;
-        BufferAll.Add(b);
+        if (SpotComp == EditorEngine->GetSelectedComponent())
+        {
+            FConstantBufferDebugCone b;
+            b.ApexPosiiton = SpotComp->GetWorldLocation();
+            b.Radius = SpotComp->GetAttenuationRadius();
+            b.Direction = SpotComp->GetForwardVector();
+            b.Angle = SpotComp->GetInnerConeAngle();
+            // 테스트용
+            b.Angle = 0.5;
+            b.Radius = 10;
+            b.Color = InnerColor;
+            BufferAll.Add(b);
 
-        b.Angle = SpotComp->GetOuterConeAngle();
-        b.Color = OuterColor;
-        BufferAll.Add(b);
+            //b.Angle = SpotComp->GetOuterConeAngle();
+            //b.Color = OuterColor;
+            //BufferAll.Add(b);
+            break;
+        }
     }
 
     PrepareConstantbufferSpotlight();
@@ -1076,13 +1141,13 @@ void FEditorRenderPass::LazyLoad()
     Resources.IconTextures[IconType::ExponentialFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Icons/ExponentialHeightFog_64.png");
     Resources.IconTextures[IconType::AtmosphericFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Icons/AtmosphericFog_64.png");
 
-// Gizmo arrow 로드
-    //UStaticMesh* Mesh = FManagerOBJ::GetStaticMesh(L"gizmo_loc_z.obj");
-    //Resources.Primitives.Arrow.Vertex = Mesh->GetRenderData()->VertexBuffer;
-    //Resources.Primitives.Arrow.Index = Mesh->GetRenderData()->IndexBuffer;
-    //Resources.Primitives.Arrow.NumVertices = Mesh->GetRenderData()->Vertices.Num();
-    //Resources.Primitives.Arrow.NumIndices = Mesh->GetRenderData()->Indices.Num();
-    //Resources.Primitives.Arrow.VertexStride = sizeof(Mesh->GetRenderData()->Vertices);
+//// Gizmo arrow 로드
+    UStaticMesh* Mesh = FManagerOBJ::GetStaticMesh(L"Assets/GizmoTranslationZ.obj");
+    Resources.Primitives.Arrow.Vertex = Mesh->GetRenderData()->VertexBuffer;
+    Resources.Primitives.Arrow.Index = Mesh->GetRenderData()->IndexBuffer;
+    Resources.Primitives.Arrow.NumVertices = Mesh->GetRenderData()->Vertices.Num();
+    Resources.Primitives.Arrow.NumIndices = Mesh->GetRenderData()->Indices.Num();
+    Resources.Primitives.Arrow.VertexStride = sizeof(Mesh->GetRenderData()->Vertices[0]);
 
 }
 
@@ -1201,10 +1266,10 @@ void FEditorRenderPass::UpdateTextureIcon(IconType type)
     DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[type]->SamplerState);
 }
 
-void FEditorRenderPass::RenderArrows(const UWorld* World)
+void FEditorRenderPass::RenderArrows()
 {
     // XYZ한번. Z는 중복으로 적용
-    const float ArrowScale = 5;
+    const float ArrowScale = 3;
 
     ShaderManager->SetVertexShaderAndInputLayout(ShaderNameArrow, DeviceContext);
     ShaderManager->SetPixelShader(ShaderNameArrow, DeviceContext);
@@ -1215,18 +1280,29 @@ void FEditorRenderPass::RenderArrows(const UWorld* World)
     DeviceContext->IASetIndexBuffer(Resources.Primitives.Arrow.Index, DXGI_FORMAT_R32_UINT, 0);
 
     PrepareConstantbufferArrow();
-    for (ULightComponentBase* LightComp : Resources.Components.PointLight)
+    for (UDirectionalLightComponent* DLightComp : Resources.Components.DirLight)
     {
-        if (UDirectionalLightComponent* DLightComp = Cast<UDirectionalLightComponent>(LightComp))
-        {
-            FConstantBufferDebugArrow buf;
-            buf.Position = DLightComp->GetWorldLocation();
-            buf.ArrowScaleXYZ = ArrowScale;
-            buf.Direction = DLightComp->GetForwardVector();
-            buf.ArrowScaleZ = ArrowScale;
-            UdpateConstantbufferArrow(buf);
-            DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
-        }
+        FConstantBufferDebugArrow buf;
+        buf.Position = DLightComp->GetWorldLocation();
+        buf.ArrowScaleXYZ = ArrowScale;
+        buf.Direction = DLightComp->GetForwardVector();
+        buf.ArrowScaleZ = ArrowScale;
+        buf.Color = DLightComp->GetLightColor();
+        UdpateConstantbufferArrow(buf);
+        DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
+
+    }
+    for (USpotLightComponent* SLightComp : Resources.Components.SpotLight)
+    {
+        FConstantBufferDebugArrow buf;
+        buf.Position = SLightComp->GetWorldLocation();
+        buf.ArrowScaleXYZ = ArrowScale;
+        buf.Direction = SLightComp->GetForwardVector();
+        buf.ArrowScaleZ = ArrowScale;
+        buf.Color = SLightComp->GetLightColor();
+        UdpateConstantbufferArrow(buf);
+        DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
+
     }
 }
 
@@ -1248,4 +1324,24 @@ void FEditorRenderPass::UdpateConstantbufferArrow(FConstantBufferDebugArrow Buff
         memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugArrow)); // TArray이니까 실제 값을 받아와야함
         DeviceContext->Unmap(Resources.ConstantBuffers.Arrow13, 0); // GPU�� �ٽ� ��밡���ϰ� �����
     }
+}
+
+void FEditorRenderPass::UpdateShaders()
+{
+
+    // 디버그용
+    //// 이전의 shader를 저장
+    //ID3D11VertexShader* PreviousVertexShaderMesh = ShaderManager->GetVertexShaderByKey(ShaderNameCone);
+    //ID3D11InputLayout* PreviousInputLayoutMesh = ShaderManager->GetInputLayoutByKey(ShaderNameCone);
+    //ID3D11PixelShader* PreviousPixelShaderMesh = ShaderManager->GetPixelShaderByKey(ShaderNameCone);
+
+    // AABB
+    D3D11_INPUT_ELEMENT_DESC PositionOnlyLayout[] = {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+
+    ShaderManager->ReloadModifiedShaders(ShaderNameCone, ShaderPath, "coneVS",
+        PositionOnlyLayout, ARRAYSIZE(PositionOnlyLayout), defines,
+        ShaderNameCone, ShaderPath, "conePS", defines);
+
 }

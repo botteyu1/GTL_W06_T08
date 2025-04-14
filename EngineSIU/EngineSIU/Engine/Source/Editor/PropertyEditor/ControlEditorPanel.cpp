@@ -24,6 +24,7 @@
 #include "Actors/Cube.h"
 
 #include "Engine/EditorEngine.h"
+#include "Runtime/Renderer/StaticMeshRenderPass.h"
 #include <Actors/HeightFogActor.h>
 
 #include "Actors/AmbientLightActor.h"
@@ -257,6 +258,26 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
         {
             GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->SetCameraSpeedScalar(CameraSpeed);
         }
+
+        ImGui::Separator();
+
+        static bool IsUber;
+        IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
+        if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->SetUberShader(IsUber);
+        }
+
+        if (ImGui::Button("Recompile(P)"))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders();
+        }
+        static bool IsAutoUpdate = false;
+        if (ImGui::Checkbox("AutoRecompile", &IsAutoUpdate))
+        {
+            GEngineLoop.Renderer.StaticMeshRenderPass->SetAutoUpdate(IsAutoUpdate);
+        }
+
 
         ImGui::EndPopup();
     }

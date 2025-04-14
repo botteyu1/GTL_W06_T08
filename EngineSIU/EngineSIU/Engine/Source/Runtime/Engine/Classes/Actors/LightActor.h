@@ -2,7 +2,6 @@
 #include "GameFramework/Actor.h"
 
 class UPointLightComponent;
-class UBillboardComponent;
 
 class APointLight :public AActor
 {
@@ -14,7 +13,4 @@ protected:
   
     UPROPERTY
     (UPointLightComponent*, PointLightComponent, = nullptr);
-
-   UPROPERTY
-   (UBillboardComponent*, BillboardComponent, = nullptr);
 };

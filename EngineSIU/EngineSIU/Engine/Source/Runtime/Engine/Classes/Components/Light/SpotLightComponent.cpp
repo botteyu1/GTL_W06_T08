@@ -1,7 +1,6 @@
 #include "SpotLightComponent.h"
 USpotLightComponent::USpotLightComponent()
 {
-    LightData.bVisible = bVisible;
     LightData.Intensity = Intensity;
     LightData.Color = FVector(LightColor.R, LightColor.G, LightColor.B);
 

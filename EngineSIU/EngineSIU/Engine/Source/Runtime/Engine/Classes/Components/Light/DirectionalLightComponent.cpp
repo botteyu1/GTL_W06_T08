@@ -2,7 +2,6 @@
 
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
-    LightData.bVisible = bVisible;
     LightData.Color = FVector(LightColor.R, LightColor.G, LightColor.B);
     LightData.Intensity = Intensity;
     LightData.Direction = this->GetForwardVector();

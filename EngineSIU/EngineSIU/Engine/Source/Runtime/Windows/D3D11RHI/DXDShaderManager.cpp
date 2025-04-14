@@ -1,4 +1,5 @@
 #include "DXDShaderManager.h"
+#include "Define.h"
 
 
 FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
@@ -51,6 +52,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
     {
         if (ErrorBlob) {
             OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
             ErrorBlob->Release();
         }
         return hr;
@@ -66,6 +68,10 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
         return hr;
 
     PixelShaders[Key] = NewPixelShader;
+
+    // modified time 기록
+    std::filesystem::path FilePath = FileName;
+    PixelShaderModifiedTime[NewPixelShader] = std::filesystem::last_write_time(FilePath);
 
     return S_OK;
 }
@@ -90,6 +96,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     {
         if (ErrorBlob) {
             OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
             ErrorBlob->Release();
         }
         return hr;
@@ -107,12 +114,43 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
 
     VertexShaderCSO->Release();
 
+    // modified time 기록
+    std::filesystem::path FilePath = FileName;
+    VertexShaderModifiedTime[NewVertexShader] = std::filesystem::last_write_time(FilePath);
+
     return S_OK;
 }
 
 HRESULT FDXDShaderManager::AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
 {
     return S_OK;
+}
+
+void FDXDShaderManager::AddVertexShader(const std::wstring& Key, ID3D11VertexShader* VerteShader)
+{
+    if (!VerteShader)
+    {
+        return;
+    }
+    VertexShaders[Key] = VerteShader;
+}
+
+void FDXDShaderManager::AddVertexShader(const std::wstring& Key, ID3D11PixelShader* PixelShader)
+{
+    if (!PixelShader)
+    {
+        return;
+    }
+    PixelShaders[Key] = PixelShader;
+}
+
+void FDXDShaderManager::AddInputLayout(const std::wstring& Key, ID3D11InputLayout* InputLayout)
+{
+    if (!InputLayout)
+    {
+        return;
+    }
+    InputLayouts[Key] = InputLayout;
 }
 
 HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines)
@@ -134,6 +172,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     {
         if (ErrorBlob) {
             OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
             ErrorBlob->Release();
         }
         return hr;
@@ -158,6 +197,10 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     InputLayouts[Key] = NewInputLayout;
 
     VertexShaderCSO->Release();
+
+    // modified time 기록
+    std::filesystem::path FilePath = FileName;
+    VertexShaderModifiedTime[NewVertexShader] = std::filesystem::last_write_time(FilePath);
 
     return S_OK;
 }
@@ -187,6 +230,36 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
         return *PixelShaders.Find(Key);
     }
     return nullptr;
+}
+
+void FDXDShaderManager::RemoveInputLayoutByKey(const std::wstring& Key)
+{
+    if (InputLayouts.Contains(Key))
+    {
+        InputLayouts[Key]->Release();
+        InputLayouts[Key] = nullptr;
+        InputLayouts.Remove(Key);
+    }
+}
+
+void FDXDShaderManager::RemoveVertexShaderByKey(const std::wstring& Key)
+{
+    if (VertexShaders.Contains(Key))
+    {
+        VertexShaders[Key]->Release();
+        VertexShaders[Key] = nullptr;
+        VertexShaders.Remove(Key);
+    }
+}
+
+void FDXDShaderManager::RemovePixelShaderByKey(const std::wstring& Key)
+{
+    if (PixelShaders.Contains(Key))
+    {
+        PixelShaders[Key]->Release();
+        PixelShaders[Key] = nullptr;
+        PixelShaders.Remove(Key);
+    }
 }
 
 void FDXDShaderManager::SetVertexShader(const std::wstring& KeyName, ID3D11DeviceContext* DeviceContext) const
@@ -238,5 +311,166 @@ void FDXDShaderManager::SetInputLayout(const std::wstring& KeyName, ID3D11Device
     if (ID3D11InputLayout* Layout = GetInputLayoutByKey(KeyName))
     {
         DeviceContext->IASetInputLayout(Layout);
+    }
+}
+
+
+HRESULT FDXDShaderManager::ReloadVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (!VertexShaders.Contains(Key))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload vertex shader : Key does not exist");
+        return S_FALSE;
+    }
+    ID3D11VertexShader* PreviousShader = VertexShaders[Key];
+
+    HRESULT hr = AddVertexShader(Key, FileName, EntryPoint, Defines);
+    if(FAILED(hr))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload vertex shader : Compilation Failed");
+        return hr;
+    }
+    else
+    {
+        // 버텍스 셰이더 컴파일에 성공했고, VertexShaders[Key]에는 새로운 shadercode가 들어가있음
+        // 원래 있었던 코드를 release
+        if (PreviousShader)
+        {
+            PreviousShader->Release();
+        }
+        UE_LOG(LogLevel::Display, "Successfully reloaded vertex shader");
+        return hr;
+    }
+}
+
+HRESULT FDXDShaderManager::ReloadPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (!PixelShaders.Contains(Key))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload pixel shader : Key does not exist");
+        return S_FALSE;
+    }
+    ID3D11PixelShader* PreviousShader = PixelShaders[Key];
+
+    HRESULT hr = AddPixelShader(Key, FileName, EntryPoint, Defines);
+    if(FAILED(hr))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload pixel shader : Compilation Failed");
+        return hr;
+    }
+    else
+    {
+        // 버텍스 셰이더 컴파일에 성공했고, PixelShaders[Key]에는 새로운 shadercode가 들어가있음
+        // 원래 있었던 코드를 release
+        if (PreviousShader)
+        {
+            PreviousShader->Release();
+        }
+        UE_LOG(LogLevel::Display, "Successfully reloaded pixel shader");
+        return hr;
+    }
+}
+
+HRESULT FDXDShaderManager::ReloadShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint,
+    const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
+    const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines)
+{
+    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey) || !InputLayouts.Contains(VertexKey))
+    {
+        UE_LOG(LogLevel::Warning, "Invalid Key : Adding new shaders. This happens when shader compilation at intialization failed.");
+    }
+    //  실패 시 revert할 shader
+    ID3D11VertexShader* PreviousVertexShader = VertexShaders[VertexKey];
+    ID3D11InputLayout* PreviousInputLayout = InputLayouts[VertexKey];
+    ID3D11PixelShader* PreviousPixelShader = PixelShaders[PixelKey];
+
+    HRESULT hr = AddVertexShaderAndInputLayout(VertexKey, VertexFileName, VertexEntryPoint, Layout, LayoutSize, VertexDefines);
+    if (FAILED(hr))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload vertex shader : Compilation Failed");
+        return hr;
+    }
+
+    hr = AddPixelShader(PixelKey, PixelFileName, PixelEntryPoint, PixelDefines);
+    if (FAILED(hr))
+    {
+        // vertex shader를 되돌림
+        // 새로 만든 shader를 release하고 이전의 shader로 돌아감
+        SafeRelease(VertexShaders[VertexKey]);
+        SafeRelease(InputLayouts[VertexKey]);
+
+        VertexShaders[VertexKey] = PreviousVertexShader;
+        InputLayouts[VertexKey] = PreviousInputLayout;
+
+        UE_LOG(LogLevel::Warning, "Successfully compiled vertex shader, but failed to compile pixel shader. Reverting to previous vertex shader.");
+        return hr;
+    }
+    else
+    {
+        // 이전의 포인터는 release
+        SafeRelease(PreviousVertexShader);
+        SafeRelease(PreviousInputLayout);
+        SafeRelease(PreviousPixelShader);
+        UE_LOG(LogLevel::Display, "Successfully reloaded vertex / pixel shader");
+        return hr;
+    }
+}
+
+HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines, const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines)
+{
+    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey) || !InputLayouts.Contains(VertexKey))
+    {
+        UE_LOG(LogLevel::Warning, "Invalid Key : Parameter might be different with parameters at init time.");
+        return S_FALSE;
+    }
+    // vertex pixel 모두 다 조사
+    bool IsModified = false;
+    {
+        std::filesystem::path filePath = VertexFileName;
+        auto ModTime = std::filesystem::last_write_time(filePath);
+
+        if (VertexShaderModifiedTime.Contains(VertexShaders[VertexKey]))
+        {
+            auto LastModTime = VertexShaderModifiedTime[VertexShaders[VertexKey]];
+            if (ModTime != LastModTime)
+            {
+                IsModified = true;
+                VertexShaderModifiedTime[VertexShaders[VertexKey]] = ModTime;
+            }
+        }
+    }
+    if(!IsModified)
+    {
+        std::filesystem::path filePath = PixelFileName;
+        auto ModTime = std::filesystem::last_write_time(filePath);
+
+        if (PixelShaderModifiedTime.Contains(PixelShaders[PixelKey]))
+        {
+            auto LastModTime = PixelShaderModifiedTime[PixelShaders[PixelKey]];
+            if (ModTime != LastModTime)
+            {
+                IsModified = true;
+                PixelShaderModifiedTime[PixelShaders[PixelKey]] = ModTime;
+            }
+        }
+    }
+    if (IsModified)
+    {
+        UE_LOG(LogLevel::Display, "Shader file is modified. Recompiling shader.");
+        return ReloadShaders(VertexKey, VertexFileName, VertexEntryPoint, Layout, LayoutSize, VertexDefines, PixelKey, PixelFileName, PixelEntryPoint, PixelDefines);
+    }
+    else
+    {
+        return S_FALSE;
+    }
+}
+
+template<typename T>
+void FDXDShaderManager::SafeRelease(T*& comObject)
+{
+    if (comObject)
+    {
+        comObject->Release();
+        comObject = nullptr;
     }
 }
