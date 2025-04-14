@@ -17,6 +17,7 @@
 
 #include "BaseGizmos/GizmoBaseComponent.h"
 #include "Engine/EditorEngine.h"
+#include "Editor/LevelEditor/SLevelEditor.h"
 
 #include "PropertyEditor/ShowFlags.h"
 
@@ -155,6 +156,8 @@ bool FStaticMeshRenderPass::SetUberShader(bool bValue)
             InputLayout = NewInputLayout;
 
             bIsUber = bValue;
+            //UE_LOG(LogLevel::Display, "Changed to UberShader");
+
             return true;
         }
         // 실패. 하나 이상이 nullptr
@@ -182,6 +185,7 @@ bool FStaticMeshRenderPass::SetUberShader(bool bValue)
             InputLayout = NewInputLayout;
 
 	        bIsUber = bValue;
+            //UE_LOG(LogLevel::Display, "Changed to StaticMeshShader");
             return true;
         }
         // 실패. 하나 이상이 nullptr
@@ -196,15 +200,6 @@ bool FStaticMeshRenderPass::SetUberShader(bool bValue)
 
 void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, int32 PhongFlag, bool ForceReload)
 {
-	// 이전의 shader를 저장
-	ID3D11VertexShader* PreviousVertexShaderMesh = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
-	ID3D11InputLayout* PreviousInputLayoutMesh = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
-	ID3D11PixelShader* PreviousPixelShaderMesh = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShader");
-
-	ID3D11VertexShader* PreviousVertexShaderUber = ShaderManager->GetVertexShaderByKey(L"UberShaderVertex");
-	ID3D11PixelShader* PreviousPixelShaderUber = ShaderManager->GetPixelShaderByKey(L"UberShaderPixel");
-	ID3D11InputLayout* PreviousInputLayoutUber = ShaderManager->GetInputLayoutByKey(L"UberShaderVertex");
-
 	D3D11_INPUT_ELEMENT_DESC StaticMeshLayoutDesc[] = {
 	{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -214,19 +209,23 @@ void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, 
 	{"MATERIAL_INDEX", 0, DXGI_FORMAT_R32_UINT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	Stride = sizeof(FStaticMeshVertex);
+
 
     if (ForceReload)
     {
         ShaderManager->ReloadShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
             StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), nullptr,
             L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS", nullptr);
+        SetUberShader(bIsUber);
     }
     else
     {
-        ShaderManager->ReloadModifiedShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
+        if (ShaderManager->ReloadModifiedShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
             StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), nullptr,
-            L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS", nullptr);
+            L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS", nullptr))
+        {
+            SetUberShader(bIsUber);
+        }
 
     }
 
@@ -255,15 +254,18 @@ void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, 
         ShaderManager->ReloadShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
             StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines,
             L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
+        SetUberShader(bIsUber);
     }
     else
     {
-        ShaderManager->ReloadModifiedShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
+        if (ShaderManager->ReloadModifiedShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
             StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines,
-            L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
+            L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines))
+        {
+            SetUberShader(bIsUber);
+        }
     }
 	
-    SetUberShader(bIsUber);
 }
 
 
@@ -378,13 +380,13 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
 
 void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    if (GetAsyncKeyState('P') & 0x0001)
+    if ((GetAsyncKeyState('P') & 0x0001) && (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
     {
         UpdateShaders(1, 0, 0, true);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
     }
 
-    if (GetAsyncKeyState('O') & 0x0001)
+    if ((GetAsyncKeyState('O') & 0x0001) && (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
     {
         SetUberShader(!bIsUber);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
@@ -392,7 +394,22 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
   
     if (bAutoUpdate)
     {
-        UpdateShaders(1, 0, 0, false);
+        EViewModeIndex mode = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetViewMode();
+        switch (mode)
+        {
+        case VMI_LitGouraud:
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, false);
+            break;
+        case VMI_LitLambert:
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 1, 0, false);
+            break;
+        case VMI_LitBlinnPhong:
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(0, 0, 1, false);
+            break;
+        default:
+            GEngineLoop.Renderer.StaticMeshRenderPass->UpdateShaders(1, 0, 0, false);
+            break;
+        }
     }
     if (!(Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))) return;
 
