@@ -212,5 +212,7 @@ PS_OUT Uber_PS(VS_OUT Input)
         Output.color += float4(0.02, 0.02, 0.02, 1);
     }
     
+    //Output.color = float4(Attenuation.xxx, 1.f);
+    
     return Output;
 }

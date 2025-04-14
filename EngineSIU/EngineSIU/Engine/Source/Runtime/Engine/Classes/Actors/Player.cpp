@@ -112,7 +112,7 @@ void AEditorPlayer::Input()
         }
     }
 
-    if (GetAsyncKeyState(VK_DELETE) & 0x8000)
+    if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
     {
         if (!bDeleteDown)
         {
@@ -236,9 +236,11 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     USceneComponent* Possible = nullptr;
     int maxIntersect = 0;
     float minDistance = FLT_MAX;
+
+    // primitive가 아닌 uscenecomponent부터 선택 (아이콘으로 나와서 항상 위에 표시되기 때문)
     for (auto iter : TObjectRange<USceneComponent>())
     {
-        if (iter && !iter->IsA<UGizmoBaseComponent>())
+        if (!iter->IsA<UPrimitiveComponent>())
         {
             float Distance = 0.0f;
             int currentIntersectCount = 0;
@@ -258,6 +260,34 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
             }
         }
     }
+
+    // 선택 안되었으면 primitive 확인
+    if (!Possible)
+    {
+        for (auto iter : TObjectRange<UPrimitiveComponent>())
+        {
+            if (iter && !iter->IsA<UGizmoBaseComponent>())
+            {
+                float Distance = 0.0f;
+                int currentIntersectCount = 0;
+                if (RayIntersectsObject(pickPosition, iter, Distance, currentIntersectCount))
+                {
+                    if (Distance < minDistance)
+                    {
+                        minDistance = Distance;
+                        maxIntersect = currentIntersectCount;
+                        Possible = iter;
+                    }
+                    else if (abs(Distance - minDistance) < FLT_EPSILON && currentIntersectCount > maxIntersect)
+                    {
+                        maxIntersect = currentIntersectCount;
+                        Possible = iter;
+                    }
+                }
+            }
+        }
+    }
+
     if (Possible)
     {
         Cast<UEditorEngine>(GEngine)->SelectActor(Possible->GetOwner());

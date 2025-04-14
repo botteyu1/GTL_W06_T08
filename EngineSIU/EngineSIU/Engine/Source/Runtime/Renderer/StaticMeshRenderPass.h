@@ -53,7 +53,7 @@ public:
 
     bool SetUberShader(bool bValue);
 
-    void UpdateShaders(int32 GouraudFlag = 1, int32 LambertFlag = 0, int32 PhongFlag = 0);
+    void UpdateShaders(int32 GouraudFlag = 1, int32 LambertFlag = 0, int32 PhongFlag = 0, bool ForceReload = false);
 
     bool IsUber() const { return bIsUber; }
 
