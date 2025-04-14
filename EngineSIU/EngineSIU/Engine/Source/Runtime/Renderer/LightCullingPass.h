@@ -67,6 +67,7 @@ private:
     HRESULT CreateTileLightList();
     ID3D11Buffer* TileLightListBuffer;
     ID3D11UnorderedAccessView* TileLightListUAV;
+    ID3D11ShaderResourceView* TileLightListSRV;
 
     
 

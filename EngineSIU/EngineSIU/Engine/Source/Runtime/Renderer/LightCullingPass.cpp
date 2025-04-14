@@ -37,8 +37,10 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
     ID3D11ShaderResourceView* srvs[] = { LightListSRV };
     Graphics->DeviceContext->CSSetShaderResources(0, 1, srvs);
 
-    ID3D11UnorderedAccessView* uavs[] = { TileLightListUAV };
-    Graphics->DeviceContext->CSSetUnorderedAccessViews(1, 1, uavs, nullptr);
+    UINT clearValue[4] = { 0, 0, 0, 0 };  // 0으로 초기화
+    Graphics->DeviceContext->ClearUnorderedAccessViewUint(TileLightListUAV, clearValue);
+
+    Graphics->DeviceContext->CSSetUnorderedAccessViews(1, 1, &TileLightListUAV, nullptr);
 
     // 디스패치: 각 타일 하나당 한 스레드 그룹
     Graphics->DeviceContext->Dispatch(NumTileWidth, NumTileHeight, 1);
@@ -54,8 +56,10 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
 
     ShaderManager->SetVertexShader(ShaderName, Graphics->DeviceContext);
     ShaderManager->SetPixelShader(ShaderName, Graphics->DeviceContext);
+    Graphics->DeviceContext->PSSetShaderResources(1, 1, &TileLightListSRV); // t1번 슬롯에 SRV 바인딩
     Graphics->DeviceContext->Draw(4, 0);
 
+    Graphics->DeviceContext->PSSetShaderResources(1, 1, nullSRV);
 }
 
 void FLightCullingPass::ClearRenderArr()
@@ -64,24 +68,25 @@ void FLightCullingPass::ClearRenderArr()
 
 HRESULT FLightCullingPass::CreateShaders()
 {
-    HRESULT hr = ShaderManager->AddVertexShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", nullptr);
-    if (FAILED(hr))
-    {
-        return hr;
-    }
-    hr = ShaderManager->AddPixelShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS");
-    if (FAILED(hr))
-    {
-        return hr;
-    }
-
     const D3D_SHADER_MACRO defines[] =
     {
         "MAX_NUM_GLOBAL_LIGHT", "256",
         NULL, NULL
     };
 
-    hr = ShaderManager->AddComputeShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS");
+    HRESULT hr = ShaderManager->AddVertexShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", defines);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+    hr = ShaderManager->AddPixelShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+
+    hr = ShaderManager->AddComputeShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
     if (FAILED(hr))
     {
         return hr;
@@ -183,7 +188,7 @@ HRESULT FLightCullingPass::CreateTileLightList()
     D3D11_BUFFER_DESC bufDesc = {};
     bufDesc.Usage = D3D11_USAGE_DEFAULT;
     bufDesc.ByteWidth = sizeof(FTileLightIndex) * tileCount;
-    bufDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+    bufDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     bufDesc.CPUAccessFlags = 0;
     bufDesc.StructureByteStride = sizeof(FTileLightIndex);
     bufDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -206,7 +211,18 @@ HRESULT FLightCullingPass::CreateTileLightList()
     {
         return hr;
     }
-    return hr;
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+    srvDesc.Buffer.NumElements = tileCount;
+
+    hr = Graphics->Device->CreateShaderResourceView(TileLightListBuffer, &srvDesc, &TileLightListSRV);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
 }
 
 

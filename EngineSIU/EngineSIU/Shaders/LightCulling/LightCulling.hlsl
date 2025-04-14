@@ -24,7 +24,7 @@ cbuffer ScreenInfo : register(b13)
 };
 
 StructuredBuffer<FPointLightBuffer> PointLightBufferList : register(t0);
-RWStructuredBuffer<FTileLightIndex> TileLightIndicesList : register(u1);
+RWStructuredBuffer<FTileLightIndex> TileLightIndicesListCS : register(u1);
 
 [numthreads(1, 1, 1)]
 void mainCS(uint3 DTid : SV_DispatchThreadID)
@@ -63,8 +63,13 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
     
     FTileLightIndex tileLightData;
     tileLightData.LightCount = 0;
+    for (int i = 0; i < 31; ++i)
+    {
+        tileLightData.LightIndices[i] = 0;
+    }
 
     uint maxLightCount;
+    uint lightCount = 0;
     uint stride;
     PointLightBufferList.GetDimensions(maxLightCount, stride);
     
@@ -81,16 +86,16 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
         float3 viewSpaceLightPos = viewPos.xyz;
 
         // Frustum과의 교차 판정
-        if (SphereInFrustum(viewSpaceLightPos, light.Radius, FrustumPlanes))
-        {
-            if (tileLightData.LightCount < 31)
-            {
-                tileLightData.LightIndices[tileLightData.LightCount++] = i;
-            }
-        }
+        //if (SphereInFrustum(viewSpaceLightPos, light.Radius, FrustumPlanes))
+        //{
+        //    if (lightCount < 31)
+        //    {
+        //        tileLightData.LightIndices[lightCount++] = i;
+        //    }
+        //}
     }
-
-    TileLightIndicesList[tileIndex] = tileLightData;
+    tileLightData.LightCount = 123;
+    TileLightIndicesListCS[DTid.x] = tileLightData;
 }
 
 struct PSInput
@@ -126,6 +131,8 @@ PSInput mainVS(uint vertexID : SV_VertexID)
     return output;
 }
 
+StructuredBuffer<FTileLightIndex> TileLightIndicesListPS : register(t1); // t1로 버퍼를 연결
+
 float4 mainPS(PSInput input) : SV_Target
 {
     // 픽셀 위치
@@ -135,7 +142,7 @@ float4 mainPS(PSInput input) : SV_Target
     uint2 tileCoord = pixelCoord / TileSize;
     uint tileIndex = tileCoord.y * NumTileWidth + tileCoord.x;
 
-    uint lightCount = TileLightIndicesList[tileIndex].LightCount;
+    uint lightCount = TileLightIndicesListPS[tileIndex].LightCount;
 
     // light count를 색상으로 매핑 (예: 최대 32개 기준)
     float intensity = saturate(lightCount / 32.0f);
