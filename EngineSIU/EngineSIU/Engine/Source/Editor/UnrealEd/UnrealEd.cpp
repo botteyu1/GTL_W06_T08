@@ -5,7 +5,7 @@
 #include "PropertyEditor/OutlinerEditorPanel.h"
 #include "PropertyEditor/PropertyEditorPanel.h"
 
-void UnrealEd::Initialize()
+void UnrealEd::Initialize(HWND hWnd)
 {
     auto ControlPanel = std::make_shared<ControlEditorPanel>();
     Panels["ControlPanel"] = ControlPanel;
@@ -15,6 +15,8 @@ void UnrealEd::Initialize()
     
     auto PropertyPanel = std::make_shared<PropertyEditorPanel>();
     Panels["PropertyPanel"] = PropertyPanel;
+
+    OnResize(hWnd);
 }
 
 void UnrealEd::Render() const

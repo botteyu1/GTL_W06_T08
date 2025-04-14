@@ -114,7 +114,7 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
     LevelEditor = new SLevelEditor();
 
-    UnrealEditor->Initialize();
+    UnrealEditor->Initialize(hWnd);
 
     GraphicDevice.Initialize(hWnd);
 
