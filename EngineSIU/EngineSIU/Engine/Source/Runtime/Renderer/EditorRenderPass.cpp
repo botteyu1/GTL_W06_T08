@@ -694,7 +694,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
 
     RenderAABBInstanced();
     RenderPointlightInstanced();
-    RenderSpotlightInstanced();
+    //RenderSpotlightInstanced();
     RenderAxis();
     RenderGrid(ActiveViewport);
 
@@ -702,8 +702,7 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
     ID3D11DepthStencilState* DepthStateDisable = Graphics->DepthStencilStateTestWriteDisable;
     DeviceContext->OMSetDepthStencilState(DepthStateDisable, 0);
     RenderIcons(ActiveViewport);
-    //RenderArrows();
-    //RenderGizmos(World);
+    RenderArrows();
 }
 
 void FEditorRenderPass::SetGridParameter(float Spacing, uint32 GridCount)
@@ -989,11 +988,6 @@ void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstant
 
 void FEditorRenderPass::RenderSpotlightInstanced()
 {
-    UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
-    if (!EditorEngine)
-    {
-        return;
-    }
     // TODO : 현재 z값이 과도하게 크면 cone의 둥근 부분이 구형이 아님
     // 따라서 따로 그려줘서 곡률이 일정하게 만들어야 할거같음
     // 아니고 그냥 셰이더에서 할수있을거같기도 함...
@@ -1011,24 +1005,17 @@ void FEditorRenderPass::RenderSpotlightInstanced()
     TArray<FConstantBufferDebugCone> BufferAll;
     for (USpotLightComponent* SpotComp : Resources.Components.SpotLight)
     {
-        if (SpotComp == EditorEngine->GetSelectedComponent())
-        {
-            FConstantBufferDebugCone b;
-            b.ApexPosiiton = SpotComp->GetWorldLocation();
-            b.Radius = SpotComp->GetAttenuationRadius();
-            b.Direction = SpotComp->GetForwardVector();
-            b.Angle = SpotComp->GetInnerConeAngle();
-            // 테스트용
-            b.Angle = 0.5;
-            b.Radius = 10;
-            b.Color = InnerColor;
-            BufferAll.Add(b);
+        FConstantBufferDebugCone b;
+        b.ApexPosiiton = SpotComp->GetWorldLocation();
+        b.Radius = SpotComp->GetAttenuationRadius();
+        b.Direction = SpotComp->GetForwardVector();
+        b.Angle = SpotComp->GetInnerConeAngle();
+        b.Color = InnerColor;
+        BufferAll.Add(b);
 
-            //b.Angle = SpotComp->GetOuterConeAngle();
-            //b.Color = OuterColor;
-            //BufferAll.Add(b);
-            break;
-        }
+        b.Angle = SpotComp->GetOuterConeAngle();
+        b.Color = OuterColor;
+        BufferAll.Add(b);
     }
 
     PrepareConstantbufferSpotlight();

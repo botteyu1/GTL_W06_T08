@@ -37,6 +37,9 @@ void FUpdateLightBufferPass::Initialize(FDXDBufferManager* InBufferManager, FGra
 
 void FUpdateLightBufferPass::PrepareRender()
 {
+    this->DirectionalLight = nullptr;
+    this->AmbientLight = nullptr;
+    
     for (const auto iter : TObjectRange<ULightComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
@@ -69,11 +72,15 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     if (this->AmbientLight)
     {
         SceneLightBufferData.AmbientLight = this->AmbientLight->GetLightData<FAmbientLight>();
+        SceneLightBufferData.AmbientLight.Color = FVector(this->AmbientLight->GetLightColor().R, this->AmbientLight->GetLightColor().G, this->AmbientLight->GetLightColor().B);
+        SceneLightBufferData.AmbientLight.Intensity = this->AmbientLight->GetIntensity();
     }
     else
     {
         FAmbientLight TempLight;
-        TempLight.Color = FVector(0.1f, 0.1f, 0.1f);
+
+        TempLight.Color = FVector(0.0f, 0.0f, 0.0f);
+
         TempLight.Intensity = 1.0f;
         
         SceneLightBufferData.AmbientLight = TempLight; 
@@ -82,6 +89,14 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     if (this->DirectionalLight)
     {
         SceneLightBufferData.DirectionalLight[0] = this->DirectionalLight->GetLightData<FDirectionalLight>();
+        SceneLightBufferData.DirectionalLight[0].Color = FVector(this->DirectionalLight->GetLightColor().R, this->DirectionalLight->GetLightColor().G, this->DirectionalLight->GetLightColor().B);
+        SceneLightBufferData.DirectionalLight[0].Intensity = this->DirectionalLight->GetIntensity();
+        SceneLightBufferData.DirectionalLight[0].Direction = this->DirectionalLight->GetForwardVector();
+        SceneLightBufferData.NumDirLights = 1;
+    }
+    else
+    {
+        SceneLightBufferData.NumDirLights = 0;
     }
     
     
@@ -115,6 +130,7 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
                 SceneLightBufferData.SpotLight[LightCount].Color = FVector(Light->GetLightColor().R, Light->GetLightColor().G, Light->GetLightColor().B);
                 SceneLightBufferData.SpotLight[LightCount].Position = Light->GetWorldLocation();
                 SceneLightBufferData.SpotLight[LightCount].Intensity = Light->GetIntensity();
+                SceneLightBufferData.SpotLight[LightCount].Direction = Light->GetForwardVector();
             }
             
             LightCount++;

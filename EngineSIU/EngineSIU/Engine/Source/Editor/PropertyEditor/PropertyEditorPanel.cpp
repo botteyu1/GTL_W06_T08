@@ -243,49 +243,78 @@ void PropertyEditorPanel::RenderForSceneComponent(USceneComponent* SceneComponen
 
 void PropertyEditorPanel::RenderForLightComponent(ULightComponent* LightComp) const
 {
-//     ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-//
-//     if (ImGui::TreeNodeEx("Light Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
-//     {
-//         /*  DrawColorProperty("Ambient Color",
-//               [&]() { return lightObj->GetAmbientColor(); },
-//               [&](FVector4 c) { lightObj->SetAmbientColor(c); });
-//           */
-//         DrawColorProperty("Base Color",
-//             [&]() { return LightComp->GetDiffuseColor(); },
-//             [&](FLinearColor c) { LightComp->SetDiffuseColor(c); });
-//
-//         DrawColorProperty("Specular Color",
-//             [&]() { return LightComp->GetSpecularColor(); },
-//             [&](FLinearColor c) { LightComp->SetSpecularColor(c); });
-//
-//         float Intensity = LightComp->GetIntensity();
-//         if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 10000.0f, "%1.f"))
-//             LightComp->SetIntensity(Intensity);
-//
-//         /*  
-//        float falloff = lightObj->GetFalloff();
-//        if (ImGui::SliderFloat("Falloff", &falloff, 0.1f, 10.0f, "%.2f")) {
-//            lightObj->SetFalloff(falloff);
-//        }
-//
-//        TODO : For SpotLight
-//        */
-//
-//         float attenuation = LightComp->GetAttenuation();
-//         if (ImGui::SliderFloat("Attenuation", &attenuation, 0.01f, 10000.f, "%.1f")) {
-//             LightComp->SetAttenuation(attenuation);
-//         }
-//
-//         float AttenuationRadius = LightComp->GetAttenuationRadius();
-//         if (ImGui::SliderFloat("Attenuation Radius", &AttenuationRadius, 0.01f, 10000.f, "%.1f")) {
-//             LightComp->SetAttenuationRadius(AttenuationRadius);
-//         }
-//
-//         ImGui::TreePop();
-//     }
-//
-//     ImGui::PopStyleColor();
+     ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+
+     if (ImGui::TreeNodeEx("Light Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+     {
+         /*  DrawColorProperty("Ambient Color",
+               [&]() { return lightObj->GetAmbientColor(); },
+               [&](FVector4 c) { lightObj->SetAmbientColor(c); });
+           */
+         DrawColorProperty("Base Color",
+             [&]() { return LightComp->GetLightColor(); },
+             [&](FLinearColor c) { LightComp->SetLightColor(c); });
+         
+         float Intensity = LightComp->GetIntensity();
+         if (ImGui::DragFloat("Intensity", &Intensity, 0.1f, 0.0f, 10000.0f, "%1.f"))
+             LightComp->SetIntensity(Intensity);
+
+         if (UPointLightComponent* PointLightComp = Cast<UPointLightComponent>(LightComp))
+         {
+             float Radius = PointLightComp->GetAttenuationRadius();
+             if (ImGui::DragFloat("Radius", &Radius,0.1f, 0.0f, 10000.0f, "%1.f"))
+             {
+                 PointLightComp->SetAttenuationRadius(Radius);
+             }
+
+             float falloff = PointLightComp->GetFalloff();
+             if (ImGui::DragFloat("Falloff", &falloff, 0.1f, 0.1f, 10.0f, "%.2f"))
+             {
+                 PointLightComp->SetFalloff(falloff);
+             }
+         }
+         
+         /*  
+        float falloff = lightObj->GetFalloff();
+        if (ImGui::SliderFloat("Falloff", &falloff, 0.1f, 10.0f, "%.2f")) {
+            lightObj->SetFalloff(falloff);
+        }
+
+        */
+
+        // TODO : For SpotLight
+         if (USpotLightComponent* SpotComp = Cast<USpotLightComponent>(LightComp))
+         {
+             // AttenuationRadius
+             float Radius = SpotComp->GetAttenuationRadius();
+             if (ImGui::DragFloat("Radius", &Radius,0.1f, 0.0f, 10000.0f, "%1.f"))
+             {
+                 SpotComp->SetAttenuationRadius(Radius);
+             }
+             // InnerCone
+             float InnerCone = SpotComp->GetInnerConeAngle();
+             if (ImGui::DragFloat("InnerCone", &InnerCone, 0.1f, 0.0f, 80.0f, "%1.f"))
+             {
+                 SpotComp->SetInnerConeAngle(InnerCone);
+             }
+             // OuterCone
+             float OuterCone = SpotComp->GetOuterConeAngle();
+             if (ImGui::DragFloat("OuterCone", &OuterCone, 0.1f, 0.0f, 80.0f, "%1.f"))
+             {
+                 SpotComp->SetOuterConeAngle(OuterCone);
+             }
+             // Falloff
+             float Falloff = SpotComp->GetFalloff();
+             if (ImGui::DragFloat("Falloff", &Falloff, 0.1f, 0.1f, 10.0f, "%1.f"))
+             {
+                 SpotComp->SetFalloff(Falloff);
+             }
+         }
+         
+         ImGui::TreePop();
+     }
+
+     ImGui::PopStyleColor();
 }
 
 void PropertyEditorPanel::RenderForProjectileMovementComponent(UProjectileMovementComponent* ProjectileComp) const

@@ -58,7 +58,7 @@ struct FMaterial
 ///////////////////////////////////////////////
 struct FAmbientLight
 {
-    float3 AmbientColor;
+    float3 Color;
     float Intensity;
 };
 

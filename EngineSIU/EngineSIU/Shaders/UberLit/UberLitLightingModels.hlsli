@@ -1,56 +1,58 @@
 // 광원으로부터 특정 지점까지 얼마나 빛이 전파되는지 계산
 
-// !!! 예시 !!!
-// 광원 타입에 따른 effective light direction과 attenuation 계산
-//void ComputeLightContribution(in SurfaceInfo surf, in LightInfo light, out float3 effectiveL, out float attenuation)
-//{
-//    if (light.Type == DIRECTIONAL)
-//    {
-//        // Directional Light는 무한대 광원: 방향만 고려하며, 감쇠 없음
-//        effectiveL = normalize(-light.Direction);
-//        attenuation = 1.0f;
-//    }
-//    else if (light.Type == SPOT)
-//    {
-//        // Spot Light: 위치와 방향이 있으며, 거리와 각도 감쇠 적용
-//        effectiveL = normalize(light.Position - surf.WorldPos);
-        
-//        // 각도 감쇠: 광원 중심과 픽셀의 각도를 비교
-//        float3 lightToPixel = normalize(surf.WorldPos - light.Position);
-//        float spotCos = dot(-light.Direction, lightToPixel);
-//        float angleFactor = saturate((spotCos - light.OuterConeCos) / (light.InnerConeCos - light.OuterConeCos));
+void CalculateDirectionalLight(float3 LightDirection, out float3 EffectiveLightDirection)
+{
+    EffectiveLightDirection = normalize(-LightDirection);
+}
 
-//        // 거리 감쇠: 거리 기반 선형 감쇠 (다양한 감쇠 모형 적용 가능)
-//        float distance = length(light.Position - surf.WorldPos);
-//        float distanceAtten = saturate(1.0f - distance / light.Range);
+void CalculatePointLight(float3 LightPosition, float3 VertexPosition, float AttenuationRadius, float Falloff, out float3 EffectiveLightDirection, out float FinalAttenuation)
+{
+    float3 LightDirection = LightPosition - VertexPosition;
+    float Distance = length(LightDirection);
 
-//        attenuation = angleFactor * distanceAtten;
-//    }
-//    else
-//    {
-//        // 기본값 (예외 처리)
-//        effectiveL = float3(0, 0, 0);
-//        attenuation = 0.0f;
-//    }
-//}
+    float CalcAttenuation = saturate(1.0f - Distance / AttenuationRadius);
+    CalcAttenuation = pow(CalcAttenuation, Falloff);
 
-// !!! 예시 !!!
-//float3 ComputeGouraudAtVertex(float3 normal, float3 viewDir, float3 worldPos, LightInfo light, float shininess)
-//{
-//    float3 lightDir;
-//    float attenuation;
-//    SurfaceInfo surf;
-//    surf.Normal = normalize(normal);
-//    surf.ViewDir = normalize(viewDir);
-//    surf.WorldPos = worldPos;
+    EffectiveLightDirection = LightDirection;
+    FinalAttenuation = CalcAttenuation;
+}
 
-//    ComputeLightContribution(surf, light, lightDir, attenuation);
 
-//    float3 color = ComputeBlinnPhong(surf, BlinnPhongParams(
-//        lightDir,
-//        light.Color * attenuation,
-//        shininess
-//    ));
+/**
+ * Assign the result to EffectiveLightDirection & FinalAttenuation.
+ *
+ * EffectiveLightDirection is not normalized.
+ * 
+ * @param SpotLightDirection
+ * @param LightPosition
+ * @param VertexPosition
+ * @param AttenuationRadius
+ * @param Falloff 
+ * @param InnerConeAngle 
+ * @param OuterConeAngle 
+ * @param EffectiveLightDirection 
+ * @param FinalAttenuation
+ */
+void CalculateSpotLight(float3 SpotLightDirection, float3 LightPosition, float3 VertexPosition,
+                        float AttenuationRadius, float Falloff, float InnerConeAngle, float OuterConeAngle,
+                        out float3 EffectiveLightDirection, out float FinalAttenuation)
+{
+    float3 LightDirection = LightPosition - VertexPosition;
+    float Distance = length(LightDirection);
+    float3 LightDirectionNormalized = LightDirection / Distance;
+    
+    // 감쇠거리
+    float Attenuation = saturate(1.0 - Distance / AttenuationRadius);
+    Attenuation = pow(Attenuation, Falloff);
 
-//    return color; // 이걸 vertex shader에서 보간
-//}
+    // Spot Cone 각도
+    float CosAngle = dot(SpotLightDirection, -LightDirectionNormalized);
+    float Outer = cos(radians(OuterConeAngle / 2.0f));
+    float Inner = cos(radians(InnerConeAngle / 2.0f));
+
+    float ConeAttenuation = saturate((CosAngle - Outer) / (Inner - Outer));
+    ConeAttenuation = pow(ConeAttenuation, Falloff);
+
+    EffectiveLightDirection = LightDirection;
+    FinalAttenuation = Attenuation * ConeAttenuation;
+}
