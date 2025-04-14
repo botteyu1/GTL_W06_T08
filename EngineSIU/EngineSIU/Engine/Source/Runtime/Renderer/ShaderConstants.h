@@ -106,36 +106,36 @@ struct alignas(16) FConstantBufferLightSpot
 //    //FVector pad;
 //};
 
-/// <summary>
-/// Per-Texture 상수버퍼 : b5
-/// </summary>
-struct alignas(16) FConstantBufferTexture
-{
-    FVector2D UVOffset = { 0,0 };
-};
-
-/// <summary>
-/// Per-Actor 상수버퍼 : b3
-/// </summary>
-struct alignas(16) FConstantBufferActor
-{
-    FVector4 UUID; // 임시
-    UINT IsSelectedActor = 0;
-};
-
-/// <summary>
-/// Lighting : b1
-/// </summary>
-struct alignas(16) FConstantBufferLights
-{
-    FConstantBufferLightDir DirLights[MACRO_FCONSTANT_NUM_MAX_DIRLIGHT];
-    FConstantBufferLightPoint PointLights[MACRO_FCONSTANT_NUM_MAX_POINTLIGHT];
-    FConstantBufferLightSpot SpotLights[MACRO_FCONSTANT_NUM_MAX_SPOTLIGHT];
-    UINT isLit = 1;
-    UINT NumPointLights;
-    UINT NumDirLights;
-    float _pad0;
-};
+///// <summary>
+///// Per-Texture 상수버퍼 : b5
+///// </summary>
+//struct alignas(16) FConstantBufferTexture
+//{
+//    FVector2D UVOffset = { 0,0 };
+//};
+//
+///// <summary>
+///// Per-Actor 상수버퍼 : b3
+///// </summary>
+//struct alignas(16) FConstantBufferActor
+//{
+//    FVector4 UUID; // 임시
+//    UINT IsSelectedActor = 0;
+//};
+//
+///// <summary>
+///// Lighting : b1
+///// </summary>
+//struct alignas(16) FConstantBufferLights
+//{
+//    FConstantBufferLightDir DirLights[MACRO_FCONSTANT_NUM_MAX_DIRLIGHT];
+//    FConstantBufferLightPoint PointLights[MACRO_FCONSTANT_NUM_MAX_POINTLIGHT];
+//    FConstantBufferLightSpot SpotLights[MACRO_FCONSTANT_NUM_MAX_SPOTLIGHT];
+//    UINT isLit = 1;
+//    UINT NumPointLights;
+//    UINT NumDirLights;
+//    float _pad0;
+//};
 
 /// <summary>
 /// Per-Scene 상수버퍼 : b0

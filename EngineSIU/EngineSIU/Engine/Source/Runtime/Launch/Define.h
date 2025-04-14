@@ -395,8 +395,14 @@ struct alignas(16)FSubUVConstant
     FVector2D uvOffset;
     FVector2D uvScale;
 };
-struct alignas(16)FLitUnlitConstants {
-    int isLit; // 1 = Lit, 0 = Unlit 
+struct alignas(16)FFlagConstants {
+    // 0 : Unlit
+    // 1 : lit
+    // 2 : depth
+    // 3 : normal
+    // 4 : position
+    // 15 까지 reserved
+    int RenderFlag;
     FVector pad;
 };
 
