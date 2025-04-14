@@ -9,8 +9,8 @@
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
                     "Properties": {
-                        "AABB_max": "X=0.407 Y=0.795 Z=2.304",
-                        "AABB_min": "X=-0.369 Y=-0.795 Z=0.002",
+                        "AABB_max": "X=1.000 Y=1.000 Z=1.000",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-1.000",
                         "AttachParentID": "nullptr",
                         "ComponentClass": "UStaticMeshComponent",
                         "ComponentName": "StaticMeshComponent_0",
@@ -19,7 +19,7 @@
                         "RelativeLocation": "X=-14.798 Y=0.000 Z=0.000",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
                         "RelativeScale3D": "X=10.000 Y=10.000 Z=10.000",
-                        "StaticMeshPath": "Contents/Monster/Monster.obj",
+                        "StaticMeshPath": "Contents/Sphere.obj",
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
@@ -121,7 +121,7 @@
                         "LightData_OuterConeAngle": "26.000000",
                         "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
                         "RelativeLocation": "X=-4.284 Y=23.333 Z=24.735",
-                        "RelativeRotation": "Pitch=57.433 Yaw=-0.001 Roll=-0.001",
+                        "RelativeRotation": "Pitch=55.796 Yaw=115.915 Roll=72.732",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
                         "bAutoActive": "true",
                         "bIsActive": "true",

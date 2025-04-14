@@ -137,6 +137,50 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     return S_OK;
 }
 
+HRESULT FDXDShaderManager::AddComputeShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (DXDDevice == nullptr)
+        return S_FALSE;
+
+    HRESULT hr = S_OK;
+
+    ID3DBlob* ComputeShaderCSO = nullptr;
+    ID3DBlob* ErrorBlob = nullptr;
+
+    FDXDInclude includeManager(FileName);
+
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "cs_5_0", 0, 0, &ComputeShaderCSO, &ErrorBlob);
+    if (FAILED(hr))
+    {
+        if (ErrorBlob) {
+            OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
+            ErrorBlob->Release();
+        }
+        return hr;
+    }
+
+    ID3D11ComputeShader* NewComputeShader;
+    hr = DXDDevice->CreateComputeShader(ComputeShaderCSO->GetBufferPointer(), ComputeShaderCSO->GetBufferSize(), nullptr, &NewComputeShader);
+    if (FAILED(hr))
+    {
+        ComputeShaderCSO->Release();
+        return hr;
+    }
+
+    ComputeShaders[Key] = NewComputeShader;
+
+    ComputeShaderCSO->Release();
+
+    // modified time 기록
+    const std::set<std::wstring>& dependencies = includeManager.GetIncludedFiles();
+
+    // modified time 기록
+    RecordShaderDependencies(Key, FileName, dependencies);
+
+    return S_OK;
+}
+
 HRESULT FDXDShaderManager::AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
 {
     return S_OK;
@@ -248,6 +292,15 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
     if (PixelShaders.Contains(Key))
     {
         return *PixelShaders.Find(Key);
+    }
+    return nullptr;
+}
+
+ID3D11ComputeShader* FDXDShaderManager::GetComputeShaderByKey(const std::wstring& Key) const
+{
+    if (ComputeShaders.Contains(Key))
+    {
+        return *ComputeShaders.Find(Key);
     }
     return nullptr;
 }

@@ -8,6 +8,7 @@
 #include "StaticMeshRenderPass.h"
 #include "BillboardRenderPass.h"
 #include "GizmoRenderPass.h"
+#include "LightCullingPass.h"
 #include "UpdateLightBufferPass.h"
 #include "LineRenderPass.h"
 #include "DepthBufferDebugPass.h"
@@ -29,6 +30,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     BillboardRenderPass = new FBillboardRenderPass();
     GizmoRenderPass = new FGizmoRenderPass();
+    LightCullingPass = new FLightCullingPass();
     UpdateLightBufferPass = new FUpdateLightBufferPass();
     DepthBufferDebugPass = new FDepthBufferDebugPass();
     FogRenderPass = new FFogRenderPass();
@@ -37,6 +39,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     BillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     GizmoRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    LightCullingPass->Initialize(BufferManager, Graphics, ShaderManager);
     UpdateLightBufferPass->Initialize(BufferManager, Graphics, ShaderManager);
     DepthBufferDebugPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -129,7 +132,7 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     UpdateLightBufferPass->Render(Viewport);
     StaticMeshRenderPass->Render(Viewport);
     BillboardRenderPass->Render(Viewport);
-    
+    LightCullingPass->Render(Viewport);
 
     //if (IsSceneDepth)
     //{

@@ -276,6 +276,11 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\FireballActor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\LightActor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\ProjectileMovementComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\LightCullingPass.cpp" />
+    <FxCompile Include="Shaders\LightCulling\LightCulling.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shaders\UberLit\UberLitShadingModels.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -448,6 +453,7 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Level.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\LightActor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\ProjectileMovementComponent.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\LightCullingPass.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\UberLit\UberLitStructs.hlsli">
