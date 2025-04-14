@@ -124,12 +124,6 @@ bool UWorld::DestroyActor(AActor* ThisActor)
         ThisActor->SetOwner(nullptr);
     }
 
-    TSet<UActorComponent*> Components = ThisActor->GetComponents();
-    for (UActorComponent* Component : Components)
-    {
-        Component->DestroyComponent();
-    }
-
     // World에서 제거
     ActiveLevel->Actors.Remove(ThisActor);
 

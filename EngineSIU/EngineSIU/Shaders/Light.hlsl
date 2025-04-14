@@ -62,12 +62,13 @@ struct SpotLight
 
     float3 Position;
     float AttenuationRadius;
+
     float3 Direction;
     float Falloff;
+    
     float InnerConeAngle;
     float OuterConeAngle;
-
-    float2 Pad0;
+    float2 pad;
 };
 
 cbuffer cbLights : register(b2)

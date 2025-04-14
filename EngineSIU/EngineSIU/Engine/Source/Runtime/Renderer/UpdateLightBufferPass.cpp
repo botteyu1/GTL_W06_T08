@@ -78,7 +78,9 @@ void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>
     else
     {
         FAmbientLight TempLight;
+
         TempLight.Color = FVector(0.0f, 0.0f, 0.0f);
+
         TempLight.Intensity = 1.0f;
         
         SceneLightBufferData.AmbientLight = TempLight; 

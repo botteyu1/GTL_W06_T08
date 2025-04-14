@@ -49,7 +49,6 @@ VS_OUT Uber_VS(VS_IN input)
     output.TBN = TBN;
     
     output.texcoord = input.texcoord;
-
 #if LIGHTING_MODEL_GOURAUD
     float3 GouraudColor = ComputeGouraudShading(output.worldPos, output.normal, 1.0f,
          AmbientLight, DirectionalLights, PointLights, SpotLights,

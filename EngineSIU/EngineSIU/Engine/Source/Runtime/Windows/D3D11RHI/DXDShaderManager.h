@@ -1,14 +1,10 @@
 #pragma once
+#include <filesystem>
 #define _TCHAR_DEFINED
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include "Container/Map.h"
 
-struct FVertexShaderData
-{
-	ID3DBlob* VertexShaderCSO;
-	ID3D11VertexShader* VertexShader;
-};
 
 class FDXDShaderManager
 {
@@ -54,10 +50,17 @@ public:
         const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
         const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines);
 
+    HRESULT ReloadModifiedShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint,
+        const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
+        const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines);
+
 private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
 	TMap<std::wstring, ID3D11VertexShader*> VertexShaders;
 	TMap<std::wstring, ID3D11PixelShader*> PixelShaders;
+
+    TMap<ID3D11VertexShader*, std::filesystem::file_time_type> VertexShaderModifiedTime;
+    TMap<ID3D11PixelShader*, std::filesystem::file_time_type> PixelShaderModifiedTime;
 
     template<typename T>
     void SafeRelease(T*& comObject);

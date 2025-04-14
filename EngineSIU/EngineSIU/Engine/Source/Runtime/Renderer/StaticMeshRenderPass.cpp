@@ -84,7 +84,6 @@ HRESULT FStaticMeshRenderPass::CreateShader()
     std::string strGouraud = std::to_string(1);
     std::string strLambert = std::to_string(0);
     std::string strPhong = std::to_string(0);
-    
     const D3D_SHADER_MACRO UberDefines[] =
     {
         { "NUM_MAX_DIRLIGHT",   strDir.c_str() },
@@ -221,7 +220,7 @@ void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, 
 
 	Stride = sizeof(FStaticMeshVertex);
 
-    ShaderManager->ReloadShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
+    ShaderManager->ReloadModifiedShaders(L"StaticMeshVertexShader", L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
         StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), nullptr,
         L"StaticMeshPixelShader", L"Shaders/StaticMeshPixelShader.hlsl", "mainPS", nullptr);
 
@@ -278,7 +277,7 @@ void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, 
 		{ NULL, NULL }
 	};
 
-    ShaderManager->ReloadShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
+    ShaderManager->ReloadModifiedShaders(L"UberShaderVertex", L"Shaders/UberLit/UberLit.hlsl", "Uber_VS",
         StaticMeshLayoutDesc, ARRAYSIZE(StaticMeshLayoutDesc), UberDefines,
         L"UberShaderPixel", L"Shaders/UberLit/UberLit.hlsl", "Uber_PS", UberDefines);
 	
@@ -443,6 +442,11 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
     {
         SetUberShader(!bIsUber);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
+    }
+  
+    if (bAutoUpdate)
+    {
+        UpdateShaders();
     }
     if (!(Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))) return;
 
