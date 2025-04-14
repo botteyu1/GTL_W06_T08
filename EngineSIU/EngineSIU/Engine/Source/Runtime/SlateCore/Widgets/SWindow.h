@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Container/Set.h"
 #include "SlateCore/Layout/SlateRect.h"
 
 class SWindow
@@ -9,13 +10,30 @@ public:
     SWindow(FSlateRect initRect);
     virtual ~SWindow() = default;
 
-    virtual void Initialize(FSlateRect initRect);
-    virtual void OnResize(float width, float height);
+    virtual void Initialize(SWindow* InParent)
+    {
+        this->Parent = InParent;
+    }
+    
+    virtual void Release();
 
+    virtual void LoadConfig(const TMap<FString, FString>& config);
+    virtual void SaveConfig(TMap<FString, FString>& config) const;
+
+public:
+    virtual void OnResize(double DeltaWidthRatio, double DeltaHeightRatio);
+public:
+    void AddChildren(SWindow* Child)
+    {
+        Children.Add(Child);
+        Child->Parent = this;
+    }
+    
+public:
     void SetRect(FSlateRect newRect) { Rect = newRect; }
     bool IsHover(FPoint coord) const;
-    virtual bool OnPressed(FPoint coord);
-    virtual bool OnReleased();
+    virtual void OnPressed(FPoint coord);
+    virtual void OnReleased();
     bool IsPressing() const { return bIsPressed; }
 
 public:
@@ -25,5 +43,8 @@ protected:
     bool bIsHoverd = false;
     bool bIsPressed = false;
 
+protected:
+    SWindow* Parent = nullptr;
+    TSet<SWindow*> Children;
 };
 

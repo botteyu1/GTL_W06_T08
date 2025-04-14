@@ -246,6 +246,11 @@ public:
     {
         return Point.X >= Left && Point.X <= Right && Point.Y >= Top && Point.Y <= Bottom;
     }
+
+    FVector2D GetCenter() const
+    {
+        return FVector2D(Right + Left * 0.5f, Bottom + Top * 0.5f);
+    }
     //         
     //     bool operator==( const FSlateRect& Other ) const
     //     {

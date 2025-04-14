@@ -5,15 +5,45 @@ SWindow::SWindow(FSlateRect initRect) : Rect(initRect)
 {
 }
 
-void SWindow::Initialize(FSlateRect initRect)
+void SWindow::OnResize(double DeltaWidthRatio, double DeltaHeightRatio)
 {
-    Rect = initRect;
+    Rect.Left *= DeltaWidthRatio;
+    Rect.Right *= DeltaWidthRatio;
+
+    Rect.Top *= DeltaHeightRatio;
+    Rect.Bottom *= DeltaHeightRatio;
+
+    for (const auto& Child : Children)
+    {
+        Child->OnResize(DeltaWidthRatio, DeltaHeightRatio);
+    } 
 }
 
-void SWindow::OnResize(float width, float height)
+void SWindow::Release()
 {
-    Rect.SetWidth(width);
-    Rect.SetHeight(height);
+    // TODO Check - 안전한가?
+    auto ChildrenCopy = Children;
+    for (const auto& Child : ChildrenCopy)
+    {
+        Child->Release();
+        delete Child;
+    }
+}
+
+void SWindow::LoadConfig(const TMap<FString, FString>& config)
+{
+    for (const auto& Child : Children)
+    {
+        Child->LoadConfig(config);
+    }
+}
+
+void SWindow::SaveConfig(TMap<FString, FString>& config) const
+{
+    for (const auto& Child : Children)
+    {
+        Child->SaveConfig(config);
+    }
 }
 
 bool SWindow::IsHover(FPoint coord) const
@@ -21,12 +51,18 @@ bool SWindow::IsHover(FPoint coord) const
     return Rect.Contains(coord);
 }
 
-bool SWindow::OnPressed(FPoint coord)
+void SWindow::OnPressed(FPoint coord)
 {
-    return false;
+    for (const auto& Child : Children)
+    {
+        Child->OnPressed(coord);
+    }
 }
 
-bool SWindow::OnReleased() 
+void SWindow::OnReleased() 
 {
-    return false;
+    for (const auto& Child : Children)
+    {
+        Child->OnReleased();
+    }
 }

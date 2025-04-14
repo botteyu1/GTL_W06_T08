@@ -45,7 +45,6 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
     LevelEditor = new SLevelEditor();
 
-
     GraphicDevice.Initialize(AppWnd);
 
     bufferManager->Initialize(GraphicDevice.Device, GraphicDevice.DeviceContext);
@@ -60,13 +59,17 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 
     LevelEditor->Initialize();
 
+    // TODO: Load Config가 Level Editor에 종속되어있음.
+    //MoveWindow(AppWnd, GraphicDevice.ScreenPosX, GraphicDevice.ScreenPosY, GraphicDevice.ScreenWidth, GraphicDevice.ScreenHeight, true);
+    
     UnrealEditor = new UnrealEd();
     UnrealEditor->Initialize(AppWnd);
+    
     
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
     GEngine->LoadLevel("Saved/AutoSaves.scene");
-
+    
     return 0;
 }
 
@@ -167,7 +170,7 @@ float FEngineLoop::GetAspectRatio(IDXGISwapChain* swapChain) const
 
 void FEngineLoop::Exit()
 {
-    GEngine->SaveLevel("Saved/AutoSaves.scene");
+    GEngine->SaveLevel("Saved/AutoSaves.scene");    
     LevelEditor->Release();
     UIMgr->Shutdown();
     delete UIMgr;
@@ -210,6 +213,14 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_MOVE:
+        {
+            int xPos = (int)(short)LOWORD(lParam); // X 좌표
+            int yPos = (int)(short)HIWORD(lParam); // Y 좌표
+            //FEngineLoop::GraphicDevice.ScreenPosX = xPos;
+            //FEngineLoop::GraphicDevice.ScreenPosY = yPos;
+            break;
+        }
     case WM_SIZE:
         if (wParam != SIZE_MINIMIZED)
         {

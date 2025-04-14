@@ -93,6 +93,7 @@ public:
     void UpdateEditorCameraMovement(float DeltaTime);
     void InputKey(const FKeyEvent& InKeyEvent);
     void MouseMove(const FPointerEvent& InMouseEvent);
+    void ResizeViewport(FSlateRect InRect);
     void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
 
     bool IsSelected(const FVector2D& InPoint) const;
@@ -125,7 +126,7 @@ public:
     float nearPlane = 0.1f;
     float farPlane = 1000000.0f;
     static FVector Pivot;
-    static float orthoSize;
+    static float OrthoSize;
     ELevelViewportType ViewportType;
     EViewModeIndex ViewMode;
 
