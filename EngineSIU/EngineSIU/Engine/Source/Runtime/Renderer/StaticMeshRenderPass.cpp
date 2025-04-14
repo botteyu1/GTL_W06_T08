@@ -378,13 +378,13 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
 
 void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    if ((GetAsyncKeyState('P') & 0x0001) && (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
+    if ((GetAsyncKeyState('P') & 0x0001) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
     {
         UpdateShaders(1, 0, 0, true);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤
     }
 
-    if ((GetAsyncKeyState('O') & 0x0001) && (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
+    if ((GetAsyncKeyState('O') & 0x0001) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
     {
         SetUberShader(!bIsUber);
         Sleep(100); // 여러번 눌리는걸 방지하기 위해서 6프레임동안 멈춤

@@ -112,7 +112,7 @@ void AEditorPlayer::Input()
         }
     }
 
-    if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
+    if ((GetAsyncKeyState(VK_DELETE) & 0x8000)&& (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
     {
         if (!bDeleteDown)
         {
