@@ -37,16 +37,16 @@ VS_OUT Uber_VS(VS_IN input)
     
     output.color = input.color;
   
-    output.normal = normalize(mul(input.normal, (float3x3) MInverseTranspose));
+    output.normal = normalize(mul(input.normal, (float3x3) MInverseTranspose)); // Object Space -> World Space
 
     float3 BiTangent = cross(input.normal, input.Tangent);
     matrix<float, 3, 3> TBN =
     {
         input.Tangent.x, input.Tangent.y, input.Tangent.z, // column 0
         BiTangent.x, BiTangent.y, BiTangent.z, // column 1
-        input.normal.x, input.normal.y, input.normal.z            // column 2
+        input.normal.x, input.normal.y, input.normal.z // column 2
     };
-    output.TBN = TBN;
+    output.TBN = transpose(TBN);
     
     output.texcoord = input.texcoord;
 #if LIGHTING_MODEL_GOURAUD
@@ -145,6 +145,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     // normal
     else if (RenderFlag == 4)
     {
+        Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
         Output.color = float4(Normal/2 + 0.5, 1);
         return Output;
     }
@@ -167,6 +168,10 @@ PS_OUT Uber_PS(VS_OUT Input)
     for (int i = 0; i < NumPointLights; i++)
     {
         CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
+
+        // Transform tangent space
+        Direction = mul(Direction, Input.TBN);
+        
         ComputeLambert(PointLights[i].Color, Direction, Normal, DiffuseColor);
 
         DiffuseColor *= Attenuation;
@@ -178,6 +183,10 @@ PS_OUT Uber_PS(VS_OUT Input)
         CalculateSpotLight(SpotLights[i].Direction, SpotLights[i].Position, Input.worldPos,
             SpotLights[i].AttenuationRadius, SpotLights[i].Falloff, SpotLights[i].InnerConeAngle, SpotLights[i].OuterConeAngle,
             Direction, Attenuation);
+
+        // Transform tangent space
+        Direction = mul(Direction, Input.TBN);
+        
         ComputeLambert(SpotLights[i].Color, Direction, Normal, DiffuseColor);
 
         DiffuseColor *= Attenuation;
@@ -186,6 +195,10 @@ PS_OUT Uber_PS(VS_OUT Input)
 
     // Directional
     CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
+
+    // Transform tangent space
+    Direction = mul(Direction, Input.TBN);
+    
     ComputeLambert(DirectionalLights[0].Color, Direction, Normal, DiffuseColor);
 
     TotalColor += DirectionalLights[0].Intensity * DiffuseColor;
@@ -196,7 +209,13 @@ PS_OUT Uber_PS(VS_OUT Input)
     for (int i = 0; i < NumPointLights; i++)
     {
         CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
-        ComputeBlinnPhong(PointLights[i].Color, Direction, normalize(CameraPosition - Input.worldPos), Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
+
+        // Transform tangent space
+        Direction = mul(Direction, Input.TBN);
+        float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
+        ViewDirection = mul(ViewDirection, Input.TBN);
+
+        ComputeBlinnPhong(PointLights[i].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
 
         DiffuseColor *= Material.DiffuseColor * Attenuation;
         SpecularColor *= Material.SpecularColor * Attenuation;
@@ -209,7 +228,13 @@ PS_OUT Uber_PS(VS_OUT Input)
         CalculateSpotLight(SpotLights[i].Direction, SpotLights[i].Position, Input.worldPos,
             SpotLights[i].AttenuationRadius, SpotLights[i].Falloff, SpotLights[i].InnerConeAngle, SpotLights[i].OuterConeAngle,
             Direction, Attenuation);
-        ComputeBlinnPhong(SpotLights[i].Color, Direction, normalize(CameraPosition - Input.worldPos), Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
+
+        // Transform tangent space
+        Direction = mul(Direction,Input.TBN);
+        float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
+        ViewDirection = mul(ViewDirection, Input.TBN);
+        
+        ComputeBlinnPhong(SpotLights[i].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
 
         DiffuseColor *= SpotLights[i].Intensity * Material.DiffuseColor * Attenuation;
         SpecularColor *= SpotLights[i].Intensity * Material.SpecularColor * Attenuation;
@@ -219,7 +244,13 @@ PS_OUT Uber_PS(VS_OUT Input)
 
     // Directional
     CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
-    ComputeBlinnPhong(DirectionalLights[0].Color, Direction, normalize(CameraPosition - Input.worldPos), Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
+
+    // Transform tangent space
+    Direction = mul(Direction, Input.TBN);
+    float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
+    ViewDirection = mul(ViewDirection, Input.TBN);
+    
+    ComputeBlinnPhong(DirectionalLights[0].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, DiffuseColor, SpecularColor);
 
     DiffuseColor *= Material.DiffuseColor;
     SpecularColor *= Material.SpecularColor;

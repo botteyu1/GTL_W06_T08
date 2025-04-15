@@ -12,7 +12,7 @@ void CalculatePointLight(float3 LightPosition, float3 VertexPosition, float Atte
 
     float CalcAttenuation = saturate(1.0f - Distance / AttenuationRadius);
     CalcAttenuation = pow(CalcAttenuation, Falloff);
-    EffectiveLightDirection = LightDirection;
+    EffectiveLightDirection = normalize(LightDirection);
     FinalAttenuation = CalcAttenuation;
 }
 
@@ -50,10 +50,8 @@ void CalculateSpotLight(float3 SpotLightDirection, float3 LightPosition, float3 
     float Inner = cos(radians(InnerConeAngle));
 
     float ConeAttenuation = saturate((CosAngle - Outer) / (Inner - Outer));
-    //ConeAttenuation = pow(ConeAttenuation, Falloff);
+    ConeAttenuation = pow(ConeAttenuation, Falloff);
 
-
-    
-    EffectiveLightDirection = LightDirection;
+    EffectiveLightDirection = normalize(LightDirection);
     FinalAttenuation = (CosAngle < 0.0f) ? 0.0 : Attenuation * ConeAttenuation;
 }

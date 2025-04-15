@@ -10,11 +10,10 @@
  * @param VertexNormal World vertex normal
  * @param DiffuseColor out DiffuseColor
  */
-
 #if LIGHTING_MODEL_LAMBERT
 void ComputeLambert(float3 LightColor, float3 LightDirection, float3 VertexNormal, out float3 DiffuseColor)
 {
-    DiffuseColor = LightColor * max(dot(VertexNormal, (LightDirection / length(LightDirection))), 0.0f);
+    DiffuseColor = LightColor * max(dot(VertexNormal, LightDirection), 0.0f);
 }
 #endif
 
@@ -35,12 +34,9 @@ void ComputeLambert(float3 LightColor, float3 LightDirection, float3 VertexNorma
 void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDirection, float3 VertexNormal,
     float Shininess, out float3 OutDiffuseColor, out float3 OutSpecularColor)
 {
-    float Distance = length(LightDirection);
-    
-    float3 LightDirectionNormalized = LightDirection / Distance;
-    float3 HalfVec = normalize(LightDirectionNormalized + ViewDirection);
+    float3 HalfVec = normalize(LightDirection + ViewDirection);
 
-    float NdotL = max(dot(VertexNormal, LightDirectionNormalized), 0.0f);
+    float NdotL = max(dot(VertexNormal, LightDirection), 0.0f);
     float NdotH = max(dot(VertexNormal, HalfVec), 0.0f);
     
     OutDiffuseColor = LightColor * NdotL;
