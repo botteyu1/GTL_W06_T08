@@ -74,6 +74,8 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
     uint stride;
     PointLightBufferList.GetDimensions(maxLightCount, stride);
     
+    uint TempIndices[31];
+    uint TempCount = 0;
     for (uint i = 0; i < MAX_NUM_GLOBAL_LIGHT; ++i)
     {
         FPointLightBuffer light = PointLightBufferList[i];
@@ -87,13 +89,16 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
         float3 viewSpaceLightPos = viewPos.xyz;
 
         // Frustum과의 교차 판정
-        //if (SphereInFrustum(viewSpaceLightPos, light.Radius, FrustumPlanes))
-        //{
-        //    if (lightCount < 31)
-        //    {
-        //        tileLightData.LightIndices[lightCount++] = i;
-        //    }
-        //}
+        if (SphereInFrustum(viewSpaceLightPos, light.Radius, FrustumPlanes))
+        {
+            if (TempCount < 31)
+            {
+                TempIndices[TempCount] = i;
+                TempCount++;
+                //tileLightData.LightIndices[lightCount] = i;
+                //lightCount++;
+            }
+        }
     }
     tileLightData.LightCount = 123;
     TileLightIndicesListCS[DTid.x] = tileLightData;

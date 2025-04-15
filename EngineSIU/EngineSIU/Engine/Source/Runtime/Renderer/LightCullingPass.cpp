@@ -29,6 +29,13 @@ void FLightCullingPass::PrepareRender()
 
 void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
+
+
+
+
+
+
+
     UpdateLightList();
     UpdateScreenInfoBuffer(Viewport);
     Graphics->DeviceContext->CSSetShader(ComputeShader, nullptr, 0);
@@ -98,6 +105,39 @@ HRESULT FLightCullingPass::CreateShaders()
     ComputeShader = ShaderManager->GetComputeShaderByKey(ShaderName);
 
     return hr;
+}
+
+HRESULT FLightCullingPass::ReloadShaders()
+{
+    //const D3D_SHADER_MACRO defines[] =
+    //{
+    //    "MAX_NUM_GLOBAL_LIGHT", "256",
+    //    NULL, NULL
+    //};
+
+    //HRESULT hr = ShaderManager->ReloadModifiedShaders(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", defines);
+    //if (FAILED(hr))
+    //{
+    //    return hr;
+    //}
+    //hr = ShaderManager->AddPixelShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
+    //if (FAILED(hr))
+    //{
+    //    return hr;
+    //}
+
+
+    //hr = ShaderManager->AddComputeShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
+    //if (FAILED(hr))
+    //{
+    //    return hr;
+    //}
+    //VisualizeVertexShader = ShaderManager->GetVertexShaderByKey(ShaderName);
+    //VisualizePixelShader = ShaderManager->GetPixelShaderByKey(ShaderName);
+    //ComputeShader = ShaderManager->GetComputeShaderByKey(ShaderName);
+
+    //return hr;
+    return S_OK;
 }
 
 void FLightCullingPass::CreateBuffers()

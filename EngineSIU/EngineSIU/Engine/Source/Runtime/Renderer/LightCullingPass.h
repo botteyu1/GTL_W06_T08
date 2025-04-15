@@ -46,6 +46,7 @@ private:
     };
 
     HRESULT CreateShaders();
+    HRESULT ReloadShaders();
     const std::wstring ShaderName = L"LightCullingShader";
     ID3D11VertexShader* VisualizeVertexShader;
     ID3D11PixelShader* VisualizePixelShader;
