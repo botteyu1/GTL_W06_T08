@@ -89,91 +89,7 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
     // frustum을 구성하는 여섯개의 평면을 생성
     float4 Planes[6];
     GetTileFrustumPlanes(NDC, ProjInv, ViewMatrixInv, Planes);
-    TileLightIndicesListCS[tileIndex].LightIndices[0] = 0;
-
-    if (IsTileCenterInsideFrustum(float3(0, 0, 0), Planes))
-    //if(Planes[0].y + 1 == Planes[0].y)
-    {
-        TileLightIndicesListCS[tileIndex].LightIndices[1] = 8;
-    }
-    else
-    {
-        TileLightIndicesListCS[tileIndex].LightIndices[1] = 0;
-    }
-    
-    TileLightIndicesListCS[tileIndex].LightIndices[2] = Planes[0].z + 1;
-    //TileLightIndicesListCS[tileIndex].LightIndices[2] = 1;
-    
-    // ---------------------
-// Tile 좌표 정보 (Screen space 기준, 픽셀 단위)
-// ---------------------
-    TileLightIndicesListCS[tileIndex].LightIndices[0] = TileUpLeft.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[1] = TileUpLeft.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[2] = Right;
-    TileLightIndicesListCS[tileIndex].LightIndices[3] = Bottom;
-
-    TileLightIndicesListCS[tileIndex].LightIndices[4] = TileUpRight.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[5] = TileUpRight.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[6] = TileBottomLeft.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[7] = TileBottomLeft.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[8] = TileBottomRight.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[9] = TileBottomRight.y;
-
-// ---------------------
-// NDC X 값들 (범위: -1 ~ 1)
-// ---------------------
-    TileLightIndicesListCS[tileIndex].LightIndices[10] = ndcUL.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[11] = ndcUR.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[12] = ndcLL.x;
-    TileLightIndicesListCS[tileIndex].LightIndices[13] = ndcLR.x;
-
-// ---------------------
-// NDC Y 값들 (범위: -1 ~ 1)
-// ---------------------
-    TileLightIndicesListCS[tileIndex].LightIndices[14] = ndcUL.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[15] = ndcUR.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[16] = ndcLL.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[17] = ndcLR.y;
-    
-    TileLightIndicesListCS[tileIndex].LightIndices[18] = (float) TileUpLeft.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[19] = -(float) TileUpLeft.y;
-    TileLightIndicesListCS[tileIndex].LightIndices[20] = -(float) TileUpLeft.y / ScreenHeight;
-    TileLightIndicesListCS[tileIndex].LightIndices[21] = ndcUL.y;
-
-    
-    //TileLightIndicesListCS[tileIndex].LightIndices[5] = DTid.x;
-    //TileLightIndicesListCS[tileIndex].LightIndices[6] = DTid.y;
-    //TileLightIndicesListCS[tileIndex].LightIndices[7] = 0;
-    //TileLightIndicesListCS[tileIndex].LightIndices[8] = 0;
-    
-    //TileLightIndicesListCS[tileIndex].LightIndices[5-4] = TileUpLeft.x;
-    //TileLightIndicesListCS[tileIndex].LightIndices[6-4] = TileUpLeft.y;
-    //TileLightIndicesListCS[tileIndex].LightIndices[7-4] = Right;
-    //TileLightIndicesListCS[tileIndex].LightIndices[8-4] = Bottom;
-    
-    
-    //TileLightIndicesListCS[tileIndex].LightIndices[5] = ndcUL.x;
-    //TileLightIndicesListCS[tileIndex].LightIndices[6] = ndcUR.x;
-    //TileLightIndicesListCS[tileIndex].LightIndices[7] = ndcLL.x;
-    //TileLightIndicesListCS[tileIndex].LightIndices[8] = ndcLR.x;
-        
-    //TileLightIndicesListCS[tileIndex].LightIndices[5 + 4] = ndcUL.y;
-    //TileLightIndicesListCS[tileIndex].LightIndices[6 + 4] = ndcUR.y;
-    //TileLightIndicesListCS[tileIndex].LightIndices[7 + 4] = ndcLL.y;
-    //TileLightIndicesListCS[tileIndex].LightIndices[8 + 4] = ndcLR.y;
-    
-    //for (int k = 0; k < 6; k++)
-    //{
-    //    TileLightIndicesListCS[tileIndex].LightIndices[6 + 3*k + 0] = Planes[k].x * 10;
-    //    TileLightIndicesListCS[tileIndex].LightIndices[6 + 3*k + 1] = Planes[k].y * 10;
-    //    TileLightIndicesListCS[tileIndex].LightIndices[6 + 3*k + 2] = Planes[k].z * 10;
-    //}
-    
-    
-    
-    return;
-    
-        int NumIntersection = 0;
+    int NumIntersection = 0;
     for (uint i = 0; i < 31; ++i)
     {
         if (PointLightBufferList[i].Radius <= 0)
@@ -186,10 +102,108 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
         }
     }
     
-    TileLightIndicesListCS[tileIndex].LightCount = NumIntersection;
-    TileLightIndicesListCS[tileIndex].LightIndices[0] = 0; //RayOnZplane.x / 1;
-    TileLightIndicesListCS[tileIndex].LightIndices[1] = NumIntersection; //RayOnZplane.y / 1;
-    //TileLightIndicesListCS[tileIndex].LightIndices[2] = RayOnZplane.z / 1;
+    //TileLightIndicesListCS[tileIndex].LightIndices[0] = -1000000*Planes[1].x;
+
+    
+    TileLightIndicesListCS[tileIndex].LightIndices[1] = SphereInFrustum(PointLightBufferList[0].Position, PointLightBufferList[0].Radius, Planes);
+    
+    //if (IsTileCenterInsideFrustum(float3(0, 0, 0), Planes))
+    //if(Planes[0].y + 1 == Planes[0].y)
+    //{
+    //    TileLightIndicesListCS[tileIndex].LightIndices[1] = 8;
+    //}
+    //else
+    //{
+    //    TileLightIndicesListCS[tileIndex].LightIndices[1] = 0;
+    //}
+    
+    ////TileLightIndicesListCS[tileIndex].LightIndices[0] = ndcUL.x;
+    //TileLightIndicesListCS[tileIndex].LightIndices[1] = ndcUL.y;
+    ////TileLightIndicesListCS[tileIndex].LightIndices[2] = 0;
+    
+    
+    
+    
+    //matrix viewprojinv = mul(ProjInv, ViewMatrixInv);
+    //float4 rayOrigin = float4(ndcLL, 0, 1);
+    //float4 rayFar = float4(ndcLL, 1, 1);
+    //rayOrigin = mul(rayOrigin, viewprojinv);
+    //rayFar = mul(rayFar, viewprojinv);
+    
+    //rayOrigin /= rayOrigin.w;
+    //rayFar /= rayFar.w;
+    
+    //float3 rayDir = normalize((rayFar - rayOrigin).xyz);
+    
+    //bool a = false;
+    //int NumIntersection = 0;
+    //for (uint i = 0; i < 31; ++i)
+    //{
+    //    if (PointLightBufferList[i].Radius <= 0)
+    //    {
+    //        continue;
+    //    }
+    //    if (IntersectRaySphere(rayOrigin, rayDir, PointLightBufferList[i].Position, PointLightBufferList[i].Radius))
+    //    {
+    //        a = true;
+    //        NumIntersection++;
+    //    }
+    //}
+    ////TileLightIndicesListCS[tileIndex].LightIndices[0] = NumIntersection; //RayOnZplane.x / 1;
+    ////TileLightIndicesListCS[tileIndex].LightIndices[1] = NumIntersection; //RayOnZplane.y / 1;
+    //TileLightIndicesListCS[tileIndex].LightIndices[2] = NumIntersection;
+    
+    
+    //TileLightIndicesListCS[tileIndex].LightIndices[0] = Planes[0].x; // Left plane (a, b, c, d)
+    //TileLightIndicesListCS[tileIndex].LightIndices[1] = Planes[0].y;
+    //TileLightIndicesListCS[tileIndex].LightIndices[2] = Planes[0].z;
+    //TileLightIndicesListCS[tileIndex].LightIndices[3] = Planes[0].w;
+
+    //TileLightIndicesListCS[tileIndex].LightIndices[4] = Planes[1].x; // Right plane (a, b, c, d)
+    //TileLightIndicesListCS[tileIndex].LightIndices[5] = Planes[1].y;
+    //TileLightIndicesListCS[tileIndex].LightIndices[6] = Planes[1].z;
+    //TileLightIndicesListCS[tileIndex].LightIndices[7] = Planes[1].w;
+
+    //TileLightIndicesListCS[tileIndex].LightIndices[8] = Planes[2].x; // Top plane (a, b, c, d)
+    //TileLightIndicesListCS[tileIndex].LightIndices[9] = Planes[2].y;
+    //TileLightIndicesListCS[tileIndex].LightIndices[10] = Planes[2].z;
+    //TileLightIndicesListCS[tileIndex].LightIndices[11] = Planes[2].w;
+
+    //TileLightIndicesListCS[tileIndex].LightIndices[12] = Planes[3].x; // Bottom plane (a, b, c, d)
+    //TileLightIndicesListCS[tileIndex].LightIndices[13] = Planes[3].y;
+    //TileLightIndicesListCS[tileIndex].LightIndices[14] = Planes[3].z;
+    //TileLightIndicesListCS[tileIndex].LightIndices[15] = Planes[3].w;
+
+    //TileLightIndicesListCS[tileIndex].LightIndices[16] = Planes[4].x; // Near plane (a, b, c, d)
+    //TileLightIndicesListCS[tileIndex].LightIndices[17] = Planes[4].y;
+    //TileLightIndicesListCS[tileIndex].LightIndices[18] = Planes[4].z;
+    //TileLightIndicesListCS[tileIndex].LightIndices[19] = Planes[4].w;
+
+    //TileLightIndicesListCS[tileIndex].LightIndices[20] = Planes[5].x; // Far plane (a, b, c, d)
+    //TileLightIndicesListCS[tileIndex].LightIndices[21] = Planes[5].y;
+    //TileLightIndicesListCS[tileIndex].LightIndices[22] = Planes[5].z;
+    //TileLightIndicesListCS[tileIndex].LightIndices[23] = Planes[5].w;
+    
+    //TileLightIndicesListCS[tileIndex].LightIndices[2] = 1;
+    return;
+    
+    //    int NumIntersection = 0;
+    //for (uint i = 0; i < 31; ++i)
+    //{
+    //    if (PointLightBufferList[i].Radius <= 0)
+    //    {
+    //        continue;
+    //    }
+    //    if (SphereInFrustum(PointLightBufferList[i].Position, PointLightBufferList[i].Radius, Planes))
+    //    {
+    //        NumIntersection++;
+    //    }
+    //}
+    
+    //TileLightIndicesListCS[tileIndex].LightCount = NumIntersection;
+    //TileLightIndicesListCS[tileIndex].LightIndices[0] = 0; //RayOnZplane.x / 1;
+    //TileLightIndicesListCS[tileIndex].LightIndices[1] = NumIntersection; //RayOnZplane.y / 1;
+    ////TileLightIndicesListCS[tileIndex].LightIndices[2] = RayOnZplane.z / 1;
     
     
     return;
@@ -534,10 +548,15 @@ float4 mainPS(PSInput input) : SV_Target
     // light count를 색상으로 매핑 (예: 최대 32개 기준)
     float intensity = saturate(lightCount / 31.0f);
     
+    //if (TileLightIndicesListPS[tileIndex].LightIndices[1] == 0)
+    //{
+    //    return float4(1, 1, 1, 1);
+
+    //}
     return float4(
-    TileLightIndicesListPS[tileIndex].LightIndices[0]/4.f,
-    TileLightIndicesListPS[tileIndex].LightIndices[1]/4.f,
-    TileLightIndicesListPS[tileIndex].LightIndices[2]/4.f,
+    TileLightIndicesListPS[tileIndex].LightIndices[0] / 8.f,
+    TileLightIndicesListPS[tileIndex].LightIndices[1] / 8.f,
+    TileLightIndicesListPS[tileIndex].LightIndices[2] / 8.f,
     0.5f);
     // 빨간색 톤으로 intensity 표시
     //return float4(1, 1, 0, 1);
