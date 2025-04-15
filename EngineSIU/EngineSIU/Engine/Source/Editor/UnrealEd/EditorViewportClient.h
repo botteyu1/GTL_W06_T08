@@ -7,10 +7,11 @@
 #include "EngineLoop.h"
 #include "EngineBaseTypes.h"
 
-#define MIN_ORTHOZOOM				1.0							/* 2D ortho viewport zoom >= MIN_ORTHOZOOM */
-#define MAX_ORTHOZOOM				1e25
+#define MIN_ORTHOZOOM           1.0		// 2D ortho viewport zoom >= MIN_ORTHOZOOM
+#define MAX_ORTHOZOOM           1e25
 
 class FSlateRect;
+struct FPointerEvent;
 class ATransformGizmo;
 class USceneComponent;
 
@@ -89,10 +90,13 @@ public:
     void Release() const;
     //virtual void Draw() override;
 
-    void Input();
+    void UpdateEditorCameraMovement(float DeltaTime);
+    void InputKey(const FKeyEvent& InKeyEvent);
+    void MouseMove(const FPointerEvent& InMouseEvent);
+    void ResizeViewport(FSlateRect InRect);
     void ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right);
 
-    bool IsSelected(POINT InPoint) const;
+    bool IsSelected(const FVector2D& InPoint) const;
 
 protected:
     /** Camera speed setting */
@@ -122,7 +126,7 @@ public:
     float nearPlane = 0.1f;
     float farPlane = 1000000.0f;
     static FVector Pivot;
-    static float orthoSize;
+    static float OrthoSize;
     ELevelViewportType ViewportType;
     EViewModeIndex ViewMode;
 
@@ -161,8 +165,10 @@ public: //Camera Movement
     static void SetOthoSize(float InValue);
 
 private: // Input
-    POINT lastMousePos;
     bool bRightMouseDown = false;
+
+    // 카메라 움직임에 사용될 키를 임시로 저장해서 사용할 예정
+    TSet<EKeys::Type> PressedKeys;
 
 public:
     void LoadConfig(const TMap<FString, FString>& config);

@@ -1,6 +1,7 @@
 #include "DXDShaderManager.h"
 #include "Define.h"
 #include "DXDInclude.h"
+#include "UserInterface/Console.h"
 
 
 FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)

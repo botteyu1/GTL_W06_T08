@@ -1,6 +1,8 @@
 #pragma once
 #include "Container/Array.h"
 #include "Container/Map.h"
+#include "Math/Vector.h"
+#include "SlateCore/Widgets/SWindow.h"
 
 
 class FEditorViewportClient;
@@ -14,32 +16,40 @@ public:
     SLevelEditor();
 
     void Initialize();
-    void Tick(double deltaTime);
-    void Input();
+    void Tick(float DeltaTime);
     void Release();
-    
-    void SelectViewport(POINT point);
+
+    void SelectViewport(FVector2D InPoint);
+
     void ResizeLevelEditor();
     void ResizeViewports();
     void SetEnableMultiViewport(bool bIsEnable);
     bool IsMultiViewport() const;
 
 private:
+    FSlateRect Padding = FSlateRect(0, 50, 10, 0);
+    // TODO: 다른 좋은 이름
+    FVector2D AnchorMax = FVector2D(0.8f, 1);
+    FVector2D AnchorMin = FVector2D(0, 0);
+
+private:
+    SWindow* ViewportWindow = nullptr;
+
     SSplitterH* HSplitter;
     SSplitterV* VSplitter;
-    UWorld* World;
+    
     TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients;
+    TMap<SWindow*, std::shared_ptr<FEditorViewportClient>> ViewportClientMap;
 
     int32 FocusedIndex;
     
-    bool bLButtonDown = false;
-    bool bRButtonDown = false;
-    
-    bool bMultiViewportMode;
+    /** 우클릭 시 캡처된 마우스 커서의 초기 위치 (스크린 좌표계) */
+    FVector2D MousePinPosition;
 
-    POINT lastMousePos;
-    float EditorWidth;
-    float EditorHeight;
+    /** 우클릭이 눌려있는지 여부 */
+    bool bIsPressedMouseRightButton = false;
+
+    bool bMultiViewportMode;
 
 public:
     inline TArray<std::shared_ptr<FEditorViewportClient>> GetViewportClients() { return ViewportClients; }

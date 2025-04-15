@@ -3,141 +3,195 @@
 
 extern FEngineLoop GEngineLoop;
 
-void SSplitter::Initialize(FSlateRect initRect)
+SSplitter::SSplitter(float SplitterHalfSize) : SplitterHalfSize(SplitterHalfSize)
 {
-    SWindow::Initialize(initRect);
-    if (SideLT == nullptr)
+}
+
+SSplitter::~SSplitter()
+{
+}
+
+void SSplitter::OnPressed(FPoint coord)
+{
+    if (IsHover(coord))
     {
-        SideLT = new SWindow();
+        bIsPressed = true;
     }
-    if (SideRB == nullptr)
+    else
     {
-        SideRB = new SWindow();
+        bIsPressed = false;
     }
 }
 
-void SSplitter::OnResize(float width, float height)
-{
-}
-
-bool SSplitter::OnPressed(FPoint coord)
-{
-    if (!IsHover(coord))
-        return false;
-    
-    return bIsPressed = true;
-}
-
-bool SSplitter::OnReleased()
+void SSplitter::OnReleased()
 {
     bIsPressed = false;
-    return false;
 }
 
 void SSplitter::LoadConfig(const TMap<FString, FString>& config)
 {
+    __super::LoadConfig(config);
 }
 
 void SSplitter::SaveConfig(TMap<FString, FString>& config) const
 {
+    __super::SaveConfig(config);
 }
 
-void SSplitterH::Initialize(FSlateRect initRect)
+void SSplitterH::Initialize(SWindow* InParent)
 {
-    SWindow::Initialize(initRect);
-    if (SideLT)
-    {
-        SideLT->Initialize(FSlateRect(0.0f, 0.0f, initRect.Left, initRect.GetHeight()));
-    }
-    if (SideRB)
-    {
-        SideRB->Initialize(FSlateRect(initRect.Left + initRect.GetHeight(), 0.0f, initRect.Left, initRect.GetHeight()));
-    }
-}
+    __super::Initialize(InParent);
 
-void SSplitterH::OnResize(float width, float height)
-{
-    Rect.SetHeight(height);
-    Rect.Left *= width;
-    if (SideLT)
-    {
-        SideLT->Rect.SetHeight(height);
-    }
-    if (SideRB)
-    {
-        SideRB->Rect.Left *= width;
-        SideRB->Rect.SetWidth(SideRB->Rect.GetWidth() * width);
-        SideLT->Rect.SetHeight(height);
+    FVector2D Center = InParent->Rect.GetCenter();
 
-    }
+    Rect = FSlateRect(Center.X - SplitterHalfSize, InParent->Rect.Top, Center.X + SplitterHalfSize, InParent->Rect.Bottom);
+    
+    SideLT = new SWindow();
+    SideRB = new SWindow();
+
+    AddChildren(SideRB);
+    AddChildren(SideLT);
+    
     UpdateChildRects();
+}
+
+// Vertical 자르기 (Horizontal로 늘어남)
+void SSplitterH::OnResize(double DeltaWidthRatio, double DeltaHeightRatio)
+{
+    Rect.Left *= DeltaWidthRatio;
+    Rect.Right *= DeltaWidthRatio;
+
+    Rect.Top *= DeltaHeightRatio;
+    Rect.Bottom *= DeltaHeightRatio;
+    
+    UpdateChildRects();
+}
+
+void SSplitterH::UpdateChildRects()
+{
+    SideLT->Rect = (FSlateRect(Parent->Rect.Left, Rect.Top, Rect.Left, Rect.Bottom));
+    SideRB->Rect = (FSlateRect(Rect.Right, Rect.Top, Parent->Rect.Right,  Rect.Bottom));
 }
 
 void SSplitterH::LoadConfig(const TMap<FString, FString>& config)
 {
-    // 각 키에 대해 기본값을 지정 (예: 기본 위치 및 크기)
-    Rect.Left = GetValueFromConfig(config, "SplitterH.X", FEngineLoop::GraphicDevice.screenWidth *0.5f);
-    Rect.Top = GetValueFromConfig(config, "SplitterH.Y", 0.0f);
-
-    Rect.SetWidth(GetValueFromConfig(config, "SplitterH.Width", 20.0f));
-    Rect.SetHeight(GetValueFromConfig(config, "SplitterH.Height", 10.0f)); // 수평 스플리터는 높이 고정
+    __super::LoadConfig(config);
     
-    Rect.Left *= FEngineLoop::GraphicDevice.screenWidth /GetValueFromConfig(config, "SplitterV.Width", 1000.0f);
+    // 각 키에 대해 기본값을 지정 (예: 기본 위치 및 크기)
+    Rect.Left = GetValueFromConfig(config, "SplitterH.Left", Parent->Rect.GetCenter().X);
+    Rect.Right = GetValueFromConfig(config, "SplitterH.Right", Rect.Left + 20);
+    //Rect.Top = GetValueFromConfig(config, "SplitterH.Top", Parent->Rect.Top);
+    //Rect.Bottom = GetValueFromConfig(config, "SplitterH.Bottom", Parent->Rect.Bottom); // 수직 스플리터는 너비 고정
+    
+    //Rect.Left *= FEngineLoop::GraphicDevice.ScreenWidth /GetValueFromConfig(config, "SplitterV.Width", 1000.0f);
+
+
+    Rect.Bottom = Parent->Rect.Bottom;
+    Rect.Top = Parent->Rect.Top;
+
+    ClampMinimumRegion();
 }
 
 void SSplitterH::SaveConfig(TMap<FString, FString>& config) const
 {
-    config["SplitterH.X"] = std::to_string(Rect.Left);
-    config["SplitterH.Y"] = std::to_string(Rect.Top);
-    config["SplitterH.Width"] = std::to_string(Rect.GetWidth());
-    config["SplitterH.Height"] = std::to_string(Rect.GetHeight());
+    __super::SaveConfig(config);
+    
+    config["SplitterH.Left"] = std::to_string(Rect.Left);
+    config["SplitterH.Top"] = std::to_string(Rect.Top);
+    config["SplitterH.Right"] = std::to_string(Rect.Right);
+    config["SplitterH.Bottom"] = std::to_string(Rect.Bottom);
 }
 
-void SSplitterV::Initialize(FSlateRect initRect)
+void SSplitterH::ClampMinimumRegion()
 {
-    __super::Initialize(initRect);
-    if (SideLT)
+    if (Rect.GetCenter().X + SplitterHalfSize + MinimumSplitterOffset > Parent->Rect.Right)
     {
-        SideLT->Initialize(FSlateRect(0.0f, 0.0f, initRect.GetWidth(), initRect.Top));
+        Rect.Left = Parent->Rect.Right - MinimumSplitterOffset - SplitterHalfSize * 2;
+        Rect.Right = Parent->Rect.Right - MinimumSplitterOffset;
     }
-    if (SideRB)
+    else if (Rect.GetCenter().X - SplitterHalfSize - MinimumSplitterOffset < Parent->Rect.Left)
     {
-        SideRB->Initialize(FSlateRect(0.0f, initRect.Top + initRect.GetHeight(), initRect.GetWidth(), initRect.Top));
+        Rect.Left = Parent->Rect.Left + MinimumSplitterOffset;
+        Rect.Right = Parent->Rect.Left + MinimumSplitterOffset + SplitterHalfSize * 2;
     }
 }
 
-void SSplitterV::OnResize(float width, float height)
+void SSplitterV::Initialize(SWindow* InParent)
 {
-    Rect.SetWidth(width);
-    Rect.Top *= height;
-    if (SideLT)
-    {
-        SideLT->Rect.SetWidth(width);
-    }
-    if (SideRB)
-    {
-        SideRB->Rect.Top *= height;
-        SideRB->Rect.SetHeight(SideRB->Rect.GetHeight() * height);
-        SideRB->Rect.SetWidth(width);
-    }
+    __super::Initialize(InParent);
+
+    FVector2D Center = InParent->Rect.GetCenter();
+    
+    Rect = FSlateRect(InParent->Rect.Left, Center.Y - SplitterHalfSize, InParent->Rect.Right, Center.Y + SplitterHalfSize);
+
+    SideLT = new SWindow();
+    SideRB = new SWindow();
+
+    AddChildren(SideRB);
+    AddChildren(SideLT);
+
     UpdateChildRects();
+}
+
+// Horizontal 자르기 (Vertical로 늘어남)
+void SSplitterV::OnResize(double DeltaWidthRatio, double DeltaHeightRatio)
+{
+    Rect.Left *= DeltaWidthRatio;
+    Rect.Right *= DeltaWidthRatio;
+
+    Rect.Top *= DeltaHeightRatio;
+    Rect.Bottom *= DeltaHeightRatio;
+    
+    UpdateChildRects();
+}
+
+void SSplitterV::UpdateChildRects()
+{
+    SideLT->Rect = (FSlateRect(Rect.Left, Parent->Rect.Top, Rect.Right, Rect.Top));
+    SideRB->Rect = (FSlateRect(Rect.Left, Rect.Bottom, Rect.Right,  Parent->Rect.Bottom));
 }
 
 void SSplitterV::LoadConfig(const TMap<FString, FString>& config)
 {
-    Rect.Left = GetValueFromConfig(config, "SplitterV.X", 0.0f);
-    Rect.Top = GetValueFromConfig(config, "SplitterV.Y", FEngineLoop::GraphicDevice.screenHeight * 0.5f);
-    Rect.SetWidth(GetValueFromConfig(config, "SplitterV.Width", 10)); // 수직 스플리터는 너비 고정
-    Rect.SetHeight(GetValueFromConfig(config, "SplitterV.Height", 20));
+    __super::LoadConfig(config);
 
-    Rect.Top *= FEngineLoop::GraphicDevice.screenHeight / GetValueFromConfig(config, "SplitterH.Height", 1000.0f);
+    Rect.Top = GetValueFromConfig(config, "SplitterV.Top", Parent->Rect.GetCenter().Y);
+    Rect.Bottom = GetValueFromConfig(config, "SplitterV.Bottom", Rect.Top + 20); // 수직 스플리터는 너비 고정
+    // Rect.Left = GetValueFromConfig(config, "SplitterV.Left", Parent->Rect.Left);
+    // Rect.Right = GetValueFromConfig(config, "SplitterV.Right", Parent->Rect.Right);
+    // Rect.Left = FMath::Clamp(Rect.Left, Parent->Rect.Left, Parent->Rect.Right);
+    // Rect.Right = FMath::Clamp(Rect.Right, Parent->Rect.Left, Parent->Rect.Right);
 
+    Rect.Left = Parent->Rect.Left;
+    Rect.Right = Parent->Rect.Right;
+
+    ClampMinimumRegion();
+    
+
+    //Rect.Top *= FEngineLoop::GraphicDevice.ScreenHeight / GetValueFromConfig(config, "SplitterH.Height", 1000.0f);
 }
 
 void SSplitterV::SaveConfig(TMap<FString, FString>& config) const
 {
-    config["SplitterV.X"] = std::to_string(Rect.Left);
-    config["SplitterV.Y"] = std::to_string(Rect.Top);
-    config["SplitterV.Width"] = std::to_string(Rect.GetWidth());
-    config["SplitterV.Height"] = std::to_string(Rect.GetHeight());
+    __super::SaveConfig(config);
+    
+    config["SplitterV.Left"] = std::to_string(Rect.Left);
+    config["SplitterV.Top"] = std::to_string(Rect.Top);
+    config["SplitterV.Right"] = std::to_string(Rect.Right);
+    config["SplitterV.Bottom"] = std::to_string(Rect.Bottom);
 }
+
+void SSplitterV::ClampMinimumRegion()
+{
+    if (Rect.GetCenter().Y + SplitterHalfSize + MinimumSplitterOffset > Parent->Rect.Bottom)
+    {
+        Rect.Top = Parent->Rect.Bottom - MinimumSplitterOffset - SplitterHalfSize * 2;
+        Rect.Bottom = Parent->Rect.Bottom - MinimumSplitterOffset;
+    }
+    else if (Rect.GetCenter().Y - SplitterHalfSize - MinimumSplitterOffset < Parent->Rect.Top)
+    {
+        Rect.Top = Parent->Rect.Top + MinimumSplitterOffset;
+        Rect.Bottom = Parent->Rect.Top + MinimumSplitterOffset + SplitterHalfSize * 2;
+    }
+}
+

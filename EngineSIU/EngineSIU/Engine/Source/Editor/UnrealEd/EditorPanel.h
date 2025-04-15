@@ -43,6 +43,9 @@ public:
 protected:
     
     FSlateRect Rect = FSlateRect(0, 0, 0, 0);
+    FSlateRect Padding = FSlateRect(0, 0, 0, 0);
+    FVector2D AnchorMax = FVector2D(1, 1);
+    FVector2D AnchorMin = FVector2D(0, 0);
     //FVector2D AnchorMin = FVector2D(0.5, 0.5);
     //FVector2D AnchorMax = FVector2D(0.5, 0.5);
     //FVector2D Pivot = FVector2D(0.5, 0.5);

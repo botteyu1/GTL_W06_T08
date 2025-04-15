@@ -16,12 +16,18 @@ void ViewportControlEditorPanel::Render()
     ImFont* IconFont = io.Fonts->Fonts[FEATHER_FONT];
     ImVec2 IconSize = ImVec2(32, 32);
 
-    Rect.Left = 1;
-    Rect.Top = 50;
-    Rect.SetHeight(45);
+    Padding = FSlateRect(1, 50, 0, 0.f);
+    AnchorMin = FVector2D(0.f, 0.f);
+    AnchorMax = FVector2D(0.8f, 0.f);
+    
+    FSlateRect PanelRect = FSlateRect(0 ,0, 0, 0);
+    PanelRect.Left = Rect.GetWidth() * AnchorMin.X + Padding.Left;
+    PanelRect.Top = Rect.GetHeight() * AnchorMin.Y + Padding.Top;
 
-    float PanelWidth = Rect.GetWidth() * 0.8f;
-    float PanelHeight = (Rect.GetHeight()) * 0.3f;
+    PanelRect.Right = Rect.GetWidth() * AnchorMax.X - Padding.Right;
+    PanelRect.Bottom = Rect.GetHeight() * AnchorMax.Y - Padding.Bottom;
+    
+    PanelRect.SetHeight(45);
 
     ImVec2 MinSize(300, 50);
     ImVec2 MaxSize(FLT_MAX, 50);
@@ -30,10 +36,10 @@ void ViewportControlEditorPanel::Render()
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
 
     /* Panel Position */
-    ImGui::SetNextWindowPos(ImVec2(Rect.Left, Rect.Top), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(PanelRect.Left, PanelRect.Top), ImGuiCond_Always);
 
     /* Panel Size */
-    ImGui::SetNextWindowSize(ImVec2(PanelWidth, PanelHeight), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(PanelRect.GetWidth(), PanelRect.GetHeight()), ImGuiCond_Always);
 
     /* Panel Flags */
     ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground;

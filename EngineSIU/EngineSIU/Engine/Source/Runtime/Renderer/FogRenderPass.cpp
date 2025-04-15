@@ -202,7 +202,7 @@ void FFogRenderPass::RenderFog(const std::shared_ptr<FEditorViewportClient>& Act
 void FFogRenderPass::CheckResize()
 {
     // 화면 크기가 변경되었으면 SRV를 재생성
-    if (screenWidth != Graphics->screenWidth || screenHeight != Graphics->screenHeight) {
+    if (screenWidth != Graphics->ScreenWidth || screenHeight != Graphics->ScreenHeight) {
         if (FogBuffer) { FogBuffer->Release(); FogBuffer = nullptr; }
         if (FogRTV) { FogRTV->Release(); FogRTV = nullptr; }
         CreateRTV();
@@ -237,8 +237,8 @@ void FFogRenderPass::CheckResize()
             return;
         }
 
-        screenWidth = Graphics->screenWidth;
-        screenHeight = Graphics->screenHeight;
+        screenWidth = Graphics->ScreenWidth;
+        screenHeight = Graphics->ScreenHeight;
     }
 }
 

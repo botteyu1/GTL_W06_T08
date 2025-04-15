@@ -10,11 +10,10 @@
  * @param VertexNormal World vertex normal
  * @param DiffuseColor out DiffuseColor
  */
-
 #if LIGHTING_MODEL_LAMBERT
 void ComputeLambert(float3 LightColor, float3 LightDirection, float3 VertexNormal, out float3 DiffuseColor)
 {
-    DiffuseColor = LightColor * max(dot(VertexNormal, (LightDirection / length(LightDirection))), 0.0f);
+    DiffuseColor = LightColor * max(dot(VertexNormal, LightDirection), 0.0f);
 }
 #endif
 
@@ -35,12 +34,9 @@ void ComputeLambert(float3 LightColor, float3 LightDirection, float3 VertexNorma
 void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDirection, float3 VertexNormal,
     float Shininess, out float3 OutDiffuseColor, out float3 OutSpecularColor)
 {
-    float Distance = length(LightDirection);
-    
-    float3 LightDirectionNormalized = LightDirection / Distance;
-    float3 HalfVec = normalize(LightDirectionNormalized + ViewDirection);
+    float3 HalfVec = normalize(LightDirection + ViewDirection);
 
-    float NdotL = max(dot(VertexNormal, LightDirectionNormalized), 0.0f);
+    float NdotL = max(dot(VertexNormal, LightDirection), 0.0f);
     float NdotH = max(dot(VertexNormal, HalfVec), 0.0f);
     
     OutDiffuseColor = LightColor * NdotL;
@@ -56,9 +52,10 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
  * @param VertexNormal World vertex normal
  * @param Shininess Color shininess scalar
  * @param AmbientLight FAmbientLight
- * @param DirectionalLight FDirectionalLight
+ * @param DirectionalLights List of FDirectionalLight, but it's only one.
  * @param PointLights List of pointlight
  * @param SpotLights List of spotlight
+ * @param NumOfDirLight Number of Directionallight
  * @param NumOfPointLight Number of pointlight
  * @param NumOfSpotLight Number of spotlight
  * @return Color3
@@ -109,7 +106,7 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
         CalculatePointLight(Point.Position, VertexPosition, Point.AttenuationRadius, Point.Falloff, Direction, Attenuation);
         float3 PointReflectDirection = reflect(Direction, VertexNormal);
 
-        // Compare normal    light direction
+        // Normal comparison for light direction
         float NormalDotDirection = dot(VertexNormal, Direction);
         if (NormalDotDirection <= 0.0f)
         {
@@ -143,6 +140,7 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
             Direction, Attenuation);
         float3 SpotReflectDirection = reflect(Direction, VertexNormal);
 
+        // Normal comparison for light direction
         float NormalDotDirection = dot(VertexNormal, Direction);
         if (NormalDotDirection <= 0.0f)
         {

@@ -27,13 +27,16 @@ void PropertyEditorPanel::Render()
     {
         return;
     }
+    Padding = FSlateRect(5, 15, 1, -15.f);
+    AnchorMin = FVector2D(0.8f, 0.3f);
+    AnchorMax = FVector2D(1.f, 0.95f);
     
-    /* Pre Setup */
-    float PanelWidth = (Rect.GetWidth()) * 0.2f - 6.0f;
-    float PanelHeight = (Rect.GetHeight()) * 0.65f;
+    FSlateRect PanelRect = FSlateRect(0 ,0, 0, 0);
+    PanelRect.Left = Rect.GetWidth() * AnchorMin.X + Padding.Left;
+    PanelRect.Top = Rect.GetHeight() * AnchorMin.Y + Padding.Top;
 
-    float PanelPosX = (Rect.GetWidth()) * 0.8f + 5.0f;
-    float PanelPosY = (Rect.GetHeight()) * 0.3f + 15.0f;
+    PanelRect.Right = Rect.GetWidth() * AnchorMax.X - Padding.Right;
+    PanelRect.Bottom = Rect.GetHeight() * AnchorMax.Y - Padding.Bottom;
 
     ImVec2 MinSize(140, 370);
     ImVec2 MaxSize(FLT_MAX, 900);
@@ -42,10 +45,10 @@ void PropertyEditorPanel::Render()
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
 
     /* Panel Position */
-    ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(PanelRect.Left, PanelRect.Top), ImGuiCond_Always);
 
     /* Panel Size */
-    ImGui::SetNextWindowSize(ImVec2(PanelWidth, PanelHeight), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(PanelRect.GetWidth(), PanelRect.GetHeight()), ImGuiCond_Always);
 
     /* Panel Flags */
     ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
