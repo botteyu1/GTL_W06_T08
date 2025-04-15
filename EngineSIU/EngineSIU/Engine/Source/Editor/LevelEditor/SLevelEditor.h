@@ -2,6 +2,7 @@
 #include "Container/Array.h"
 #include "Container/Map.h"
 #include "Math/Vector.h"
+#include "SlateCore/Widgets/SWindow.h"
 
 
 class FEditorViewportClient;
@@ -26,15 +27,15 @@ public:
     bool IsMultiViewport() const;
 
 private:
+    SWindow* ViewportWindow = nullptr;
+
     SSplitterH* HSplitter;
     SSplitterV* VSplitter;
-    UWorld* World;
+    
     TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients;
+    TMap<SWindow*, std::shared_ptr<FEditorViewportClient>> ViewportClientMap;
 
     int32 FocusedIndex;
-    
-    bool bLButtonDown = false;
-    bool bRButtonDown = false;
     
     /** 우클릭 시 캡처된 마우스 커서의 초기 위치 (스크린 좌표계) */
     FVector2D MousePinPosition;
@@ -43,9 +44,6 @@ private:
     bool bIsPressedMouseRightButton = false;
 
     bool bMultiViewportMode;
-
-    float EditorWidth;
-    float EditorHeight;
 
 public:
     inline TArray<std::shared_ptr<FEditorViewportClient>> GetViewportClients() { return ViewportClients; }

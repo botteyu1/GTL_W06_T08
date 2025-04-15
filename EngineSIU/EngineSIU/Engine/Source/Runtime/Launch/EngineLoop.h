@@ -50,6 +50,8 @@ private:
     //TODO: GWorld 제거, Editor들 EditorEngine으로 넣기
 
     std::unique_ptr<FSlateAppMessageHandler> AppMessageHandler;
+
+    // TODO: EditorEngine으로 옮길만 하지 않나
     SLevelEditor* LevelEditor;
     UnrealEd* UnrealEditor;
     FDXDBufferManager* bufferManager; //ToDo UEngine으로 옮겨야함.

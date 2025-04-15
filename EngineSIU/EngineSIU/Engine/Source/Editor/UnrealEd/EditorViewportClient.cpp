@@ -17,7 +17,7 @@
 #include "SlateCore/Input/Events.h"
 
 FVector FEditorViewportClient::Pivot = FVector(0.0f, 0.0f, 0.0f);
-float FEditorViewportClient::orthoSize = 10.0f;
+float FEditorViewportClient::OrthoSize = 10.0f;
 
 FEditorViewportClient::FEditorViewportClient()
     : Viewport(nullptr)
@@ -312,6 +312,21 @@ void FEditorViewportClient::MouseMove(const FPointerEvent& InMouseEvent)
     }
 }
 
+void FEditorViewportClient::ResizeViewport(FSlateRect InRect)
+{
+    if (Viewport)
+    {
+        Viewport->ResizeViewport(InRect);
+    }
+    else
+    {
+        UE_LOG(LogLevel::Error, "Viewport is nullptr");
+    }
+    AspectRatio = GEngineLoop.GetAspectRatio(FEngineLoop::GraphicDevice.SwapChain);
+    UpdateProjectionMatrix();
+    UpdateViewMatrix();
+}
+
 void FEditorViewportClient::ResizeViewport(FSlateRect Top, FSlateRect Bottom, FSlateRect Left, FSlateRect Right)
 {
     if (Viewport)
@@ -439,8 +454,8 @@ void FEditorViewportClient::UpdateProjectionMatrix()
         float aspectRatio = GetViewport()->GetViewport().Width / GetViewport()->GetViewport().Height;
 
         // 오쏘그래픽 너비는 줌 값과 가로세로 비율에 따라 결정됩니다.
-        float orthoWidth = orthoSize * aspectRatio;
-        float orthoHeight = orthoSize;
+        float orthoWidth = OrthoSize * aspectRatio;
+        float orthoHeight = OrthoSize;
 
         // 오쏘그래픽 투영 행렬 생성 (nearPlane, farPlane 은 기존 값 사용)
         Projection = JungleMath::CreateOrthoProjectionMatrix(
@@ -528,9 +543,9 @@ void FEditorViewportClient::UpdateOrthoCameraLoc()
 
 void FEditorViewportClient::SetOthoSize(float InValue)
 {
-    orthoSize += InValue;
-    if (orthoSize <= 0.1f)
-        orthoSize = 0.1f;
+    OrthoSize += InValue;
+    if (OrthoSize <= 0.1f)
+        OrthoSize = 0.1f;
     
 }
 
