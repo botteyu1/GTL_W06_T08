@@ -76,9 +76,9 @@ void SSplitterH::LoadConfig(const TMap<FString, FString>& config)
     __super::LoadConfig(config);
     
     // 각 키에 대해 기본값을 지정 (예: 기본 위치 및 크기)
-    Rect.Left = GetValueFromConfig(config, "SplitterH.Left", FEngineLoop::GraphicDevice.ScreenWidth * 0.5f);
-    Rect.Top = GetValueFromConfig(config, "SplitterH.Top", 0.0f);
-    Rect.Bottom = GetValueFromConfig(config, "SplitterH.Bottom", FEngineLoop::GraphicDevice.ScreenHeight); // 수직 스플리터는 너비 고정
+    Rect.Left = GetValueFromConfig(config, "SplitterH.Left", Parent->Rect.GetCenter().X);
+    Rect.Top = GetValueFromConfig(config, "SplitterH.Top", Parent->Rect.Top);
+    Rect.Bottom = GetValueFromConfig(config, "SplitterH.Bottom", Parent->Rect.Bottom); // 수직 스플리터는 너비 고정
     Rect.Right = GetValueFromConfig(config, "SplitterH.Right", Rect.Left + 20);
     
     //Rect.Left *= FEngineLoop::GraphicDevice.ScreenWidth /GetValueFromConfig(config, "SplitterV.Width", 1000.0f);
@@ -132,11 +132,11 @@ void SSplitterV::UpdateChildRects()
 void SSplitterV::LoadConfig(const TMap<FString, FString>& config)
 {
     __super::LoadConfig(config);
-    
-    Rect.Left = GetValueFromConfig(config, "SplitterV.X", 0.0f);
-    Rect.Top = GetValueFromConfig(config, "SplitterV.Y", FEngineLoop::GraphicDevice.ScreenHeight * 0.5f);
+
+    Rect.Left = GetValueFromConfig(config, "SplitterV.Left", Parent->Rect.Left);
+    Rect.Top = GetValueFromConfig(config, "SplitterV.Top", Parent->Rect.GetCenter().Y);
     Rect.Bottom = GetValueFromConfig(config, "SplitterV.Bottom", Rect.Top + 20); // 수직 스플리터는 너비 고정
-    Rect.Right = GetValueFromConfig(config, "SplitterV.Right", FEngineLoop::GraphicDevice.ScreenWidth * 0.5f);
+    Rect.Right = GetValueFromConfig(config, "SplitterV.Right", Parent->Rect.Right);
 
     //Rect.Top *= FEngineLoop::GraphicDevice.ScreenHeight / GetValueFromConfig(config, "SplitterH.Height", 1000.0f);
 }

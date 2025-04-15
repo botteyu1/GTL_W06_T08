@@ -249,7 +249,7 @@ public:
 
     FVector2D GetCenter() const
     {
-        return FVector2D(Right + Left * 0.5f, Bottom + Top * 0.5f);
+        return FVector2D((Right + Left) * 0.5f, (Bottom + Top) * 0.5f);
     }
     //         
     //     bool operator==( const FSlateRect& Other ) const

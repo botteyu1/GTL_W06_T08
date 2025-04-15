@@ -33,14 +33,13 @@ void SLevelEditor::Initialize()
     ViewportWindow->AddChildren(HSplitter);
 
 
-    
+    // TODO: 각 Viewport와 Rect 매핑?
     for (size_t i = 0; i < VIEWPORTNUM; i++)
     {
         std::shared_ptr<FEditorViewportClient> EditorViewportClient = std::make_shared<FEditorViewportClient>();
         EditorViewportClient->Initialize(i);
         ViewportClients.Add(EditorViewportClient);
     }
-    // ViewportClientMap.Add(ViewportClients[0])
 
     
     LoadConfig();
