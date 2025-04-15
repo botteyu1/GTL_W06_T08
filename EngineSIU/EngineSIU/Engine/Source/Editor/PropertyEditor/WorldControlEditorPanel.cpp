@@ -12,6 +12,7 @@
 #include "Components/ParticleSubUVComponent.h"
 #include "Components/SphereComp.h"
 #include "Components/TextComponent.h"
+#include "Engine/ConfigManager.h"
 
 #include "Engine/EditorEngine.h"
 #include "Engine/Engine.h"
@@ -374,11 +375,13 @@ void WorldControlEditorPanel::CreateSettingButton(ImVec2 ButtonSize, ImFont* Ico
             if (ImGui::MenuItem("Light"))
             {
                 GEngineLoop.GetUImGuiManager()->PreferenceStyle(Light);
+                ConfigManager::SetConfigValue("Preference", "Theme", FString(std::to_string((uint8)EEditorLayoutTheme::Light)), FName("settings.ini"));
             }
 
             if (ImGui::MenuItem("Dark"))
             {
-                GEngineLoop.GetUImGuiManager()->PreferenceStyle(Dark);   
+                GEngineLoop.GetUImGuiManager()->PreferenceStyle(Dark);
+                ConfigManager::SetConfigValue("Preference", "Theme", FString(std::to_string((uint8)EEditorLayoutTheme::Dark)), FName("settings.ini"));
             }
             
             ImGui::EndMenu();
