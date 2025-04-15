@@ -921,16 +921,16 @@ void FEditorRenderPass::RenderPointlightInstanced()
     TArray<FConstantBufferDebugSphere> BufferAll;
     for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
     {
-        if (PointLightComp == EditorEngine->GetSelectedComponent())
-        {
+        //if (PointLightComp == EditorEngine->GetSelectedComponent())
+        //{
             FConstantBufferDebugSphere b;
             b.Position = PointLightComp->GetWorldLocation();
             b.Radius = PointLightComp->GetAttenuationRadius();
             b.Color = FLinearColor(149.f / 255.f, 198.f / 255.f, 255.f / 255.f, 255.f / 255.f);
 
             BufferAll.Add(b);
-            break;
-        }
+            //break;
+        //}
     }
 
     PrepareConstantbufferPointlight();

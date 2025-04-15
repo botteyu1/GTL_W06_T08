@@ -5,6 +5,7 @@
 #include "Engine/EditorEngine.h"
 #include "Editor/LevelEditor/SLevelEditor.h"
 #include "UnrealEd/EditorViewportClient.h"
+#include "UnrealClient.h"
 
 FLightCullingPass::FLightCullingPass()
 {
@@ -30,11 +31,7 @@ void FLightCullingPass::PrepareRender()
 void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
 
-
-
-
-
-
+    ReloadShaders();
 
     UpdateLightList();
     UpdateScreenInfoBuffer(Viewport);
@@ -61,8 +58,8 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
     // 시각화 (Full-screen quad 렌더링)
     Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-    ShaderManager->SetVertexShader(ShaderName, Graphics->DeviceContext);
-    ShaderManager->SetPixelShader(ShaderName, Graphics->DeviceContext);
+    ShaderManager->SetVertexShader(ShaderNameVS, Graphics->DeviceContext);
+    ShaderManager->SetPixelShader(ShaderNamePS, Graphics->DeviceContext);
     UpdateScreenInfoBuffer(Viewport);
     BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
     Graphics->DeviceContext->PSSetShaderResources(1, 1, &TileLightListSRV); // t1번 슬롯에 SRV 바인딩
@@ -75,6 +72,34 @@ void FLightCullingPass::ClearRenderArr()
 {
 }
 
+void FLightCullingPass::PrepareBlendState()
+{
+    D3D11_BLEND_DESC blendDesc = {};
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+    ID3D11BlendState* blendState = nullptr;
+    Graphics->Device->CreateBlendState(&blendDesc, &blendState);
+
+    // 사용 시
+    float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+    Graphics->DeviceContext->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+
+    D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+    dsDesc.DepthEnable = FALSE; // 중요!
+    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+
+    ID3D11DepthStencilState* dsState;
+    Graphics->Device->CreateDepthStencilState(&dsDesc, &dsState);
+    Graphics->DeviceContext->OMSetDepthStencilState(dsState, 0);
+}
+
 HRESULT FLightCullingPass::CreateShaders()
 {
     const D3D_SHADER_MACRO defines[] =
@@ -83,67 +108,61 @@ HRESULT FLightCullingPass::CreateShaders()
         NULL, NULL
     };
 
-    HRESULT hr = ShaderManager->AddVertexShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", defines);
+    HRESULT hr = ShaderManager->AddVertexShader(ShaderNameVS, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", defines);
     if (FAILED(hr))
     {
         return hr;
     }
-    hr = ShaderManager->AddPixelShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
+    hr = ShaderManager->AddPixelShader(ShaderNamePS, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
     if (FAILED(hr))
     {
         return hr;
     }
 
 
-    hr = ShaderManager->AddComputeShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
+    hr = ShaderManager->AddComputeShader(ShaderNameCS, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
     if (FAILED(hr))
     {
         return hr;
     }
-    VisualizeVertexShader = ShaderManager->GetVertexShaderByKey(ShaderName);
-    VisualizePixelShader = ShaderManager->GetPixelShaderByKey(ShaderName);
-    ComputeShader = ShaderManager->GetComputeShaderByKey(ShaderName);
+    VisualizeVertexShader = ShaderManager->GetVertexShaderByKey(ShaderNameVS);
+    VisualizePixelShader = ShaderManager->GetPixelShaderByKey(ShaderNamePS);
+    ComputeShader = ShaderManager->GetComputeShaderByKey(ShaderNameCS);
 
     return hr;
 }
 
 HRESULT FLightCullingPass::ReloadShaders()
 {
-    //const D3D_SHADER_MACRO defines[] =
-    //{
-    //    "MAX_NUM_GLOBAL_LIGHT", "256",
-    //    NULL, NULL
-    //};
+    const D3D_SHADER_MACRO defines[] =
+    {
+        "MAX_NUM_GLOBAL_LIGHT", "256",
+        NULL, NULL
+    };
 
-    //HRESULT hr = ShaderManager->ReloadModifiedShaders(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", defines);
-    //if (FAILED(hr))
-    //{
-    //    return hr;
-    //}
-    //hr = ShaderManager->AddPixelShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
-    //if (FAILED(hr))
-    //{
-    //    return hr;
-    //}
+    HRESULT hr = ShaderManager->ReloadModifiedShaders(ShaderNameVS, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS",
+        nullptr, 0, defines, ShaderNamePS, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
 
+    hr = ShaderManager->ReloadModifiedComputeShader(ShaderNameCS, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+    VisualizeVertexShader = ShaderManager->GetVertexShaderByKey(ShaderNameVS);
+    VisualizePixelShader = ShaderManager->GetPixelShaderByKey(ShaderNamePS);
+    ComputeShader = ShaderManager->GetComputeShaderByKey(ShaderNameCS);
 
-    //hr = ShaderManager->AddComputeShader(ShaderName, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
-    //if (FAILED(hr))
-    //{
-    //    return hr;
-    //}
-    //VisualizeVertexShader = ShaderManager->GetVertexShaderByKey(ShaderName);
-    //VisualizePixelShader = ShaderManager->GetPixelShaderByKey(ShaderName);
-    //ComputeShader = ShaderManager->GetComputeShaderByKey(ShaderName);
-
-    //return hr;
-    return S_OK;
+    return hr;
 }
 
 void FLightCullingPass::CreateBuffers()
 {
     CreateGlobalLightList();
-    CreateTileLightList();
+    CreateTileLightList(Graphics);
     CreateScreebInfoBuffer();
 }
 
@@ -157,11 +176,13 @@ void FLightCullingPass::UpdateScreenInfoBuffer(std::shared_ptr<FEditorViewportCl
     ScreenInfo info;
     info.ProjInv = FMatrix::Inverse(Viewport->GetProjectionMatrix());
     info.ViewMatrix = Viewport->GetViewMatrix();
+    info.ViewInv = FMatrix::Inverse(info.ViewMatrix);
     info.NumTileWidth = NumTileWidth;
     info.NumTileHeight = NumTileHeight;
     info.TileSize = TileSize;
-    info.ScreenWidth = Graphics->screenWidth;
-    info.ScreenHeight = Graphics->screenHeight;
+    info.ScreenWidth = Viewport->GetViewport()->GetViewport().Width;
+    info.ScreenHeight = Viewport->GetViewport()->GetViewport().Height;
+    info.ScreenTopPadding = Viewport->GetViewport()->GetViewport().TopLeftY;
     BufferManager->UpdateConstantBuffer("ScreenInfo", info);
     //D3D11_MAPPED_SUBRESOURCE mappedResource;
     //HRESULT hr = DXDeviceContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -231,10 +252,20 @@ void FLightCullingPass::UpdateLightList()
     );
 }
 
-HRESULT FLightCullingPass::CreateTileLightList()
+HRESULT FLightCullingPass::CreateTileLightList(FGraphicsDevice* Graphics)
 {
-    NumTileWidth = ceil(Graphics->screenWidth / (float)TileSize);
-    NumTileHeight = ceil(Graphics->screenHeight / (float)TileSize);
+    FSlateRect Padding = FSlateRect(0, 0, 0, 0);
+    // TODO: 다른 좋은 이름
+    FVector2D AnchorMax = FVector2D(1.f, 1);
+    FVector2D AnchorMin = FVector2D(0, 0);
+    FSlateRect Rect = FSlateRect(
+        FEngineLoop::GraphicDevice.ScreenWidth * AnchorMin.X + Padding.Left,
+        FEngineLoop::GraphicDevice.ScreenHeight * AnchorMin.Y + Padding.Top,
+        (FEngineLoop::GraphicDevice.ScreenWidth * AnchorMax.X) - Padding.Right,
+        (FEngineLoop::GraphicDevice.ScreenHeight * AnchorMax.Y) - Padding.Bottom);
+     
+    NumTileWidth = ceil(Rect.GetWidth() / (float)TileSize);
+    NumTileHeight = ceil(Rect.GetHeight() / (float)TileSize);
     
     uint32 tileCount = NumTileWidth * NumTileHeight;
     D3D11_BUFFER_DESC bufDesc = {};
@@ -275,6 +306,10 @@ HRESULT FLightCullingPass::CreateTileLightList()
         return hr;
     }
 
+}
+
+void FLightCullingPass::ReleaseTileLightList()
+{
 }
 
 

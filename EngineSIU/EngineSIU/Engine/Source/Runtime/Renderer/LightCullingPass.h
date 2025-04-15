@@ -17,6 +17,9 @@ public:
     virtual void ClearRenderArr() override;
 
 private:
+    void PrepareBlendState();
+
+
     // CPU -> GPU 전달용 scene의 전체 light를 담은 버퍼
     // TODO : 추후에 라이트 개수 늘어나면 어떻게해야할까..
     const uint32 MaxNumPointLight = 256; // define에서 바꾸기
@@ -38,16 +41,22 @@ private:
     {
         FMatrix ProjInv;
         FMatrix ViewMatrix;
+        FMatrix ViewInv;
         uint32 NumTileWidth;
         uint32 NumTileHeight;
         uint32 TileSize;
         uint32 ScreenWidth;
         uint32 ScreenHeight;
+        uint32 ScreenTopPadding;
+        uint32 pad;
+        uint32 pad1;
     };
 
     HRESULT CreateShaders();
     HRESULT ReloadShaders();
-    const std::wstring ShaderName = L"LightCullingShader";
+    const std::wstring ShaderNameVS = L"LightCullingShaderVS";
+    const std::wstring ShaderNamePS = L"LightCullingShaderPS";
+    const std::wstring ShaderNameCS = L"LightCullingShaderCS";
     ID3D11VertexShader* VisualizeVertexShader;
     ID3D11PixelShader* VisualizePixelShader;
     ID3D11ComputeShader* ComputeShader;
@@ -65,7 +74,8 @@ private:
     void UpdateLightList();
     ID3D11Buffer* GlobalLightListBuffer;
     ID3D11ShaderResourceView* LightListSRV;
-    HRESULT CreateTileLightList();
+    HRESULT CreateTileLightList(FGraphicsDevice* Graphics);
+    void ReleaseTileLightList();
     ID3D11Buffer* TileLightListBuffer;
     ID3D11UnorderedAccessView* TileLightListUAV;
     ID3D11ShaderResourceView* TileLightListSRV;

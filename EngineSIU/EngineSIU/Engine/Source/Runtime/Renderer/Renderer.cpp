@@ -132,7 +132,6 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     UpdateLightBufferPass->Render(Viewport);
     StaticMeshRenderPass->Render(Viewport);
     BillboardRenderPass->Render(Viewport);
-    LightCullingPass->Render(Viewport);
 
     //if (IsSceneDepth)
     //{
@@ -151,5 +150,7 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
         EditorRenderPass->Render(Viewport);
         GizmoRenderPass->Render(Viewport);
     }
+    LightCullingPass->Render(Viewport);
+
     ClearRenderArr();
 }

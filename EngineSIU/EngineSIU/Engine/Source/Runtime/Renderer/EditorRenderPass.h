@@ -2,6 +2,7 @@
 
 #define _TCHAR_DEFINED
 #include <d3d11.h>
+#include "IRenderPass.h"
 #include "Math/Vector.h"
 #include "Math/Vector4.h"
 #include "Math/Matrix.h"

@@ -45,3 +45,14 @@ bool SphereInFrustum(float3 center, float radius, float4 planes[6])
     }
     return true; // 안에 있거나 걸침
 }
+
+bool IntersectRaySphere(float3 rayOrigin, float3 rayDir, float3 sphereCenter, float radius)
+{
+    float3 oc = rayOrigin - sphereCenter;
+    float a = dot(rayDir, rayDir);
+    float b = 2.0 * dot(oc, rayDir);
+    float c = dot(oc, oc) - radius * radius;
+
+    float discriminant = b * b - 4.0 * a * c;
+    return discriminant >= 0.0;
+}
