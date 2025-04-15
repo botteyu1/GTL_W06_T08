@@ -21,7 +21,11 @@ void SLevelEditor::Initialize()
     FocusedIndex = 0;
 
     ViewportWindow = new SWindow();
-    ViewportWindow->Rect = FSlateRect(0, 0, FEngineLoop::GraphicDevice.ScreenWidth, FEngineLoop::GraphicDevice.ScreenHeight);
+    ViewportWindow->Rect = FSlateRect(
+        FEngineLoop::GraphicDevice.ScreenWidth * AnchorMin.X + Padding.Left,
+        FEngineLoop::GraphicDevice.ScreenHeight * AnchorMin.Y + Padding.Top,
+        (FEngineLoop::GraphicDevice.ScreenWidth * AnchorMax.X) - Padding.Right,
+        (FEngineLoop::GraphicDevice.ScreenHeight * AnchorMax.Y) - Padding.Bottom);
 
     VSplitter = new SSplitterV(10);
     HSplitter = new SSplitterH(10);
@@ -271,8 +275,18 @@ void SLevelEditor::ResizeLevelEditor()
     //ViewportWindow->Rect.SetWidth(FEngineLoop::GraphicDevice.ScreenWidth);
     //ViewportWindow->Rect.SetHeight(FEngineLoop::GraphicDevice.ScreenHeight);
 
+
+
+    FSlateRect TargetRect = FSlateRect(
+    FEngineLoop::GraphicDevice.ScreenWidth * AnchorMin.X + Padding.Left,
+FEngineLoop::GraphicDevice.ScreenHeight * AnchorMin.Y + Padding.Top,
+(FEngineLoop::GraphicDevice.ScreenWidth * AnchorMax.X) - Padding.Right,
+(FEngineLoop::GraphicDevice.ScreenHeight * AnchorMax.Y) - Padding.Bottom);
+    
+    FVector2D RectSize = FVector2D(TargetRect.GetWidth(), TargetRect.GetHeight());
+    
     // foreach Children -> Splitter->OnResize()
-    ViewportWindow->OnResize(FEngineLoop::GraphicDevice.ScreenWidth / PrevWidth, FEngineLoop::GraphicDevice.ScreenHeight / PrevHeight);
+    ViewportWindow->OnResize(RectSize.X / PrevWidth, RectSize.Y / PrevHeight);
     ResizeViewports();
 }
 
@@ -312,12 +326,12 @@ void SLevelEditor::LoadConfig()
     FEditorViewportClient::Pivot.Z = GetValueFromConfig(config, "OrthoPivotZ", 0.0f);
     FEditorViewportClient::OrthoSize = GetValueFromConfig(config, "OrthoZoomSize", 10.0f);
     
-    //FEngineLoop::GraphicDevice.ScreenPosX = GetValueFromConfig(config, "ScreenPosX", FEngineLoop::GraphicDevice.ScreenPosX);
-    //FEngineLoop::GraphicDevice.ScreenPosY = GetValueFromConfig(config, "ScreenPosY", FEngineLoop::GraphicDevice.ScreenPosY);
+    // FEngineLoop::GraphicDevice.ScreenPosX = GetValueFromConfig(config, "ScreenPosX", FEngineLoop::GraphicDevice.ScreenPosX);
+    // FEngineLoop::GraphicDevice.ScreenPosY = GetValueFromConfig(config, "ScreenPosY", FEngineLoop::GraphicDevice.ScreenPosY);
+    //
+    // FEngineLoop::GraphicDevice.ScreenWidth = GetValueFromConfig(config, "ScreenWidth", FEngineLoop::GraphicDevice.ScreenWidth);
+    // FEngineLoop::GraphicDevice.ScreenHeight = GetValueFromConfig(config, "ScreenHeight", FEngineLoop::GraphicDevice.ScreenHeight);
     
-    FEngineLoop::GraphicDevice.ScreenWidth = GetValueFromConfig(config, "ScreenWidth", FEngineLoop::GraphicDevice.ScreenWidth);
-    FEngineLoop::GraphicDevice.ScreenHeight = GetValueFromConfig(config, "ScreenHeight", FEngineLoop::GraphicDevice.ScreenHeight);
-
     SetViewportClient(GetValueFromConfig(config, "ActiveViewportIndex", 0));
     bMultiViewportMode = GetValueFromConfig(config, "bMutiView", false);
     for (const auto& ViewportClient : ViewportClients)
@@ -340,10 +354,10 @@ void SLevelEditor::SaveConfig()
     GetFocusedViewportClient()->SaveConfig(config);
     config["bMutiView"] = std::to_string(bMultiViewportMode);
     config["ActiveViewportIndex"] = std::to_string(FocusedIndex);
-    //config["ScreenPosX"] = std::to_string(FEngineLoop::GraphicDevice.ScreenPosX);
-    //config["ScreenPosY"] = std::to_string(FEngineLoop::GraphicDevice.ScreenPosY);
-    config["ScreenWidth"] = std::to_string(FEngineLoop::GraphicDevice.ScreenWidth);
-    config["ScreenHeight"] = std::to_string(FEngineLoop::GraphicDevice.ScreenHeight);
+    // config["ScreenPosX"] = std::to_string(FEngineLoop::GraphicDevice.ScreenPosX);
+    // config["ScreenPosY"] = std::to_string(FEngineLoop::GraphicDevice.ScreenPosY);
+    // config["ScreenWidth"] = std::to_string(FEngineLoop::GraphicDevice.ScreenWidth);
+    // config["ScreenHeight"] = std::to_string(FEngineLoop::GraphicDevice.ScreenHeight);
     config["OrthoPivotX"] = std::to_string(FEditorViewportClient::Pivot.X);
     config["OrthoPivotY"] = std::to_string(FEditorViewportClient::Pivot.Y);
     config["OrthoPivotZ"] = std::to_string(FEditorViewportClient::Pivot.Z);

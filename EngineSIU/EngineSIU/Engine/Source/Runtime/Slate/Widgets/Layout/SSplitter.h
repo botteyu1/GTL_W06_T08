@@ -15,7 +15,7 @@ public:
 
     virtual void LoadConfig(const TMap<FString, FString>& config) override;
     virtual void SaveConfig(TMap<FString, FString>& config) const override;
-    
+    virtual void ClampMinimumRegion() = 0;
 public:
     virtual void OnDragStart(const FPoint& mousePos) { /* 초기화 */ }
     virtual void OnDrag(const FPoint& delta) = 0; // 가로/세로에 따라 구현 다름.
@@ -30,6 +30,7 @@ public:
 protected:
 
     float SplitterHalfSize;
+    const float MinimumSplitterOffset = 10;
 
     template <typename T>
     T GetValueFromConfig(const TMap<FString, FString>& config, const FString& key, T defaultValue) {
@@ -60,11 +61,16 @@ public:
     void LoadConfig(const TMap<FString, FString>& config) override;
     void SaveConfig(TMap<FString, FString>& config) const override;
 
+    void ClampMinimumRegion() override;
+
     virtual void OnDrag(const FPoint& delta) override
     {
         // 수평 스플리터의 경우, 좌우로 이동
         Rect.Left += delta.X;
         Rect.Right += delta.X;
+
+        ClampMinimumRegion();
+        
 
         UpdateChildRects();
     }
@@ -84,10 +90,14 @@ public:
     void LoadConfig(const TMap<FString, FString>& config)   override;
     void SaveConfig(TMap<FString, FString>& config) const   override;
 
+    void ClampMinimumRegion() override;
+    
     virtual void OnDrag(const FPoint& delta) override
     {
         Rect.Bottom += delta.Y;
         Rect.Top += delta.Y;
+
+        ClampMinimumRegion();
         
         UpdateChildRects();
     }

@@ -79,11 +79,17 @@ void SSplitterH::LoadConfig(const TMap<FString, FString>& config)
     
     // 각 키에 대해 기본값을 지정 (예: 기본 위치 및 크기)
     Rect.Left = GetValueFromConfig(config, "SplitterH.Left", Parent->Rect.GetCenter().X);
-    Rect.Top = GetValueFromConfig(config, "SplitterH.Top", Parent->Rect.Top);
-    Rect.Bottom = GetValueFromConfig(config, "SplitterH.Bottom", Parent->Rect.Bottom); // 수직 스플리터는 너비 고정
     Rect.Right = GetValueFromConfig(config, "SplitterH.Right", Rect.Left + 20);
+    //Rect.Top = GetValueFromConfig(config, "SplitterH.Top", Parent->Rect.Top);
+    //Rect.Bottom = GetValueFromConfig(config, "SplitterH.Bottom", Parent->Rect.Bottom); // 수직 스플리터는 너비 고정
     
     //Rect.Left *= FEngineLoop::GraphicDevice.ScreenWidth /GetValueFromConfig(config, "SplitterV.Width", 1000.0f);
+
+
+    Rect.Bottom = Parent->Rect.Bottom;
+    Rect.Top = Parent->Rect.Top;
+
+    ClampMinimumRegion();
 }
 
 void SSplitterH::SaveConfig(TMap<FString, FString>& config) const
@@ -94,6 +100,20 @@ void SSplitterH::SaveConfig(TMap<FString, FString>& config) const
     config["SplitterH.Top"] = std::to_string(Rect.Top);
     config["SplitterH.Right"] = std::to_string(Rect.Right);
     config["SplitterH.Bottom"] = std::to_string(Rect.Bottom);
+}
+
+void SSplitterH::ClampMinimumRegion()
+{
+    if (Rect.GetCenter().X + SplitterHalfSize + MinimumSplitterOffset > Parent->Rect.Right)
+    {
+        Rect.Left = Parent->Rect.Right - MinimumSplitterOffset - SplitterHalfSize * 2;
+        Rect.Right = Parent->Rect.Right - MinimumSplitterOffset;
+    }
+    else if (Rect.GetCenter().X - SplitterHalfSize - MinimumSplitterOffset < Parent->Rect.Left)
+    {
+        Rect.Left = Parent->Rect.Left + MinimumSplitterOffset;
+        Rect.Right = Parent->Rect.Left + MinimumSplitterOffset + SplitterHalfSize * 2;
+    }
 }
 
 void SSplitterV::Initialize(SWindow* InParent)
@@ -135,10 +155,18 @@ void SSplitterV::LoadConfig(const TMap<FString, FString>& config)
 {
     __super::LoadConfig(config);
 
-    Rect.Left = GetValueFromConfig(config, "SplitterV.Left", Parent->Rect.Left);
     Rect.Top = GetValueFromConfig(config, "SplitterV.Top", Parent->Rect.GetCenter().Y);
     Rect.Bottom = GetValueFromConfig(config, "SplitterV.Bottom", Rect.Top + 20); // 수직 스플리터는 너비 고정
-    Rect.Right = GetValueFromConfig(config, "SplitterV.Right", Parent->Rect.Right);
+    // Rect.Left = GetValueFromConfig(config, "SplitterV.Left", Parent->Rect.Left);
+    // Rect.Right = GetValueFromConfig(config, "SplitterV.Right", Parent->Rect.Right);
+    // Rect.Left = FMath::Clamp(Rect.Left, Parent->Rect.Left, Parent->Rect.Right);
+    // Rect.Right = FMath::Clamp(Rect.Right, Parent->Rect.Left, Parent->Rect.Right);
+
+    Rect.Left = Parent->Rect.Left;
+    Rect.Right = Parent->Rect.Right;
+
+    ClampMinimumRegion();
+    
 
     //Rect.Top *= FEngineLoop::GraphicDevice.ScreenHeight / GetValueFromConfig(config, "SplitterH.Height", 1000.0f);
 }
@@ -152,3 +180,18 @@ void SSplitterV::SaveConfig(TMap<FString, FString>& config) const
     config["SplitterV.Right"] = std::to_string(Rect.Right);
     config["SplitterV.Bottom"] = std::to_string(Rect.Bottom);
 }
+
+void SSplitterV::ClampMinimumRegion()
+{
+    if (Rect.GetCenter().Y + SplitterHalfSize + MinimumSplitterOffset > Parent->Rect.Bottom)
+    {
+        Rect.Top = Parent->Rect.Bottom - MinimumSplitterOffset - SplitterHalfSize * 2;
+        Rect.Bottom = Parent->Rect.Bottom - MinimumSplitterOffset;
+    }
+    else if (Rect.GetCenter().Y - SplitterHalfSize - MinimumSplitterOffset < Parent->Rect.Top)
+    {
+        Rect.Top = Parent->Rect.Top + MinimumSplitterOffset;
+        Rect.Bottom = Parent->Rect.Top + MinimumSplitterOffset + SplitterHalfSize * 2;
+    }
+}
+

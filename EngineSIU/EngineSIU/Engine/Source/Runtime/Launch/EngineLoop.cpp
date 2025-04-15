@@ -58,17 +58,37 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     ResourceManager.Initialize(&Renderer, &GraphicDevice);
 
     LevelEditor->Initialize();
-
-    // TODO: Load Config가 Level Editor에 종속되어있음.
-    //MoveWindow(AppWnd, GraphicDevice.ScreenPosX, GraphicDevice.ScreenPosY, GraphicDevice.ScreenWidth, GraphicDevice.ScreenHeight, true);
     
     UnrealEditor = new UnrealEd();
     UnrealEditor->Initialize(AppWnd);
     
-    
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
     GEngine->LoadLevel("Saved/AutoSaves.scene");
+
+    // // 1. 현재 스타일 가져오기
+    // DWORD style = GetWindowLong(AppWnd, GWL_STYLE);
+    // BOOL hasMenu = FALSE; // 필요시 메뉴 여부에 따라 TRUE
+    //
+    // // 2. 전체 창 크기 계산
+    // RECT rect = { 0, 0, (LONG)GraphicDevice.ScreenWidth, (LONG)GraphicDevice.ScreenHeight };
+    // AdjustWindowRect(&rect, style, hasMenu);
+    //
+    // int windowWidth = rect.right - rect.left;
+    // int windowHeight = rect.bottom - rect.top;
+    //
+    // // 3. 타이틀바/테두리 offset 계산
+    // int borderOffsetX = -rect.left;
+    // int borderOffsetY = -rect.top;
+    //
+    // int windowX = GraphicDevice.ScreenPosX + borderOffsetX;
+    // int windowY = GraphicDevice.ScreenPosY + borderOffsetY;
+    //
+    // // 4. 창 이동
+    // MoveWindow(AppWnd, windowX, windowY, windowWidth, windowHeight, TRUE);
+    //
+    // // TODO: Load Config가 Level Editor에 종속되어있음.
+    // MoveWindow(AppWnd, GraphicDevice.ScreenPosX, GraphicDevice.ScreenPosY, GraphicDevice.ScreenWidth, GraphicDevice.ScreenHeight, true);
     
     return 0;
 }
@@ -215,15 +235,18 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
         break;
     case WM_MOVE:
         {
-            int xPos = (int)(short)LOWORD(lParam); // X 좌표
-            int yPos = (int)(short)HIWORD(lParam); // Y 좌표
-            //FEngineLoop::GraphicDevice.ScreenPosX = xPos;
-            //FEngineLoop::GraphicDevice.ScreenPosY = yPos;
+            if (wParam != SIZE_MINIMIZED)
+            {
+                int xPos = (int)(short)LOWORD(lParam); // X 좌표
+                int yPos = (int)(short)HIWORD(lParam); // Y 좌표
+                FEngineLoop::GraphicDevice.ScreenPosX = xPos;
+                FEngineLoop::GraphicDevice.ScreenPosY = yPos;
+            }
             break;
         }
     case WM_SIZE:
         if (wParam != SIZE_MINIMIZED)
-        {
+        {            
             auto LevelEditor = GEngineLoop.GetLevelEditor();
             if (LevelEditor)
             {
@@ -241,7 +264,8 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
         if (GEngineLoop.GetUnrealEditor())
         {
             GEngineLoop.GetUnrealEditor()->OnResize(hWnd);
-        }
+        }        
+        
         break;
     default:
         GEngineLoop.AppMessageHandler->ProcessMessage(hWnd, Msg, wParam, lParam);

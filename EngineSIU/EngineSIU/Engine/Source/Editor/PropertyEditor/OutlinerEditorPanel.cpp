@@ -9,13 +9,16 @@ void OutlinerEditorPanel::Render()
     /* Pre Setup */
     ImGuiIO& io = ImGui::GetIO();
 
+    Padding = FSlateRect(5, 5, 1, 0);
+    AnchorMin = FVector2D(0.8f, 0);
+    AnchorMax = FVector2D(1.f, 0.3f);
+    
+    FSlateRect PanelRect = FSlateRect(0 ,0, 0, 0);
+    PanelRect.Left = Rect.GetWidth() * AnchorMin.X + Padding.Left;
+    PanelRect.Top = Rect.GetHeight() * AnchorMin.Y + Padding.Top;
 
-    float PanelWidth = (Rect.GetWidth()) * 0.2f - 6.0f;
-    float PanelHeight = (Rect.GetHeight()) * 0.3f;
-    
-    float PanelPosX = (Rect.GetWidth()) * 0.8f + 5.0f;
-    float PanelPosY = 5.0f;
-    
+    PanelRect.Right = Rect.GetWidth() * AnchorMax.X - Padding.Right;
+    PanelRect.Bottom = Rect.GetHeight() * AnchorMax.Y - Padding.Bottom;
 
     ImVec2 MinSize(140, 100);
     ImVec2 MaxSize(FLT_MAX, 500);
@@ -24,10 +27,10 @@ void OutlinerEditorPanel::Render()
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
     
     /* Panel Position */
-    ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(PanelRect.Left, PanelRect.Top), ImGuiCond_Always);
 
     /* Panel Size */
-    ImGui::SetNextWindowSize(ImVec2(PanelWidth, PanelHeight), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(PanelRect.GetWidth(), PanelRect.GetHeight()), ImGuiCond_Always);
 
     /* Panel Flags */
     ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
@@ -47,30 +50,30 @@ void OutlinerEditorPanel::Render()
     }
 
     std::function<void(USceneComponent*)> CreateNode = [&CreateNode, &Engine](USceneComponent* InComp)->void
+    {
+        FString Name = InComp->GetName();
+
+        ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_None;
+        if (InComp->GetAttachChildren().Num() == 0)
+            Flags |= ImGuiTreeNodeFlags_Leaf;
+
+        bool NodeOpen = ImGui::TreeNodeEx(*Name, Flags);
+
+        if (ImGui::IsItemClicked())
         {
-            FString Name = InComp->GetName();
+            Engine->SelectActor(InComp->GetOwner());
+            Engine->SelectComponent(InComp);
+        }
 
-            ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_None;
-            if (InComp->GetAttachChildren().Num() == 0)
-                Flags |= ImGuiTreeNodeFlags_Leaf;
-
-            bool NodeOpen = ImGui::TreeNodeEx(*Name, Flags);
-
-            if (ImGui::IsItemClicked())
+        if (NodeOpen)
+        {
+            for (USceneComponent* Child : InComp->GetAttachChildren())
             {
-                Engine->SelectActor(InComp->GetOwner());
-                Engine->SelectComponent(InComp);
+                CreateNode(Child);
             }
-
-            if (NodeOpen)
-            {
-                for (USceneComponent* Child : InComp->GetAttachChildren())
-                {
-                    CreateNode(Child);
-                }
-                ImGui::TreePop(); // 트리 닫기
-            }
-        };
+            ImGui::TreePop(); // 트리 닫기
+        }
+    };
 
     for (AActor* Actor : Engine->ActiveWorld->GetActiveLevel()->Actors)
     {

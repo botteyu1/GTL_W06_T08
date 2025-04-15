@@ -2,7 +2,6 @@
 
 #include "Components/ActorComponent.h"
 #include "UnrealEd/EditorPanel.h"
-#include "Math/Rotator.h"
 
 class UExponentialHeightFogComponent;
 class ULightComponent;
