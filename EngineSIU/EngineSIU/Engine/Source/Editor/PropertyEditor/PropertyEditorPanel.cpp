@@ -174,8 +174,7 @@ void PropertyEditorPanel::RenderForActor(AActor* SelectedActor, USceneComponent*
         Engine->SelectActor(NewActor);
         Engine->DeselectComponent(Engine->GetSelectedComponent());
     }
-        
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    
     if (ImGui::TreeNodeEx("Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
         ImGui::Text("Add");
@@ -202,14 +201,12 @@ void PropertyEditorPanel::RenderForActor(AActor* SelectedActor, USceneComponent*
 
         ImGui::TreePop();
     }
-    ImGui::PopStyleColor();
 }
 
 void PropertyEditorPanel::RenderForSceneComponent(USceneComponent* SceneComponent, AEditorPlayer* Player) const
 {
     ImGui::SetItemDefaultFocus();
-    // TreeNode 배경색을 변경 (기본 상태)
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+
     if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
         FVector Location = SceneComponent->GetRelativeLocation();
@@ -241,13 +238,11 @@ void PropertyEditorPanel::RenderForSceneComponent(USceneComponent* SceneComponen
         }
         ImGui::TreePop(); // 트리 닫기
     }
-    ImGui::PopStyleColor();
+
 }
 
 void PropertyEditorPanel::RenderForLightComponent(ULightComponent* LightComp) const
 {
-     ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-
      if (ImGui::TreeNodeEx("Light Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
      {
          /*  DrawColorProperty("Ambient Color",
@@ -316,14 +311,10 @@ void PropertyEditorPanel::RenderForLightComponent(ULightComponent* LightComp) co
          
          ImGui::TreePop();
      }
-
-     ImGui::PopStyleColor();
 }
 
 void PropertyEditorPanel::RenderForProjectileMovementComponent(UProjectileMovementComponent* ProjectileComp) const
 {
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-
     if (ImGui::TreeNodeEx("Projectile Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
     {
         float InitialSpeed = ProjectileComp->GetInitialSpeed();
@@ -352,13 +343,10 @@ void PropertyEditorPanel::RenderForProjectileMovementComponent(UProjectileMoveme
                 
         ImGui::TreePop();
     }
-
-    ImGui::PopStyleColor();
 }
 
 void PropertyEditorPanel::RenderForTextComponent(UTextComponent* TextComp) const
 {
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
     if (ImGui::TreeNodeEx("Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
         if (TextComp) {
@@ -387,12 +375,10 @@ void PropertyEditorPanel::RenderForTextComponent(UTextComponent* TextComp) const
         }
         ImGui::TreePop();
     }
-    ImGui::PopStyleColor();
 }
 
 void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshComp) const
 {
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
     if (ImGui::TreeNodeEx("Static Mesh", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
         ImGui::Text("StaticMesh");
@@ -434,7 +420,6 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
 
         ImGui::TreePop();
     }
-    ImGui::PopStyleColor();
 }
 
 
@@ -444,8 +429,7 @@ void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp
     {
         return;
     }
-
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    
     if (ImGui::TreeNodeEx("Materials", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
         for (uint32 i = 0; i < StaticMeshComp->GetNumMaterials(); ++i)
@@ -492,8 +476,6 @@ void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp
 
         ImGui::TreePop();
     }
-
-    ImGui::PopStyleColor();
 
     if (SelectedMaterialIndex != -1)
     {
@@ -618,7 +600,6 @@ void PropertyEditorPanel::RenderMaterialView(UMaterial* Material)
 
 void PropertyEditorPanel::RenderForExponentialHeightFogComponent(UExponentialHeightFogComponent* ExponentialHeightFogComp) const
 {
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
     if (ImGui::TreeNodeEx("Exponential Height Fog", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
         FLinearColor currColor = ExponentialHeightFogComp->GetFogColor();
@@ -701,7 +682,6 @@ void PropertyEditorPanel::RenderForExponentialHeightFogComponent(UExponentialHei
 
         ImGui::TreePop();
     }
-    ImGui::PopStyleColor();
 }
 
 void PropertyEditorPanel::RenderCreateMaterialView()

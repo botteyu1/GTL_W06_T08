@@ -195,9 +195,9 @@ void Console::Draw() {
         // 색상 지정
         ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
         switch (entry.level) {
-        case LogLevel::Display: color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); break;  // 기본 흰색
-        case LogLevel::Warning: color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); break; // 노란색
-        case LogLevel::Error:   color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); break; // 빨간색
+        case LogLevel::Display: color = ImGui::GetStyle().Colors[ImGuiCol_Text]; break;  // 기본 흰색
+        case LogLevel::Warning: color = ImVec4(0.80f, 0.60f, 0.10f, 1.0f); break; // 노란색
+        case LogLevel::Error:   color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f); break; // 빨간색
         }
 
         ImGui::TextColored(color, "%s", *entry.message);

@@ -1,5 +1,6 @@
 #include "WorldControlEditorPanel.h"
 
+#include "ImGuiManager.h"
 #include "Actors/AmbientLightActor.h"
 #include "Actors/Cube.h"
 #include "Actors/DirectionalLightActor.h"
@@ -66,7 +67,7 @@ void WorldControlEditorPanel::Render()
 
     ImGui::SameLine();
 
-    CreateShaderButton(IconSize, IconFont);
+    CreateSettingButton(IconSize, IconFont);
     
     ImGui::SameLine();
 
@@ -247,6 +248,7 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
             {
                 EditorEngine->NewLevel();
             }
+            bOpenMenu = !bOpenMenu;
         }
 
         if (ImGui::MenuItem("Load Level"))
@@ -257,6 +259,7 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
             if (FileName == nullptr)
             {
                 tinyfd_messageBox("Error", "파일을 불러올 수 없습니다.", "ok", "error", 1);
+                bOpenMenu = false;
                 ImGui::End();
                 return;
             }
@@ -265,8 +268,8 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
                 EditorEngine->NewLevel();
                 EditorEngine->LoadLevel(FileName);
             }
-            
-            
+
+            bOpenMenu = false;
         }
 
         ImGui::Separator();
@@ -288,6 +291,7 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
 
 
             tinyfd_messageBox("알림", "저장되었습니다.", "ok", "info", 1);
+            bOpenMenu = false;
         }
 
         ImGui::Separator();
@@ -308,8 +312,9 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
                         tinyfd_messageBox("Error", "파일을 불러올 수 없습니다.", "ok", "error", 1);
                     }
                 }
+                bOpenMenu = false;
             }
-
+            
             ImGui::EndMenu();
         }
 
@@ -317,15 +322,15 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
 
         if (ImGui::MenuItem("Quit"))
         {
-            ImGui::OpenPopup("프로그램 종료");
+            ImGui::OpenPopup("Quit Program");
         }
 
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-        if (ImGui::BeginPopupModal("프로그램 종료", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("Quit Program", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
         {
-            ImGui::Text("정말 프로그램을 종료하시겠습니까?");
+            ImGui::Text("Are you sure you want to quit?");
             ImGui::Separator();
 
             float ContentWidth = ImGui::GetWindowContentRegionMax().x;
@@ -353,17 +358,34 @@ void WorldControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFo
     }
 }
 
-void WorldControlEditorPanel::CreateShaderButton(ImVec2 ButtonSize, ImFont* IconFont)
+void WorldControlEditorPanel::CreateSettingButton(ImVec2 ButtonSize, ImFont* IconFont)
 {
     ImGui::PushFont(IconFont);
-    if (ImGui::Button("\ue9c4", ButtonSize)) // Slider
+    if (ImGui::Button("\ue9db", ButtonSize))
     {
-        ImGui::OpenPopup("SliderControl##");
+        ImGui::OpenPopup("SettingControl##");
     }
     ImGui::PopFont();
 
-    if (ImGui::BeginPopup("SliderControl##"))
+    if (ImGui::BeginPopup("SettingControl##"))
     {
+        if (ImGui::BeginMenu("Style Theme"))
+        {
+            if (ImGui::MenuItem("Light"))
+            {
+                GEngineLoop.GetUImGuiManager()->PreferenceStyle(Light);
+            }
+
+            if (ImGui::MenuItem("Dark"))
+            {
+                GEngineLoop.GetUImGuiManager()->PreferenceStyle(Dark);   
+            }
+            
+            ImGui::EndMenu();
+        }
+    
+        ImGui::Separator();
+        
         static bool IsUber;
         IsUber = GEngineLoop.Renderer.StaticMeshRenderPass->IsUber();
         if (ImGui::Checkbox("UberLit.hlsl(O)", &IsUber))
@@ -408,22 +430,24 @@ void WorldControlEditorPanel::CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFon
 
     ImVec2 WindowSize = ImGui::GetIO().DisplaySize;
 
-    float CenterX = (WindowSize.x - ButtonSize.x) / 2.5f;
+    float CenterX = (WindowSize.x * 0.8f) / 2;
 
-    ImGui::SetCursorScreenPos(ImVec2(CenterX - 40.0f, 10.0f));
-    
+    ImGui::SetCursorScreenPos(ImVec2(CenterX - (ButtonSize.x * 0.5f) - 5.0f, 10.0f));
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 1.0f);
     if (ImGui::Button("\ue9a8", ButtonSize)) // Play
     {
         UE_LOG(LogLevel::Display, TEXT("PIE Button Clicked"));
         Engine->StartPIE();
     }
 
-    ImGui::SetCursorScreenPos(ImVec2(CenterX - 10.0f, 10.0f));
+    ImGui::SetCursorScreenPos(ImVec2(CenterX + (ButtonSize.x * 0.5f) + 5.0f, 10.0f));
     if (ImGui::Button("\ue9e4", ButtonSize)) // Stop
     {
         UE_LOG(LogLevel::Display, TEXT("Stop Button Clicked"));
         Engine->EndPIE();
     }
+    ImGui::PopStyleVar();
     
 }
 
