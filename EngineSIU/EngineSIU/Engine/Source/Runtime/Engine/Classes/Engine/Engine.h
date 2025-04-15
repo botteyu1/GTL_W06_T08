@@ -37,6 +37,9 @@ public:
     
     void LoadLevel(const FString& FileName);
     void SaveLevel(const FString& FileName);
+
+    void LoadConfig();
+    void SaveConfig();
 };
 
 extern class UEngine* GEngine;

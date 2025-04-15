@@ -2,8 +2,11 @@
 #include "ImGUI/imgui_impl_dx11.h"
 #include "ImGUI/imgui_impl_win32.h"
 #include "ImGuiManager.h"
+
+#include "Engine/ConfigManager.h"
 #include "Font/RawFonts.h"
 #include "Font/IconDefs.h"
+#include "UObject/NameTypes.h"
 
 void UImGuiManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
@@ -38,6 +41,13 @@ void UImGuiManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceCont
 
     io.Fonts->AddFontFromMemoryTTF(FeatherRawData, FontSizeOfFeather, 22.0f, &FeatherFontConfig, IconRanges);
     PreferenceStyle();
+}
+
+void UImGuiManager::PostInitialize()
+{
+    FString Value;
+    ConfigManager::GetConfigValue("Preference", "Theme", Value, FName("settings.ini"));
+    PreferenceStyle(static_cast<EEditorLayoutTheme>(FString::ToInt(Value)));
 }
 
 void UImGuiManager::BeginFrame() const
@@ -121,7 +131,7 @@ void UImGuiManager::PreferenceStyle(EEditorLayoutTheme InTheme)
 
             // 프레임
             ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = ImVec4(0.90f, 0.90f, 0.90f, 1.0f);
-            ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.85f, 0.85f, 0.85f, 1.0f);
+            ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.65f, 0.65f, 0.65f, 1.0f);
             ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
 
             // 버튼

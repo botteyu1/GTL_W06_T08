@@ -11,6 +11,12 @@ class UImGuiManager
 {
 public:
     void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* deviceContext);
+
+    /**
+     * This method must call after config loaded.
+     */
+    void PostInitialize();
+    
     void BeginFrame() const;
     void EndFrame() const;
     void PreferenceStyle();
