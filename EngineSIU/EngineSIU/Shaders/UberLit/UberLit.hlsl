@@ -113,11 +113,10 @@ PS_OUT Uber_PS(VS_OUT Input)
     if (Material.TextureFlag & (1 << 6))
     {
         float3 SampledNormal = NormalTexture.Sample(Sampler, UV).rgb;
-        //SampledNormal = LinearToSRGB(SampledNormal); //노말 텍스쳐는 리니어 그대로 적용
         Normal = normalize(2.f * SampledNormal - 1.f);
-        Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
-        //Output.color = float4(1.0f,1.0f,1.0f, 1);
-        //return Output;
+
+        /** Depreacated - processing normals by converting them to world space. */
+        // Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
     }
 
     BaseColor *= Material.DiffuseColor.rgb;
@@ -154,10 +153,8 @@ PS_OUT Uber_PS(VS_OUT Input)
     
     float3 DiffuseColor;
     float3 Direction;
-    
     float Attenuation;
 
-    
 #if LIGHTING_MODEL_GOURAUD
 
     float3 FinalColor = BaseColor * Input.color.rgb;

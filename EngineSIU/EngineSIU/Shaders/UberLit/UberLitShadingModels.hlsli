@@ -52,9 +52,10 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
  * @param VertexNormal World vertex normal
  * @param Shininess Color shininess scalar
  * @param AmbientLight FAmbientLight
- * @param DirectionalLight FDirectionalLight
+ * @param DirectionalLights List of FDirectionalLight, but it's only one.
  * @param PointLights List of pointlight
  * @param SpotLights List of spotlight
+ * @param NumOfDirLight Number of Directionallight
  * @param NumOfPointLight Number of pointlight
  * @param NumOfSpotLight Number of spotlight
  * @return Color3
@@ -105,7 +106,7 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
         CalculatePointLight(Point.Position, VertexPosition, Point.AttenuationRadius, Point.Falloff, Direction, Attenuation);
         float3 PointReflectDirection = reflect(Direction, VertexNormal);
 
-        // Compare normal    light direction
+        // Normal comparison for light direction
         float NormalDotDirection = dot(VertexNormal, Direction);
         if (NormalDotDirection <= 0.0f)
         {
@@ -139,6 +140,7 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
             Direction, Attenuation);
         float3 SpotReflectDirection = reflect(Direction, VertexNormal);
 
+        // Normal comparison for light direction
         float NormalDotDirection = dot(VertexNormal, Direction);
         if (NormalDotDirection <= 0.0f)
         {
