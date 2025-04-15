@@ -46,6 +46,11 @@ void SWindow::SaveConfig(TMap<FString, FString>& config) const
     }
 }
 
+bool SWindow::IsHover(FVector2D coord) const
+{
+    return Rect.Contains(coord);
+}
+
 bool SWindow::IsHover(FPoint coord) const
 {
     return Rect.Contains(coord);

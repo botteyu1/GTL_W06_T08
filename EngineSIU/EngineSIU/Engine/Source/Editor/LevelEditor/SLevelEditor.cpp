@@ -88,7 +88,7 @@ void SLevelEditor::Initialize()
 
         // Splitter 움직임 로직
         if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
-        {
+        {            
             const auto& [DeltaX, DeltaY] = InMouseEvent.GetCursorDelta();
                         
             if (VSplitter->IsPressing())
@@ -121,8 +121,8 @@ void SLevelEditor::Initialize()
             GetCursorPos(&Point);
             ScreenToClient(GEngineLoop.AppWnd, &Point);
             FVector2D ClientPos = FVector2D{static_cast<float>(Point.x), static_cast<float>(Point.y)};
-            const bool bIsVerticalHovered = VSplitter->IsHover({ClientPos.X, ClientPos.Y});
-            const bool bIsHorizontalHovered = HSplitter->IsHover({ClientPos.X, ClientPos.Y});
+            const bool bIsVerticalHovered = VSplitter->IsHover(ClientPos);
+            const bool bIsHorizontalHovered = HSplitter->IsHover(ClientPos);
 
             if (bIsHorizontalHovered && bIsVerticalHovered)
             {

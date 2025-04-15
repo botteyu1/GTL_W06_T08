@@ -13,12 +13,14 @@ SSplitter::~SSplitter()
 
 void SSplitter::OnPressed(FPoint coord)
 {
-    if (!IsHover(coord))
+    if (IsHover(coord))
+    {
+        bIsPressed = true;
+    }
+    else
     {
         bIsPressed = false;
     }
-    
-    bIsPressed = true;
 }
 
 void SSplitter::OnReleased()

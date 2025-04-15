@@ -31,6 +31,7 @@ public:
     
 public:
     void SetRect(FSlateRect newRect) { Rect = newRect; }
+    bool IsHover(FVector2D coord) const;
     bool IsHover(FPoint coord) const;
     virtual void OnPressed(FPoint coord);
     virtual void OnReleased();
