@@ -1,4 +1,4 @@
-float4 CreatePlane(float3 a, float3 b, float3 c)
+float4 ComputePlane(float3 a, float3 b, float3 c)
 {
     float3 ab = b - a;
     float3 ac = c - a;
@@ -7,30 +7,57 @@ float4 CreatePlane(float3 a, float3 b, float3 c)
     return float4(normal, d);
 }
 
-void ComputeFrustumPlanes(float3 ViewPos[4], out float4 FrustumPlanes[6])
+void GetTileFrustumPlanes(
+    float2 ndc[4], // UL, UR, LL, LR
+    matrix ProjInv, // Projection Inverse (clip → view)
+    matrix ViewInv, // View Inverse (view → world)
+    out float4 planes[6])     // left, right, top, bottom, near, far
 {
-    float3 camPos = float3(0, 0, 0); // View space 기준
+    float4 clipNear[4];
+    float4 clipFar[4];
+    for (int i = 0; i < 4; ++i)
+    {
+        clipNear[i] = float4(ndc[i], 0, 1); // Near Z = 0
+        clipFar[i] = float4(ndc[i], 1, 1); // Far Z = 1
+    }
+    float temp;
+    float3 world[8]; // 0~3 near, 4~7 far
+    for (int i = 0; i < 4; ++i)
+    {
+        float4 viewNear = mul(clipNear[i], ProjInv);
+        float4 viewFar = mul(clipFar[i], ProjInv);
+        viewNear /= viewNear.w;
+        viewFar /= viewFar.w;
 
-    // ViewPos 순서:
-    // 0 = UL, 1 = UR, 2 = LL, 3 = LR
+        float4 worldNear = mul(viewNear, ViewInv);
+        float4 worldFar = mul(viewFar, ViewInv);
 
-    // 좌측 평면: (cam, UL, LL)
-    FrustumPlanes[0] = CreatePlane(camPos, ViewPos[0], ViewPos[2]);
-    
-    // 우측 평면: (cam, LR, UR)
-    FrustumPlanes[1] = CreatePlane(camPos, ViewPos[3], ViewPos[1]);
-    
-    // 상단 평면: (cam, UR, UL)
-    FrustumPlanes[2] = CreatePlane(camPos, ViewPos[1], ViewPos[0]);
-    
-    // 하단 평면: (cam, LL, LR)
-    FrustumPlanes[3] = CreatePlane(camPos, ViewPos[2], ViewPos[3]);
-    
-    // near plane: z = 0 평면, 법선이 view space에서 앞을 보는 방향
-    FrustumPlanes[4] = float4(0, 0, 1, 0); // z > 0 인 부분이 inside
+        temp = worldNear.z;
+        world[i] = worldNear.xyz;
+        world[i + 4] = worldFar.xyz;
+    }
 
-    // far plane
-    FrustumPlanes[5] = CreatePlane(ViewPos[0], ViewPos[1], ViewPos[3]);
+    //// Plane order: left, right, top, bottom, near, far
+    //planes[0] = float3(world[0].x, world[0].y, world[0].x); // left
+    //planes[1] = float3(world[1].x, world[1].y, world[1].x); // right
+    //planes[2] = float3(world[2].x, world[2].y, world[2].x); // top
+    //planes[3] = float3(world[3].x, world[3].y, world[3].x); // bottom
+    //planes[4] = float3(world[4].x, world[4].y, world[4].x); // near
+    //planes[5] = float3(world[5].x, world[5].y, world[5].x); // far
+    
+    for (int j = 0; j < 6; j++)
+    {
+        planes[j] = float4(0, 0, 0, 0);
+
+    }
+    
+    //// Plane order: left, right, top, bottom, near, far
+    //planes[0] = ComputePlane(world[0], world[2], world[6]); // left
+    //planes[1] = ComputePlane(world[3], world[1], world[7]); // right
+    //planes[2] = ComputePlane(world[1], world[0], world[5]); // top
+    //planes[3] = ComputePlane(world[2], world[3], world[6]); // bottom
+    //planes[4] = ComputePlane(world[0], world[1], world[2]); // near
+    //planes[5] = ComputePlane(world[6], world[7], world[5]); // far
 }
 
 bool SphereInFrustum(float3 center, float radius, float4 planes[6])
@@ -38,6 +65,7 @@ bool SphereInFrustum(float3 center, float radius, float4 planes[6])
     for (int i = 0; i < 6; ++i)
     {
         float distance = dot(planes[i].xyz, center) + planes[i].w;
+        // distance 음수면 plane의 뒤 
         if (distance < -radius)
         {
             return false; // 완전히 바깥
@@ -55,4 +83,25 @@ bool IntersectRaySphere(float3 rayOrigin, float3 rayDir, float3 sphereCenter, fl
 
     float discriminant = b * b - 4.0 * a * c;
     return discriminant >= 0.0;
+}
+
+// Plane의 안쪽을 향하고 있는지 검사하는 함수
+bool IsTileCenterInsideFrustum(float3 tileCenterWorld, float4 planes[6])
+{
+    bool allInside = true;
+
+    for (int i = 0; i < 6; ++i)
+    {
+        float distance = dot(planes[i].xyz, tileCenterWorld) + planes[i].w;
+
+        // 디버깅: 거리 값 확인
+        // [옵션] RWBuffer나 UAV로 거리값 출력 가능
+
+        if (distance < 0)
+        {
+            allInside = false;
+            // [옵션] 로그 출력 or 시각화용 마킹
+        }
+    }
+    return allInside;
 }

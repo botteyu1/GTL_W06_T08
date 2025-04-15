@@ -18,12 +18,12 @@
                         "ComponentOwnerClass": "APointLight",
                         "Intensity": "1.000000",
                         "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
-                        "LightData_AttenuationRadius": "85.155045",
+                        "LightData_AttenuationRadius": "89.000000",
                         "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
                         "LightData_Falloff": "1.000000",
                         "LightData_Intensity": "1.000000",
                         "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=15.400 Y=80.814 Z=56.690",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
                         "bAutoActive": "true",
@@ -33,6 +33,343 @@
                 }
             ],
             "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_92",
+            "ActorLabel": "OBJ_PointLight_92",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_92",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "83.000000",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=0.000 Y=-25.082 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_94",
+            "ActorLabel": "OBJ_PointLight_94",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_94",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "44.000000",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=98.900",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_96",
+            "ActorLabel": "OBJ_PointLight_96",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_96",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "48.000000",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=-137.300 Y=61.038 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_98",
+            "ActorLabel": "OBJ_PointLight_98",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_98",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "8.235716",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=-7.513",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "ACube",
+            "ActorID": "ACube_100",
+            "ActorLabel": "OBJ_CUBE_100",
+            "Components": [
+                {
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "StaticMeshComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=1.000",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-1.000",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "StaticMeshComponent_0",
+                        "ComponentOwner": "ACube_100",
+                        "ComponentOwnerClass": "ACube",
+                        "RelativeLocation": "X=10.712 Y=-21.430 Z=-36.231",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/helloBlender.obj",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
+                    }
+                }
+            ],
+            "RootComponentID": "StaticMeshComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_102",
+            "ActorLabel": "OBJ_PointLight_102",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_102",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "1.000000",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=-37.498",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_104",
+            "ActorLabel": "OBJ_PointLight_104",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_104",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "68.851364",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=47.886 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=73.800 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_106",
+            "ActorLabel": "OBJ_PointLight_106",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_106",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "54.060741",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=-27.824 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=47.800 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "APointLight",
+            "ActorID": "APointLight_108",
+            "ActorLabel": "OBJ_PointLight_108",
+            "Components": [
+                {
+                    "ComponentClass": "UPointLightComponent",
+                    "ComponentID": "PointLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "UPointLightComponent",
+                        "ComponentName": "PointLightComponent_0",
+                        "ComponentOwner": "APointLight_108",
+                        "ComponentOwnerClass": "APointLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "21.160152",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=-16.966",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=21.900 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "PointLightComponent_0"
+        },
+        {
+            "ActorClass": "ASpotLight",
+            "ActorID": "ASpotLight_110",
+            "ActorLabel": "OBJ_SpotLight_110",
+            "Components": [
+                {
+                    "ComponentClass": "USpotLightComponent",
+                    "ComponentID": "USpotLightComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "nullptr",
+                        "ComponentClass": "USpotLightComponent",
+                        "ComponentName": "USpotLightComponent_0",
+                        "ComponentOwner": "ASpotLight_110",
+                        "ComponentOwnerClass": "ASpotLight",
+                        "Intensity": "1.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "LightData_AttenuationRadius": "1.000000",
+                        "LightData_Color": "X=1.000 Y=1.000 Z=1.000",
+                        "LightData_Direction": "X=1.000 Y=0.000 Z=0.000",
+                        "LightData_Falloff": "1.000000",
+                        "LightData_InnerConeAngle": "0.000000",
+                        "LightData_Intensity": "1.000000",
+                        "LightData_OuterConeAngle": "0.000000",
+                        "LightData_Position": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=-40.382",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "USpotLightComponent_0"
         }
     ],
     "NextUUID": 0,
