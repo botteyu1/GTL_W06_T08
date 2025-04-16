@@ -463,9 +463,8 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         
         // 키 생성 (v/vt/vn 조합)
         std::string Key = std::to_string(VertexIndex) + "/" + std::to_string(UVIndex) + "/" + std::to_string(NormalIndex);
-
         uint32 FinalIndex;
-        if (IndexMap.Contains(Key) && (OutStaticMesh.Materials.Num() > 0 && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal)) )
+        if (IndexMap.Contains(Key) && OutStaticMesh.Materials.Num() > MaterialIndex && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal) )
         {
             FinalIndex = IndexMap[Key];
         }
@@ -586,7 +585,8 @@ void FLoaderOBJ::CalculateTangent(FStaticMeshVertex& PivotVertex, const FStaticM
     const float Ty = f * (t2 * E1y - t1 * E2y);
     const float Tz = f * (t2 * E1z - t1 * E2z);
 
-    FVector Tangent = FVector(Tx, Ty, Tz).GetSafeNormal();
+    // Todo: 이거 필수로 고쳐야함 !! (1,1,1) 값만 들어가는 중...
+    FVector Tangent = FVector(Tx, Ty, Tz).Normalize();
 
     PivotVertex.TangentX = Tangent.X;
     PivotVertex.TangentY = Tangent.Y;
