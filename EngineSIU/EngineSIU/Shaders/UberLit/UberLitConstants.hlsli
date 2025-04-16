@@ -34,6 +34,8 @@ cbuffer cbLights : register(b2)
     int NumSpotLights;
     int Pad2;
 };
+StructuredBuffer<FPointLight> PointLightBufferList : register(t16);
+
 cbuffer MaterialConstants : register(b3)
 {
     FMaterial Material;

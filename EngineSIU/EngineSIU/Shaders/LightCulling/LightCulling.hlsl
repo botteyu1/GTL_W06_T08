@@ -16,7 +16,7 @@ struct FPointLight
 struct FTileLightIndex
 {
     uint LightCount;
-    float LightIndices[31];
+    uint LightIndices[31];
 };
 
 cbuffer ScreenInfo : register(b10)
@@ -37,10 +37,18 @@ cbuffer ScreenInfo : register(b10)
 StructuredBuffer<FPointLight> PointLightBufferList : register(t0);
 RWStructuredBuffer<FTileLightIndex> TileLightIndicesListCS : register(u1);
 
-[numthreads(1, 1, 1)]
-void mainCS(uint3 DTid : SV_DispatchThreadID)
+// 32개의 thread가 lockstep으로 계산하므로, 32개로 나눔
+groupshared uint SharedLightIndices[32];
+groupshared uint SharedLightCount;
+
+#define NumThread 64
+
+[numthreads(NumThread, 1, 1)]
+void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uint3 GroupID : SV_GroupID)
 {
-    uint2 tileCoord = DTid.xy;
+    uint localThreadID = GTid.x;
+
+    uint2 tileCoord = GroupID.xy;
     uint tileIndex = tileCoord.y * NumTileWidth + tileCoord.x;
 
     uint2 TileUpLeft = tileCoord * TileSize;
@@ -81,8 +89,8 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
     float4 Planes[6];
     GetTileFrustumPlanes(NDC, ProjInv, ViewMatrixInv, Planes);
     
-    float3 RayOrigin[4];
-    float3 RayDir[4];
+    float3 RayOrigin[5];
+    float3 RayDir[5];
     // 코너에 4개의 ray 생성
     for (int j = 0; j < 4; ++j)
     {
@@ -98,41 +106,66 @@ void mainCS(uint3 DTid : SV_DispatchThreadID)
         RayDir[j] = (rayFar - rayOrigin).xyz;
         RayOrigin[j] = rayOrigin.xyz;
     }
-    
+    // 중점에 한개의 ray 생성
+    RayDir[4] = (RayDir[0] + RayDir[3]) / 2.f;
+    RayOrigin[4] = (RayOrigin[0] + RayOrigin[3]) / 2.f;
 
-    int NumIntersection = 0;
-    for (uint i = 0; i < MaxNumPointLight; ++i)
+    // 가장 앞의 쓰레드가 값을 컨트롤함
+    if (localThreadID == 0)
     {
-        if (PointLightBufferList[i].AttenuationRadius <= 0)
+        SharedLightCount = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
+    
+    int NumIntersection = 0;
+    for (uint LightIndex = localThreadID; LightIndex < MaxNumPointLight; LightIndex += NumThread)
+    {
+        // 쓰레기값은 버림 (heap에서 넘어와서 다 음수값)
+        if (PointLightBufferList[LightIndex].AttenuationRadius <= 0)
         {
             continue;
         }
         // frustum 방식은 false positive 발생
         // true negative만 reject
-        if (!SphereFrustumPlaneIntersection(PointLightBufferList[i].Position, PointLightBufferList[i].AttenuationRadius, Planes))
+        if (!SphereFrustumPlaneIntersection(PointLightBufferList[LightIndex].Position, PointLightBufferList[LightIndex].AttenuationRadius, Planes))
         {
             continue;
         }
         
+        // if문에 넣지말고 밖에서 값 넣기
+        bool intersects = false;
+        // corner4개에서 나오는 ray와 intersection
         for (int j = 0; j < 4; ++j)
         {
-            if (IntersectRaySphere(RayOrigin[j], RayDir[j], PointLightBufferList[i].Position, PointLightBufferList[i].AttenuationRadius))
+            if (IntersectRaySphere(RayOrigin[j], RayDir[j], PointLightBufferList[LightIndex].Position, PointLightBufferList[LightIndex].AttenuationRadius))
             {
-                NumIntersection++;
+                intersects = true;
                 break;
+            }
+        }
+        
+        if (intersects)
+        {
+            uint index;
+            InterlockedAdd(SharedLightCount, 1, index);
+            if (index < 31)
+            {
+                SharedLightIndices[index] = LightIndex;
             }
         }
 
     }
     
-    //TileLightIndicesListCS[tileIndex].LightIndices[0] = -1000000*Planes[1].x;
-
-    
-    TileLightIndicesListCS[tileIndex].
-        LightCount = NumIntersection;
-    TileLightIndicesListCS[tileIndex].LightIndices[1] = SphereFrustumPlaneIntersection(PointLightBufferList[0].Position, PointLightBufferList[0].AttenuationRadius, Planes);
-    
-
+    // thread0가 기록
+    GroupMemoryBarrierWithGroupSync();
+    if (localThreadID == 0)
+    {
+        TileLightIndicesListCS[tileIndex].LightCount = min(SharedLightCount, 31);
+        for (uint i = 0; i < min(SharedLightCount, 32); ++i)
+        {
+            TileLightIndicesListCS[tileIndex].LightIndices[i] = SharedLightIndices[i];
+        }
+    }
 }
 
 struct PSInput
@@ -168,7 +201,7 @@ PSInput mainVS(uint vertexID : SV_VertexID)
     return output;
 }
 
-StructuredBuffer<FTileLightIndex> TileLightIndicesListPS : register(t1); // t1로 버퍼를 연결
+StructuredBuffer<FTileLightIndex> TileLightIndicesListPS : register(t16); // t1로 버퍼를 연결
 
 float4 mainPS(PSInput input) : SV_Target
 {
@@ -185,30 +218,8 @@ float4 mainPS(PSInput input) : SV_Target
     // light count를 색상으로 매핑 (예: 최대 32개 기준)
     float intensity = saturate(lightCount / 31.0f);
     
-    //if (TileLightIndicesListPS[tileIndex].LightIndices[1] == 0)
-    //{
-    //    return float4(1, 1, 1, 1);
-
-    //}
     return float4(
-    HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, 40),
+    HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, 64),
     0.5f
     );
-    return float4(
-    TileLightIndicesListPS[tileIndex].LightCount / 8000.f,
-    TileLightIndicesListPS[tileIndex].LightIndices[1] / 8.f,
-    TileLightIndicesListPS[tileIndex].LightIndices[2] / 8.f,
-    0.3f);
-    // 빨간색 톤으로 intensity 표시
-    //return float4(1, 1, 0, 1);
-    //return float4(tileCoord / float2 (NumTileWidth-1,NumTileHeight - 1), 0.0f, 1.0f);
-    //if (intensity > 0)
-    //{
-    //    return float4(intensity, 0, 0, 0.5);
-    //}
-    //else
-    //{
-    //    return float4(intensity, 0, 0, 0.5);
-    //    return float4(1, 0, 0, 1);
-    //}
 }

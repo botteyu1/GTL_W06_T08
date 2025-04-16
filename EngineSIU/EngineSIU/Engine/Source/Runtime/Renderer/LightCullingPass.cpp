@@ -62,10 +62,10 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
     ShaderManager->SetPixelShader(ShaderNamePS, Graphics->DeviceContext);
     UpdateScreenInfoBuffer(Viewport);
     BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
-    Graphics->DeviceContext->PSSetShaderResources(1, 1, &TileLightListSRV); // t1번 슬롯에 SRV 바인딩
+    Graphics->DeviceContext->PSSetShaderResources(16, 1, &TileLightListSRV); // t16번 슬롯에 SRV 바인딩
     Graphics->DeviceContext->Draw(4, 0);
 
-    Graphics->DeviceContext->PSSetShaderResources(1, 1, nullSRV);
+    Graphics->DeviceContext->PSSetShaderResources(16, 1, nullSRV);
 }
 
 void FLightCullingPass::ClearRenderArr()

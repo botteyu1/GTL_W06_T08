@@ -68,15 +68,15 @@ bool IntersectRaySphere(float3 rayOrigin, float3 rayDir, float3 sphereCenter, fl
 {
     float3 OriginToCenter = sphereCenter - rayOrigin;
     
-    if (dot(OriginToCenter, OriginToCenter) < radius * radius)
-    {
-        return true;
-    }
+    //if (dot(OriginToCenter, OriginToCenter) < radius * radius)
+    //{
+    //    return true;
+    //}
     
-    if (dot(rayDir, OriginToCenter) < 0)
-    {
-        return false;
-    }
+    //if (dot(rayDir, OriginToCenter) < 0)
+    //{
+    //    return false;
+    //}
     
     
     float3 oc = rayOrigin - sphereCenter;
