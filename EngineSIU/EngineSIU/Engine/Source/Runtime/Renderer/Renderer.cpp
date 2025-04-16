@@ -149,9 +149,9 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     //LineRenderPass->Render(ActiveViewport);
     if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
     {
-        LightCullingPass->CullPointLight(Viewport);
         EditorRenderPass->Render(Viewport);
         GizmoRenderPass->Render(Viewport);
+        LightCullingPass->RenderHeatmap(Viewport);
     }
 
     ClearRenderArr();

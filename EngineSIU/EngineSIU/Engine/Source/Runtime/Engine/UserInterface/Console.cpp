@@ -260,22 +260,21 @@ void Console::ExecuteCommand(const std::string& command)
     {
         UWorld* World = GEngine->ActiveWorld;
 
-        const int scale = pow(1 << 10, 1 / 3.f);
+        const int scale = pow(1 << 14, 1 / 2.f);
         const int spacing = 10;
         for (int i = 0; i < scale; i++)
         {
             for (int j = 0; j < scale; j++)
             {
-                for (int k = 0; k < scale; k++)
-                {
-                    FVector Pos = FVector(i, j, k) * 16 - FVector(scale, scale, scale) * 8;
+                    FVector Pos = FVector(i, j, 0) * 16 - FVector(scale, scale, 0) * 8;
+                    Pos.Z = 0.5;
                     APointLight* LightActor = World->SpawnActor<APointLight>();
                     LightActor->SetActorLocation(Pos);
 
                     UPointLightComponent* PLComp = Cast<UPointLightComponent>(LightActor->GetRootComponent());
                     if (!PLComp) continue;
 
-                    PLComp->SetAttenuationRadius(30);
+                    PLComp->SetAttenuationRadius(10);
                     PLComp->SetIntensity(4);
 
                     // 랜덤 색상 지정
@@ -285,7 +284,6 @@ void Console::ExecuteCommand(const std::string& command)
 
                     // 라벨 설정
                     LightActor->SetActorLabel(TEXT("OBJ_SpotLight"));
-                }
             }
         }
 
