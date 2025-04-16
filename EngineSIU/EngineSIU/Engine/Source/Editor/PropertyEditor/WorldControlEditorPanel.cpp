@@ -374,13 +374,13 @@ void WorldControlEditorPanel::CreateSettingButton(ImVec2 ButtonSize, ImFont* Ico
         {
             if (ImGui::MenuItem("Light"))
             {
-                GEngineLoop.GetUImGuiManager()->PreferenceStyle(Light);
+                GEngineLoop.GetUIManager()->PreferenceStyle(Light);
                 ConfigManager::SetConfigValue("Preference", "Theme", FString(std::to_string((uint8)EEditorLayoutTheme::Light)), FName("settings.ini"));
             }
 
             if (ImGui::MenuItem("Dark"))
             {
-                GEngineLoop.GetUImGuiManager()->PreferenceStyle(Dark);
+                GEngineLoop.GetUIManager()->PreferenceStyle(Dark);
                 ConfigManager::SetConfigValue("Preference", "Theme", FString(std::to_string((uint8)EEditorLayoutTheme::Dark)), FName("settings.ini"));
             }
             
