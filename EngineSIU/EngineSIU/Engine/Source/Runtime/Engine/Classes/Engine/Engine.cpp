@@ -1,5 +1,6 @@
 #include "Engine.h"
 
+#include "ConfigManager.h"
 #include "EditorEngine.h"
 #include "UnrealEd/SceneManager.h"
 #include "UObject/Casts.h"
@@ -42,4 +43,14 @@ void UEngine::LoadLevel(const FString& FileName)
 void UEngine::SaveLevel(const FString& FileName)
 {
     SceneManager::SaveSceneToJsonFile(FileName, *ActiveWorld);
+}
+
+void UEngine::LoadConfig()
+{
+    ConfigManager::LoadAllConfigs();
+}
+
+void UEngine::SaveConfig()
+{
+    ConfigManager::SaveAllConfigs();
 }

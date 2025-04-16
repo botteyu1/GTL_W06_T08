@@ -209,7 +209,7 @@ void ViewportControlEditorPanel::CreateSRTButton(ImVec2 IconSize, ImFont* IconFo
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
     AEditorPlayer* Player = Engine->GetEditorPlayer();
 
-    ImVec4 ActiveColor = ImVec4(0.00f, 0.00f, 0.85f, 1.0f);
+    ImVec4 ActiveColor = ImGui::GetStyle().Colors[ImGuiCol_ButtonActive];
 
     ControlMode ControlMode = Player->GetControlMode();
 

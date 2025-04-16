@@ -65,30 +65,9 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
     GEngine->LoadLevel("Saved/AutoSaves.scene");
+    GEngine->LoadConfig();
 
-    // // 1. 현재 스타일 가져오기
-    // DWORD style = GetWindowLong(AppWnd, GWL_STYLE);
-    // BOOL hasMenu = FALSE; // 필요시 메뉴 여부에 따라 TRUE
-    //
-    // // 2. 전체 창 크기 계산
-    // RECT rect = { 0, 0, (LONG)GraphicDevice.ScreenWidth, (LONG)GraphicDevice.ScreenHeight };
-    // AdjustWindowRect(&rect, style, hasMenu);
-    //
-    // int windowWidth = rect.right - rect.left;
-    // int windowHeight = rect.bottom - rect.top;
-    //
-    // // 3. 타이틀바/테두리 offset 계산
-    // int borderOffsetX = -rect.left;
-    // int borderOffsetY = -rect.top;
-    //
-    // int windowX = GraphicDevice.ScreenPosX + borderOffsetX;
-    // int windowY = GraphicDevice.ScreenPosY + borderOffsetY;
-    //
-    // // 4. 창 이동
-    // MoveWindow(AppWnd, windowX, windowY, windowWidth, windowHeight, TRUE);
-    //
-    // // TODO: Load Config가 Level Editor에 종속되어있음.
-    // MoveWindow(AppWnd, GraphicDevice.ScreenPosX, GraphicDevice.ScreenPosY, GraphicDevice.ScreenWidth, GraphicDevice.ScreenHeight, true);
+    UIMgr->PostInitialize();
     
     return 0;
 }
@@ -190,7 +169,8 @@ float FEngineLoop::GetAspectRatio(IDXGISwapChain* swapChain) const
 
 void FEngineLoop::Exit()
 {
-    GEngine->SaveLevel("Saved/AutoSaves.scene");    
+    GEngine->SaveLevel("Saved/AutoSaves.scene");
+    GEngine->SaveConfig();
     LevelEditor->Release();
     UIMgr->Shutdown();
     delete UIMgr;

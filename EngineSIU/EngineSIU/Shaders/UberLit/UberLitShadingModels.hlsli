@@ -51,6 +51,8 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
  * @param VertexPosition World vertex position
  * @param VertexNormal World vertex normal
  * @param Shininess Color shininess scalar
+ * @param MatDiffuseColor Material diffuse color
+ * @param MatSpecularColor Material specular color
  * @param AmbientLight FAmbientLight
  * @param DirectionalLights List of FDirectionalLight, but it's only one.
  * @param PointLights List of pointlight
@@ -60,15 +62,19 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
  * @param NumOfSpotLight Number of spotlight
  * @return Color3
  */
-float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float Shininess,
+float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float Shininess, float3 MatDiffuseColor, float3 MatSpecularColor,
                              FAmbientLight AmbientLight, FDirectionalLight DirectionalLights[NUM_MAX_DIRLIGHT],
                              FPointLight PointLights[NUM_MAX_POINTLIGHT], FSpotLight SpotLights[NUM_MAX_SPOTLIGHT],
                              int NumOfDirLight, int NumOfPointLight, int NumOfSpotLight)
 {
-    // Initialize by Ambient Light
-    float3 ResultColor = float3(0, 0, 0);
-    ResultColor += AmbientLight.Color * AmbientLight.Intensity;
-    
+    float3 TotalColor = float3(0, 0, 0);
+    float3 TotalDiffuse = float3(0, 0, 0);
+    float3 TotalSpecular = float3(0, 0, 0);
+
+    /***********************
+     * Ambient Light       *
+     ***********************/
+    TotalColor += AmbientLight.Color * AmbientLight.Intensity * MatDiffuseColor;
     
     float3 ViewDirection = normalize(CameraPosition - VertexPosition);
     
@@ -87,9 +93,8 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
         float DirectionalSpecularDot = pow(max(dot(DirectionalReflectDirection, ViewDirection), 0.0f), Shininess);
 
         // Sum color
-        float3 DirectionalDiffuse = DirectionalLights[0].Color * DirectionalDiffuseDot;
-        float3 DirectionalSpecular = DirectionalLights[0].Color * DirectionalSpecularDot;
-        ResultColor += DirectionalLights[0].Intensity * (DirectionalDiffuse + DirectionalSpecular);
+        TotalDiffuse += DirectionalLights[0].Color * DirectionalDiffuseDot * DirectionalLights[0].Intensity;
+        TotalSpecular += DirectionalLights[0].Color * DirectionalSpecularDot * DirectionalLights[0].Intensity;
     }
     
     /***********************
@@ -119,9 +124,8 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
         float PointSpecularDot = pow(max(dot(PointReflectDirection, ViewDirection), 0.0f), Shininess);
 
         // Sum color
-        float3 PointDiffuse = Point.Color * PointDiffuseDot * Attenuation;
-        float3 PointSpecular = Point.Color * PointSpecularDot * Attenuation;
-        ResultColor += Point.Intensity * (PointDiffuse + PointSpecular);
+        TotalDiffuse += Point.Color * PointDiffuseDot * Attenuation * Point.Intensity;
+        TotalSpecular += Point.Color * PointSpecularDot * Attenuation * Point.Intensity;
     }
     
     /***********************
@@ -152,10 +156,11 @@ float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float S
         float SpotSpecularDot = pow(max(dot(SpotReflectDirection, ViewDirection), 0.0f), Shininess);
 
         // Sum color
-        float3 SpotDiffuse = Spot.Color * SpotDiffuseDot * Attenuation;
-        float3 SpotSpecular = Spot.Color * SpotSpecularDot * Attenuation;
-        ResultColor += Spot.Intensity * (SpotDiffuse + SpotSpecular);
+        TotalDiffuse += Spot.Color * SpotDiffuseDot * Attenuation * Spot.Intensity;
+        TotalSpecular += Spot.Color * SpotSpecularDot * Attenuation * Spot.Intensity;
     }
+
+    TotalColor += (MatDiffuseColor * TotalDiffuse) + (MatSpecularColor * TotalSpecular);
     
-    return ResultColor;
+    return TotalColor;
 }

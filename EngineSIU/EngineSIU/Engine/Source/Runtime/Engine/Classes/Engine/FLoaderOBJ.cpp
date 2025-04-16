@@ -586,7 +586,7 @@ void FLoaderOBJ::CalculateTangent(FStaticMeshVertex& PivotVertex, const FStaticM
     const float Ty = f * (t2 * E1y - t1 * E2y);
     const float Tz = f * (t2 * E1z - t1 * E2z);
 
-    FVector Tangent = FVector(Tx, Ty, Tz).Normalize();
+    FVector Tangent = FVector(Tx, Ty, Tz).GetSafeNormal();
 
     PivotVertex.TangentX = Tangent.X;
     PivotVertex.TangentY = Tangent.Y;
