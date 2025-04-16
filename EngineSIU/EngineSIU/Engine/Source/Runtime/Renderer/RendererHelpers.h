@@ -41,7 +41,10 @@ namespace MaterialUtils
             
             std::shared_ptr<FTexture> texture = FEngineLoop::ResourceManager.GetTexture(TextureData.Path);
             Graphics->DeviceContext->PSSetShaderResources(index, 1, &texture->TextureSRV);
+            Graphics->DeviceContext->VSSetShaderResources(index, 1, &texture->TextureSRV);
+            
             Graphics->DeviceContext->PSSetSamplers(index, 1, &texture->SamplerState);
+            Graphics->DeviceContext->VSSetSamplers(index, 1, &texture->SamplerState);
         }
 
         // TODO: 해제하는 것이 안전하나 TextureFlag가 있어서 쉐이더에서 체크 가능함.
