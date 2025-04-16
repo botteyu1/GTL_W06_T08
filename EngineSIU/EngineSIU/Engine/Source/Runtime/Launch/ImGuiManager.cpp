@@ -114,6 +114,11 @@ void UImGuiManager::PreferenceStyle(EEditorLayoutTheme InTheme)
             ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
             ImGui::GetStyle().Colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
             ImGui::GetStyle().Colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+
+            FEngineLoop::GraphicDevice.ClearColor[0] = 0.025f;
+            FEngineLoop::GraphicDevice.ClearColor[1] = 0.025f;
+            FEngineLoop::GraphicDevice.ClearColor[2] = 0.025f;
+            FEngineLoop::GraphicDevice.ClearColor[3] = 1.0f;
         }
         break;
 
@@ -161,6 +166,12 @@ void UImGuiManager::PreferenceStyle(EEditorLayoutTheme InTheme)
             ImGui::GetStyle().WindowRounding = 5.0f;
             ImGui::GetStyle().PopupRounding = 4.0f;
             ImGui::GetStyle().FrameRounding = 3.0f;
+
+
+            FEngineLoop::GraphicDevice.ClearColor[0] = 0.9f;
+            FEngineLoop::GraphicDevice.ClearColor[1] = 0.9f;
+            FEngineLoop::GraphicDevice.ClearColor[2] = 0.9f;
+            FEngineLoop::GraphicDevice.ClearColor[3] = 1.0f;
         }
         break;
     }
