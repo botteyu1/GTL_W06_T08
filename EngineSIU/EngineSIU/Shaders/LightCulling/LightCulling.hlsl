@@ -38,7 +38,7 @@ StructuredBuffer<FPointLight> PointLightBufferList : register(t0);
 RWStructuredBuffer<FTileLightIndex> TileLightIndicesListCS : register(u1);
 
 // 32개의 thread가 lockstep으로 계산하므로, 32개로 나눔
-groupshared uint SharedLightIndices[32];
+groupshared uint SharedLightIndices[MAX_NUM_INDICES_PER_TILE];
 groupshared uint SharedLightCount;
 
 #define NumThread 64
@@ -153,7 +153,6 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
                 SharedLightIndices[index] = LightIndex;
             }
         }
-
     }
     
     // thread0가 기록
@@ -161,7 +160,7 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
     if (localThreadID == 0)
     {
         TileLightIndicesListCS[tileIndex].LightCount = min(SharedLightCount, MAX_NUM_INDICES_PER_TILE);
-        for (uint i = 0; i < min(SharedLightCount, 32); ++i)
+        for (uint i = 0; i < min(SharedLightCount, MAX_NUM_INDICES_PER_TILE); ++i)
         {
             TileLightIndicesListCS[tileIndex].LightIndices[i] = SharedLightIndices[i];
         }
@@ -219,7 +218,7 @@ float4 mainPS(PSInput input) : SV_Target
     float intensity = saturate(lightCount / 31.0f);
     
     return float4(
-    HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, 32),
+    HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, MAX_NUM_INDICES_PER_TILE),
     0.5f
     );
 }

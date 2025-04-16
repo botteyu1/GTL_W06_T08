@@ -68,3 +68,8 @@ cbuffer TextureConstants : register(b6)
     float2 UVOffset;
     float2 TexturePad0;
 }
+
+cbuffer ScreenInfo : register(b10)
+{
+    FScreenInfo ScreenInfo;
+};

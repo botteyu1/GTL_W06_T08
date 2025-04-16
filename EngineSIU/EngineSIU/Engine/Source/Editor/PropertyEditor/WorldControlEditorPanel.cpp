@@ -151,40 +151,8 @@ void WorldControlEditorPanel::CreateAddPrimitiveButton(ImVec2 ButtonSize, ImFont
                 }
                 case OBJ_PointLight:
                 {
-                    // 랜덤 생성기 설정
-                    std::mt19937 rng(42); // 시드 고정 시 반복 가능
-                    std::uniform_real_distribution<float> posDist(-500.0f, 500.0f);
-                    std::uniform_real_distribution<float> radiusDist(1.f, 30.f);
-                    std::uniform_real_distribution<float> intensityDist(0.01, 1.f);
-                    std::uniform_real_distribution<float> colorDist(0.3f, 1.0f);
-
-                    for (int i = 0; i < 16384/2; ++i)
-                    {
-                        float x = posDist(rng);
-                        float y = posDist(rng);
-                        float z = posDist(rng);
-
-                        APointLight* LightActor = World->SpawnActor<APointLight>();
-                        LightActor->SetActorLocation(FVector(x, y, z));
-
-                        UPointLightComponent* PLComp = Cast<UPointLightComponent>(LightActor->GetRootComponent());
-                        if (!PLComp) continue;
-
-                        PLComp->SetAttenuationRadius(radiusDist(rng));
-                        PLComp->SetIntensity(intensityDist(rng));
-
-                        // 랜덤 색상 지정
-                        FLinearColor LightColor(
-                            colorDist(rng), // R
-                            colorDist(rng), // G
-                            colorDist(rng)  // B
-                        );
-                        PLComp->SetLightColor(LightColor);
-                        PLComp->SetFalloff(1.0f);
-
-                        // 라벨 설정
-                        LightActor->SetActorLabel(TEXT("OBJ_SpotLight"));
-                    }
+                    APointLight* LightActor = World->SpawnActor<APointLight>();
+                    LightActor->SetActorLabel(TEXT("OBJ_PointLight"));
                     break;
                 }
                 case OBJ_SpotLight:

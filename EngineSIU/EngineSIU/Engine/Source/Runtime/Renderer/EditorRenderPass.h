@@ -58,17 +58,17 @@ private:
     void RenderAxis();
 
     // AABB
-    void RenderAABBInstanced();
+    void RenderAABBInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferAABB();
     void UdpateConstantbufferAABBInstanced(TArray<FConstantBufferDebugAABB> Buffer);
 
     // Sphere
-    void RenderPointlightInstanced();
+    void RenderPointlightInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferPointlight();
     void UdpateConstantbufferPointlightInstanced(TArray<FConstantBufferDebugSphere> Buffer);
 
     // Cone
-    void RenderSpotlightInstanced();
+    void RenderSpotlightInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferSpotlight();
     void UdpateConstantbufferSpotlightInstanced(TArray<FConstantBufferDebugCone> Buffer);
 

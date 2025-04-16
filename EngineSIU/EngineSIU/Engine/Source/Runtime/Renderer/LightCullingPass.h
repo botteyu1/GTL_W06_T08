@@ -13,9 +13,10 @@ public:
 
     virtual void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager) override;
     virtual void PrepareRender() override;
-    virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override;
+    virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override {}
     virtual void ClearRenderArr() override;
 
+    void RenderHeatmap(const std::shared_ptr<FEditorViewportClient>& Viewport);
     void CullPointLight(const std::shared_ptr<FEditorViewportClient>& Viewport);
     void OnResize(HWND hWnd);
 
@@ -26,6 +27,7 @@ public:
         NULL, NULL,
     };
 private:
+    void CreateBlendState();
     void PrepareBlendState();
 
     // GPU 내부에서 서로 주고받는 용도
@@ -79,7 +81,9 @@ private:
     ID3D11UnorderedAccessView* TileLightListUAV;
     ID3D11ShaderResourceView* TileLightListSRV;
 
-    
+    ID3D11BlendState* BlendState;
+    ID3D11DepthStencilState* DepthState;
+
 
 
     TArray<class UPointLightComponent*> PointLights;

@@ -22,27 +22,28 @@ void FLightCullingPass::Initialize(FDXDBufferManager* InBufferManager, FGraphics
     ShaderManager = InShaderManager;
     CreateShaders();
     CreateBuffers();
+    CreateBlendState();
 }
 
 void FLightCullingPass::PrepareRender()
 {
 }
 
-void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
+void FLightCullingPass::RenderHeatmap(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
+    if (!(Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_LightHeatMap))) return;
+
+    PrepareBlendState();
     // 시각화 (Full-screen quad 렌더링)
     Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
     ShaderManager->SetVertexShader(ShaderNameVS, Graphics->DeviceContext);
     ShaderManager->SetPixelShader(ShaderNamePS, Graphics->DeviceContext);
     UpdateScreenInfoBuffer(Viewport);
-    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
-    Graphics->DeviceContext->PSSetShaderResources(17, 1, &TileLightListSRV); // t17번 슬롯에 SRV 바인딩
     Graphics->DeviceContext->Draw(4, 0);
 
-    // static mesh를 위해서 미리 바인딩
-    // -> staticMeshRenderPass에서 해줘야함
-    Graphics->DeviceContext->PSSetShaderResources(16, 1, &LightListSRV); // t17번 슬롯에 SRV 바인딩
+
+
 
     //Graphics->DeviceContext->PSSetShaderResources(16, 1, nullSRV);
 }
@@ -78,6 +79,11 @@ void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClie
 
     Graphics->DeviceContext->CSSetShaderResources(0, 1, nullSRV);
 
+    // static mesh를 위해서 미리 바인딩
+    // -> staticMeshRenderPass에서 해줘야함
+    Graphics->DeviceContext->PSSetShaderResources(16, 1, &LightListSRV); // t17번 슬롯에 SRV 바인딩
+    Graphics->DeviceContext->PSSetShaderResources(17, 1, &TileLightListSRV); // t17번 슬롯에 SRV 바인딩
+    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
 
 }
 
@@ -91,7 +97,7 @@ void FLightCullingPass::OnResize(HWND hWnd)
     CreateTileLightList(Graphics);
 }
 
-void FLightCullingPass::PrepareBlendState()
+void FLightCullingPass::CreateBlendState()
 {
     D3D11_BLEND_DESC blendDesc = {};
     blendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -103,20 +109,24 @@ void FLightCullingPass::PrepareBlendState()
     blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-    ID3D11BlendState* blendState = nullptr;
-    Graphics->Device->CreateBlendState(&blendDesc, &blendState);
+    Graphics->Device->CreateBlendState(&blendDesc, &BlendState);
 
-    // 사용 시
-    float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
-    Graphics->DeviceContext->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+
 
     D3D11_DEPTH_STENCIL_DESC dsDesc = {};
     dsDesc.DepthEnable = FALSE; // 중요!
     dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 
-    ID3D11DepthStencilState* dsState;
-    Graphics->Device->CreateDepthStencilState(&dsDesc, &dsState);
-    Graphics->DeviceContext->OMSetDepthStencilState(dsState, 0);
+    Graphics->Device->CreateDepthStencilState(&dsDesc, &DepthState);
+}
+
+void FLightCullingPass::PrepareBlendState()
+{
+    // 사용 시
+    float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+    Graphics->DeviceContext->OMSetBlendState(BlendState, blendFactor, 0xffffffff);
+
+    Graphics->DeviceContext->OMSetDepthStencilState(DepthState, 0);
 }
 
 HRESULT FLightCullingPass::CreateShaders()
