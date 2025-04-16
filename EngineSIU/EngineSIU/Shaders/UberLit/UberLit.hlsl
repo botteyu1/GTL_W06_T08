@@ -161,7 +161,6 @@ PS_OUT Uber_PS(VS_OUT Input)
     {
         float3 SampledNormal = NormalTexture.Sample(Sampler, UV).rgb;
         Normal = normalize(2.f * SampledNormal - 1.f);
-        Normal = SampledNormal;
 
         /** Depreacated - processing normals by converting them to world space. */
         // Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
