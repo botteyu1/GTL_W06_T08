@@ -4,7 +4,6 @@
 #include "World/World.h"
 
 #include "RendererHelpers.h"
-#include "Math/JungleMath.h"
 
 #include "UObject/UObjectIterator.h"
 #include "UObject/Casts.h"
@@ -315,9 +314,14 @@ void FStaticMeshRenderPass::PrepareRenderState() const
     ID3D11Buffer* PerObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FPerObjectConstantBuffer"));
     ID3D11Buffer* CameraConstantBuffer = BufferManager->GetConstantBuffer(TEXT("FCameraConstantBuffer"));
     ID3D11Buffer* LightBuffer = BufferManager->GetConstantBuffer(TEXT("FSceneLightBuffer"));
+    ID3D11Buffer* MaterialBuffer = BufferManager->GetConstantBuffer(TEXT("FMaterialConstants"));
+    ID3D11Buffer* TextureBuffer = BufferManager->GetConstantBuffer(TEXT("FTextureConstants"));
+    
     Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &PerObjectBuffer);
     Graphics->DeviceContext->VSSetConstantBuffers(1, 1, &CameraConstantBuffer);
     Graphics->DeviceContext->VSSetConstantBuffers(2, 1, &LightBuffer);
+    Graphics->DeviceContext->VSSetConstantBuffers(3, 1, &MaterialBuffer);
+    Graphics->DeviceContext->VSSetConstantBuffers(6, 1, &TextureBuffer);
 
     TArray<FString> PSBufferKeys = {
                                   TEXT("FCameraConstantBuffer"),

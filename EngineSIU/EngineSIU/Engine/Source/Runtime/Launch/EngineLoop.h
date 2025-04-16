@@ -62,6 +62,7 @@ private:
 public:
     SLevelEditor* GetLevelEditor() const { return LevelEditor; }
     UnrealEd* GetUnrealEditor() const { return UnrealEditor; }
+    UImGuiManager* GetUIManager() const { return UIMgr; }
 
     FSlateAppMessageHandler* GetAppMessageHandler() const { return AppMessageHandler.get(); }
 };
