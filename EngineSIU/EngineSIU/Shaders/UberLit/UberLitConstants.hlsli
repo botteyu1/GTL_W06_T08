@@ -19,6 +19,8 @@ cbuffer CameraConstants : register(b1)
     float3 CameraPosition;
     float pad;
 };
+
+
 cbuffer cbLights : register(b2)
 {
     FAmbientLight AmbientLight;
@@ -34,7 +36,10 @@ cbuffer cbLights : register(b2)
     int NumSpotLights;
     int Pad2;
 };
+
+// LightCulling 용 Pointlight
 StructuredBuffer<FPointLight> PointLightBufferList : register(t16);
+StructuredBuffer<FTileLightIndex> TileLightIndicesList : register(t17);
 
 cbuffer MaterialConstants : register(b3)
 {

@@ -16,7 +16,7 @@ struct FPointLight
 struct FTileLightIndex
 {
     uint LightCount;
-    uint LightIndices[31];
+    uint LightIndices[MAX_NUM_INDICES_PER_TILE];
 };
 
 cbuffer ScreenInfo : register(b10)
@@ -148,7 +148,7 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
         {
             uint index;
             InterlockedAdd(SharedLightCount, 1, index);
-            if (index < 31)
+            if (index < MAX_NUM_INDICES_PER_TILE)
             {
                 SharedLightIndices[index] = LightIndex;
             }
@@ -160,7 +160,7 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
     GroupMemoryBarrierWithGroupSync();
     if (localThreadID == 0)
     {
-        TileLightIndicesListCS[tileIndex].LightCount = min(SharedLightCount, 31);
+        TileLightIndicesListCS[tileIndex].LightCount = min(SharedLightCount, MAX_NUM_INDICES_PER_TILE);
         for (uint i = 0; i < min(SharedLightCount, 32); ++i)
         {
             TileLightIndicesListCS[tileIndex].LightIndices[i] = SharedLightIndices[i];
@@ -201,7 +201,7 @@ PSInput mainVS(uint vertexID : SV_VertexID)
     return output;
 }
 
-StructuredBuffer<FTileLightIndex> TileLightIndicesListPS : register(t16); // t1로 버퍼를 연결
+StructuredBuffer<FTileLightIndex> TileLightIndicesListPS : register(t17); // t1로 버퍼를 연결
 
 float4 mainPS(PSInput input) : SV_Target
 {
@@ -219,7 +219,7 @@ float4 mainPS(PSInput input) : SV_Target
     float intensity = saturate(lightCount / 31.0f);
     
     return float4(
-    HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, 64),
+    HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, 32),
     0.5f
     );
 }

@@ -199,7 +199,13 @@ PS_OUTPUT mainPS(PS_INPUT input)
         output.color = float4(Normal / 2 + 0.5, 1);
         return output;
     }
-    
+    // lit
+    else
+    {
+        float3 lightRgb = Lighting(input.worldPos, Normal).rgb;
+        float3 litColor = baseColor * lightRgb;
+        output.color = float4(litColor, 1);
+    }
     if (isSelected)
     {
         output.color += float4(0.02, 0.02, 0.02, 1);

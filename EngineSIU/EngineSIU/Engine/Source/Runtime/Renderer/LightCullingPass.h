@@ -15,23 +15,24 @@ public:
     virtual void PrepareRender() override;
     virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override;
     virtual void ClearRenderArr() override;
+
+    void CullPointLight(const std::shared_ptr<FEditorViewportClient>& Viewport);
     void OnResize(HWND hWnd);
 
+    const D3D_SHADER_MACRO LightCullingDefines[3] =
+    {
+        "MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar,
+        "MAX_NUM_INDICES_PER_TILE", MaxNumPointLightPerTileChar,
+        NULL, NULL,
+    };
 private:
     void PrepareBlendState();
-
-
-    // CPU -> GPU 전달용 scene의 전체 light를 담은 버퍼
-    // TODO : 추후에 라이트 개수 늘어나면 어떻게해야할까..
-    const uint32 MaxNumPointLight = 16384; // define에서 바꾸기
-    const char MaxNumPointLightChar[6] = "16384";
-
 
     // GPU 내부에서 서로 주고받는 용도
     struct FTileLightIndex
     {
         uint32 LightCount;
-        uint32 LightIndices[31];
+        uint32 LightIndices[MaxNumPointLightPerTile];
     };
 
     // Tile 만들때 필요한 data

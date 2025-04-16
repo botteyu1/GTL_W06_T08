@@ -99,3 +99,9 @@ struct FSpotLight
     float OuterConeAngle;
     float2 pad;
 };
+
+struct FTileLightIndex
+{
+    uint LightCount;
+    uint LightIndices[MAX_NUM_INDICES_PER_TILE];
+};

@@ -30,8 +30,32 @@ void FLightCullingPass::PrepareRender()
 
 void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
+    // 시각화 (Full-screen quad 렌더링)
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+    ShaderManager->SetVertexShader(ShaderNameVS, Graphics->DeviceContext);
+    ShaderManager->SetPixelShader(ShaderNamePS, Graphics->DeviceContext);
+    UpdateScreenInfoBuffer(Viewport);
+    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
+    Graphics->DeviceContext->PSSetShaderResources(17, 1, &TileLightListSRV); // t17번 슬롯에 SRV 바인딩
+    Graphics->DeviceContext->Draw(4, 0);
+
+    // static mesh를 위해서 미리 바인딩
+    // -> staticMeshRenderPass에서 해줘야함
+    Graphics->DeviceContext->PSSetShaderResources(16, 1, &LightListSRV); // t17번 슬롯에 SRV 바인딩
+
+    //Graphics->DeviceContext->PSSetShaderResources(16, 1, nullSRV);
+}
+
+void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClient>& Viewport)
+{
+    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+    ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
 
     ReloadShaders();
+
+    Graphics->DeviceContext->PSSetShaderResources(16, 1, nullSRV); // t17번 슬롯에 SRV 바인딩
+    Graphics->DeviceContext->PSSetShaderResources(17, 1, nullSRV); // t17번 슬롯에 SRV 바인딩
 
     UpdateLightList();
     UpdateScreenInfoBuffer(Viewport);
@@ -50,22 +74,11 @@ void FLightCullingPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
     Graphics->DeviceContext->Dispatch(NumTileWidth, NumTileHeight, 1);
 
     // 언바인딩
-    ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
     Graphics->DeviceContext->CSSetUnorderedAccessViews(1, 1, nullUAV, nullptr);
-    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+
     Graphics->DeviceContext->CSSetShaderResources(0, 1, nullSRV);
 
-    // 시각화 (Full-screen quad 렌더링)
-    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-    ShaderManager->SetVertexShader(ShaderNameVS, Graphics->DeviceContext);
-    ShaderManager->SetPixelShader(ShaderNamePS, Graphics->DeviceContext);
-    UpdateScreenInfoBuffer(Viewport);
-    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
-    Graphics->DeviceContext->PSSetShaderResources(16, 1, &TileLightListSRV); // t16번 슬롯에 SRV 바인딩
-    Graphics->DeviceContext->Draw(4, 0);
-
-    Graphics->DeviceContext->PSSetShaderResources(16, 1, nullSRV);
 }
 
 void FLightCullingPass::ClearRenderArr()
@@ -108,25 +121,21 @@ void FLightCullingPass::PrepareBlendState()
 
 HRESULT FLightCullingPass::CreateShaders()
 {
-    const D3D_SHADER_MACRO defines[] =
-    {
-        "MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar,
-        NULL, NULL
-    };
 
-    HRESULT hr = ShaderManager->AddVertexShader(ShaderNameVS, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", defines);
+
+    HRESULT hr = ShaderManager->AddVertexShader(ShaderNameVS, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS", LightCullingDefines);
     if (FAILED(hr))
     {
         return hr;
     }
-    hr = ShaderManager->AddPixelShader(ShaderNamePS, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
+    hr = ShaderManager->AddPixelShader(ShaderNamePS, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", LightCullingDefines);
     if (FAILED(hr))
     {
         return hr;
     }
 
 
-    hr = ShaderManager->AddComputeShader(ShaderNameCS, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
+    hr = ShaderManager->AddComputeShader(ShaderNameCS, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", LightCullingDefines);
     if (FAILED(hr))
     {
         return hr;
@@ -140,20 +149,15 @@ HRESULT FLightCullingPass::CreateShaders()
 
 HRESULT FLightCullingPass::ReloadShaders()
 {
-    const D3D_SHADER_MACRO defines[] =
-    {
-        "MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar,
-        NULL, NULL
-    };
 
     HRESULT hr = ShaderManager->ReloadModifiedShaders(ShaderNameVS, L"Shaders/LightCulling/LightCulling.hlsl", "mainVS",
-        nullptr, 0, defines, ShaderNamePS, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", defines);
+        nullptr, 0, LightCullingDefines, ShaderNamePS, L"Shaders/LightCulling/LightCulling.hlsl", "mainPS", LightCullingDefines);
     if (FAILED(hr))
     {
         return hr;
     }
 
-    hr = ShaderManager->ReloadModifiedComputeShader(ShaderNameCS, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", defines);
+    hr = ShaderManager->ReloadModifiedComputeShader(ShaderNameCS, L"Shaders/LightCulling/LightCulling.hlsl", "mainCS", LightCullingDefines);
     if (FAILED(hr))
     {
         return hr;
@@ -189,7 +193,7 @@ void FLightCullingPass::UpdateScreenInfoBuffer(std::shared_ptr<FEditorViewportCl
     info.ScreenWidth = Viewport->GetViewport()->GetViewport().Width;
     info.ScreenHeight = Viewport->GetViewport()->GetViewport().Height;
     info.ScreenTopPadding = Viewport->GetViewport()->GetViewport().TopLeftY;
-    info.MaxNumPointLight = this->MaxNumPointLight;
+    info.MaxNumPointLight = MaxNumPointLight;
     BufferManager->UpdateConstantBuffer("ScreenInfo", info);
     //D3D11_MAPPED_SUBRESOURCE mappedResource;
     //HRESULT hr = DXDeviceContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);

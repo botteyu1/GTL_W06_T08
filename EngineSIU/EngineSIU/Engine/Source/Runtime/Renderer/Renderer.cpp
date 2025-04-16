@@ -130,6 +130,8 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     // ChangeViewMode(Viewport->GetViewMode());
 
     UpdateLightBufferPass->Render(Viewport);
+
+    LightCullingPass->CullPointLight(Viewport);
     StaticMeshRenderPass->Render(Viewport);
     BillboardRenderPass->Render(Viewport);
 
@@ -147,10 +149,10 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     //LineRenderPass->Render(ActiveViewport);
     if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
     {
+        LightCullingPass->Render(Viewport);
         EditorRenderPass->Render(Viewport);
         GizmoRenderPass->Render(Viewport);
     }
-    LightCullingPass->Render(Viewport);
 
     ClearRenderArr();
 }
