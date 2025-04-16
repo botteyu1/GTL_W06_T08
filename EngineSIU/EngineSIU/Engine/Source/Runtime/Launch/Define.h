@@ -317,6 +317,7 @@ struct alignas(16) FPointLight
     float AttenuationRadius;
 
     float Falloff;
+    FVector pad;
     // pad 12 byte
 };
 
@@ -468,3 +469,13 @@ struct alignas(16) FFogConstants
     float CameraFar;
     FVector padding;
 };
+
+
+// Spotlight Light Culling을 위한 값
+// CPU -> GPU 전달용 scene의 전체 light를 담은 버퍼
+constexpr static uint32 MaxNumPointLight = 16384; // define에서 바꾸기
+constexpr char MaxNumPointLightChar[6] = "16384";
+
+// 64개 - 개수담을 1개
+constexpr static uint32 MaxNumPointLightPerTile = 63;
+constexpr char MaxNumPointLightPerTileChar[3] = "63";

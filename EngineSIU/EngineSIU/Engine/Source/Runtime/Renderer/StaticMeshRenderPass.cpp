@@ -19,6 +19,7 @@
 #include "Editor/LevelEditor/SLevelEditor.h"
 
 #include "UnrealEd/EditorViewportClient.h"
+#include "LightCullingPass.h"
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
     : VertexShader(nullptr)
@@ -90,6 +91,8 @@ HRESULT FStaticMeshRenderPass::CreateShader()
         {"LIGHTING_MODEL_GOURAUD", strGouraud.c_str() },
         {"LIGHTING_MODEL_LAMBERT", strLambert.c_str() },
         {"LIGHTING_MODEL_PHONG", strPhong.c_str() },
+        {"MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar},
+        {"MAX_NUM_INDICES_PER_TILE", MaxNumPointLightPerTileChar},
         { NULL, NULL }
     };
 
@@ -256,6 +259,8 @@ void FStaticMeshRenderPass::UpdateShaders(int32 GouraudFlag, int32 LambertFlag, 
 	    {"LIGHTING_MODEL_GOURAUD", strGouraud.c_str() },
 	    {"LIGHTING_MODEL_LAMBERT", strLambert.c_str() },
 	    {"LIGHTING_MODEL_PHONG", strPhong.c_str() },
+        {"MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar},
+        {"MAX_NUM_INDICES_PER_TILE", MaxNumPointLightPerTileChar},
 		{ NULL, NULL }
 	};
 

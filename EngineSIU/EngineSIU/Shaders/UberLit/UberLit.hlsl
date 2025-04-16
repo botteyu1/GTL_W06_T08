@@ -221,17 +221,32 @@ PS_OUT Uber_PS(VS_OUT Input)
     // Ambient Light
     TotalColor += AmbientLight.Color * AmbientLight.Intensity * MatDiffuseColor;
 
+    // Light Culling Data 수집
+    // 화면 좌표 기반 타일 인덱스 계산 예시
+    //float2 NDCCoord = Input.position.xy / Input.position.w;
+    //int2 pixelCoord = (NDCCoord + 1.f) * float2(ScreenInfo.ScreenWidth, ScreenInfo.ScreenHeight) * float2(0.5, -0.5);
+    int2 pixelCoord = Input.position;
+    int2 tileCoord = pixelCoord / ScreenInfo.TileSize;
+    uint tileIndex = tileCoord.y * ScreenInfo.NumTileWidth + tileCoord.x;
+
+    FTileLightIndex tileLightInfo = TileLightIndicesList[tileIndex];
+    
+    uint CulledLightNum = tileLightInfo.LightCount;
+    uint CulledLightIndex[MAX_NUM_INDICES_PER_TILE] = tileLightInfo.LightIndices;
+
+    
 #if LIGHTING_MODEL_LAMBERT
-    for (int i = 0; i < NumPointLights; i++)
+    for (int i = 0; i < CulledLightNum; i++)
     {
-        CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
+        FPointLight PointLightFromBuffer = PointLightBufferList[CulledLightIndex[i]];
+        CalculatePointLight(PointLightFromBuffer.Position, Input.worldPos, PointLightFromBuffer.AttenuationRadius, PointLightFromBuffer.Falloff, Direction, Attenuation);
 
         // Transform tangent space
         Direction = mul(Direction, TBN);
         
-        ComputeLambert(PointLights[i].Color, Direction, Normal, LightDiffuseColor);
+        ComputeLambert(PointLightFromBuffer.Color, Direction, Normal, LightDiffuseColor);
 
-        TotalDiffuse += LightDiffuseColor * Attenuation * PointLights[i].Intensity;
+        TotalDiffuse += LightDiffuseColor * Attenuation * PointLightFromBuffer.Intensity;
     }
 
     for (int i = 0; i < NumSpotLights; i++)
@@ -262,19 +277,20 @@ PS_OUT Uber_PS(VS_OUT Input)
     TotalColor += MatDiffuseColor * TotalDiffuse;
     
 #elif LIGHTING_MODEL_PHONG
-    for (int i = 0; i < NumPointLights; i++)
+    for (int i = 0; i < CulledLightNum; i++)
     {
-        CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
+        FPointLight PointLightFromBuffer = PointLightBufferList[CulledLightIndex[i]];
+        CalculatePointLight(PointLightFromBuffer.Position, Input.worldPos, PointLightFromBuffer.AttenuationRadius, PointLightFromBuffer.Falloff, Direction, Attenuation);
 
         // Transform tangent space
         Direction = mul(Direction, TBN);
         float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
         ViewDirection = mul(ViewDirection, TBN);
 
-        ComputeBlinnPhong(PointLights[i].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, LightDiffuseColor, LightSpecularColor);
+        ComputeBlinnPhong(PointLightFromBuffer.Color, Direction, ViewDirection, Normal, Material.SpecularScalar, LightDiffuseColor, LightSpecularColor);
 
-        TotalDiffuse += LightDiffuseColor * Attenuation * PointLights[i].Intensity;
-        TotalSpecular += LightSpecularColor * Attenuation * PointLights[i].Intensity;
+        TotalDiffuse += LightDiffuseColor * Attenuation * PointLightFromBuffer.Intensity;
+        TotalSpecular += LightSpecularColor * Attenuation * PointLightFromBuffer.Intensity;
     }
 
     for (int i = 0; i < NumSpotLights; i++)

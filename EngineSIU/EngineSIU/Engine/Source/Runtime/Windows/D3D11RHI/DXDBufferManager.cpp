@@ -60,6 +60,8 @@ void FDXDBufferManager::BindConstantBuffers(const TArray<FString>& Keys, UINT St
         DXDeviceContext->VSSetConstantBuffers(StartSlot, Count, Buffers.GetData());
     else if (Stage == EShaderStage::Pixel)
         DXDeviceContext->PSSetConstantBuffers(StartSlot, Count, Buffers.GetData());
+    else if (Stage == EShaderStage::Compute)
+        DXDeviceContext->CSSetConstantBuffers(StartSlot, Count, Buffers.GetData());
 }
 
 void FDXDBufferManager::BindConstantBuffer(const FString& Key, UINT StartSlot, EShaderStage Stage) const
@@ -69,6 +71,8 @@ void FDXDBufferManager::BindConstantBuffer(const FString& Key, UINT StartSlot, E
         DXDeviceContext->VSSetConstantBuffers(StartSlot, 1, &Buffer);
     else if (Stage == EShaderStage::Pixel)
         DXDeviceContext->PSSetConstantBuffers(StartSlot, 1, &Buffer);
+    else if (Stage == EShaderStage::Compute)
+        DXDeviceContext->CSSetConstantBuffers(StartSlot, 1, &Buffer);
 }
 
 FVertexInfo FDXDBufferManager::GetVertexBuffer(const FString& InName) const

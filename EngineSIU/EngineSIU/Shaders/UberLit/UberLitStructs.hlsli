@@ -100,3 +100,24 @@ struct FSpotLight
     float OuterConeAngle;
     float2 pad;
 };
+
+struct FTileLightIndex
+{
+    uint LightCount;
+    uint LightIndices[MAX_NUM_INDICES_PER_TILE];
+};
+
+struct FScreenInfo
+{
+    row_major matrix ProjInv;
+    row_major matrix ViewMatrix;
+    row_major matrix ViewMatrixInv;
+    uint NumTileWidth;
+    uint NumTileHeight;
+    uint TileSize;
+    uint ScreenWidth;
+    uint ScreenHeight;
+    uint ScreenTopPadding;
+    uint MaxNumPointLight;
+    uint ScreenInfoPad;
+};

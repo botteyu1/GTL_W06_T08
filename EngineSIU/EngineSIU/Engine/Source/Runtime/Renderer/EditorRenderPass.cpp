@@ -19,7 +19,7 @@
 #include "Engine/Source/Runtime/Windows/D3D11RHI/DXDBufferManager.h"
 #include "Engine/Source/Runtime/Windows/D3D11RHI/DXDShaderManager.h"
 
-const float FEditorRenderPass::IconScale = 3.f;
+const float FEditorRenderPass::IconScale = 1.f;
 
 void FEditorRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)
 {
@@ -692,9 +692,9 @@ void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> ActiveView
     ID3D11DepthStencilState* DepthStateEnable = Graphics->DepthStencilStateTestWriteEnable;
     DeviceContext->OMSetDepthStencilState(DepthStateEnable, 0);
 
-    RenderAABBInstanced();
-    RenderPointlightInstanced();
-    RenderSpotlightInstanced();
+    RenderAABBInstanced(ActiveViewport);
+    RenderPointlightInstanced(ActiveViewport);
+    RenderSpotlightInstanced(ActiveViewport);
     RenderAxis();
     RenderGrid(ActiveViewport);
 
@@ -826,8 +826,10 @@ void FEditorRenderPass::RenderAxis()
     DeviceContext->Draw(6, 0);
 }
 
-void FEditorRenderPass::RenderAABBInstanced()
+void FEditorRenderPass::RenderAABBInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
+    if (!(ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))) return;
+
     ShaderManager->SetVertexShaderAndInputLayout(ShaderNameAABB, DeviceContext);
     ShaderManager->SetPixelShader(ShaderNameAABB, DeviceContext);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -901,8 +903,10 @@ void FEditorRenderPass::UdpateConstantbufferAABBInstanced(TArray<FConstantBuffer
     }
 }
 
-void FEditorRenderPass::RenderPointlightInstanced()
+void FEditorRenderPass::RenderPointlightInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
+    if (!(ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_LightVisualize))) return;
+
     UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
     if (!EditorEngine)
     {
@@ -921,16 +925,16 @@ void FEditorRenderPass::RenderPointlightInstanced()
     TArray<FConstantBufferDebugSphere> BufferAll;
     for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
     {
-        if (PointLightComp == EditorEngine->GetSelectedComponent())
-        {
+        //if (PointLightComp == EditorEngine->GetSelectedComponent())
+        //{
             FConstantBufferDebugSphere b;
             b.Position = PointLightComp->GetWorldLocation();
             b.Radius = PointLightComp->GetAttenuationRadius();
             b.Color = FLinearColor(149.f / 255.f, 198.f / 255.f, 255.f / 255.f, 255.f / 255.f);
 
             BufferAll.Add(b);
-            break;
-        }
+            //break;
+        //}
     }
 
     PrepareConstantbufferPointlight();
@@ -986,8 +990,10 @@ void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstant
     }
 }
 
-void FEditorRenderPass::RenderSpotlightInstanced()
+void FEditorRenderPass::RenderSpotlightInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
+    if (!(ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_LightVisualize))) return;
+
     // TODO : 현재 z값이 과도하게 크면 cone의 둥근 부분이 구형이 아님
     // 따라서 따로 그려줘서 곡률이 일정하게 만들어야 할거같음
     // 아니고 그냥 셰이더에서 할수있을거같기도 함...
@@ -1143,6 +1149,8 @@ void FEditorRenderPass::LazyLoad()
 
 void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
+    if (!(ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Icons))) return;
+
     // ULightComponentBase::CheckRayIntersection에서도 수정 필요
     ShaderManager->SetVertexShader(ShaderNameIcon, DeviceContext);
     ShaderManager->SetPixelShader(ShaderNameIcon, DeviceContext);

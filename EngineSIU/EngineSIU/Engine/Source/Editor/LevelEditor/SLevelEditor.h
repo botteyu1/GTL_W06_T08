@@ -27,9 +27,10 @@ public:
     bool IsMultiViewport() const;
 
 private:
-    FSlateRect Padding = FSlateRect(0, 50, 10, 0);
+    //FSlateRect Padding = FSlateRect(0, 50, 10, 0);
+    FSlateRect Padding = FSlateRect(0, 0, 0, 0);
     // TODO: 다른 좋은 이름
-    FVector2D AnchorMax = FVector2D(0.8f, 1);
+    FVector2D AnchorMax = FVector2D(1, 1);
     FVector2D AnchorMin = FVector2D(0, 0);
 
 private:

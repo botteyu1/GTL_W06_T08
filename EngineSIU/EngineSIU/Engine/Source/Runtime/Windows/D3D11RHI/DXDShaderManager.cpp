@@ -138,6 +138,54 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     return S_OK;
 }
 
+HRESULT FDXDShaderManager::AddComputeShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (DXDDevice == nullptr)
+        return S_FALSE;
+
+    HRESULT hr = S_OK;
+
+    ID3DBlob* ComputeShaderCSO = nullptr;
+    ID3DBlob* ErrorBlob = nullptr;
+    DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+//#ifdef _DEBUG
+    shaderFlags |= D3DCOMPILE_DEBUG;
+    shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+//#endif
+    FDXDInclude includeManager(FileName);
+
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "cs_5_0", shaderFlags, 0, &ComputeShaderCSO, &ErrorBlob);
+    if (FAILED(hr))
+    {
+        if (ErrorBlob) {
+            OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            UE_LOG(LogLevel::Error, (char*)ErrorBlob->GetBufferPointer());
+            ErrorBlob->Release();
+        }
+        return hr;
+    }
+
+    ID3D11ComputeShader* NewComputeShader;
+    hr = DXDDevice->CreateComputeShader(ComputeShaderCSO->GetBufferPointer(), ComputeShaderCSO->GetBufferSize(), nullptr, &NewComputeShader);
+    if (FAILED(hr))
+    {
+        ComputeShaderCSO->Release();
+        return hr;
+    }
+
+    ComputeShaders[Key] = NewComputeShader;
+
+    ComputeShaderCSO->Release();
+
+    // modified time 기록
+    const std::set<std::wstring>& dependencies = includeManager.GetIncludedFiles();
+
+    // modified time 기록
+    RecordShaderDependencies(Key, FileName, dependencies);
+
+    return S_OK;
+}
+
 HRESULT FDXDShaderManager::AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
 {
     return S_OK;
@@ -204,14 +252,16 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
         return hr;
     }
 
-    ID3D11InputLayout* NewInputLayout;
-    hr = DXDDevice->CreateInputLayout(Layout, LayoutSize, VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), &NewInputLayout);
-    if (FAILED(hr))
+    ID3D11InputLayout* NewInputLayout = nullptr;
+    if (Layout)
     {
-        VertexShaderCSO->Release();
-        return hr;
+        hr = DXDDevice->CreateInputLayout(Layout, LayoutSize, VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), &NewInputLayout);
+        if (FAILED(hr))
+        {
+            VertexShaderCSO->Release();
+            return hr;
+        }
     }
-
     VertexShaders[Key] = NewVertexShader;
     InputLayouts[Key] = NewInputLayout;
 
@@ -249,6 +299,15 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
     if (PixelShaders.Contains(Key))
     {
         return *PixelShaders.Find(Key);
+    }
+    return nullptr;
+}
+
+ID3D11ComputeShader* FDXDShaderManager::GetComputeShaderByKey(const std::wstring& Key) const
+{
+    if (ComputeShaders.Contains(Key))
+    {
+        return *ComputeShaders.Find(Key);
     }
     return nullptr;
 }
@@ -392,11 +451,39 @@ HRESULT FDXDShaderManager::ReloadPixelShader(const std::wstring& Key, const std:
     }
 }
 
+HRESULT FDXDShaderManager::ReloadComputeShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (!ComputeShaders.Contains(Key))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload compute shader : Key does not exist");
+        return S_FALSE;
+    }
+    ID3D11ComputeShader* PreviousShader = ComputeShaders[Key];
+
+    HRESULT hr = AddComputeShader(Key, FileName, EntryPoint, Defines);
+    if (FAILED(hr))
+    {
+        UE_LOG(LogLevel::Warning, "Failed to reload compute shader : Compilation Failed");
+        return hr;
+    }
+    else
+    {
+        // 버텍스 셰이더 컴파일에 성공했고, PixelShaders[Key]에는 새로운 shadercode가 들어가있음
+        // 원래 있었던 코드를 release
+        if (PreviousShader)
+        {
+            PreviousShader->Release();
+        }
+        UE_LOG(LogLevel::Display, "Successfully reloaded compute shader");
+        return hr;
+    }
+}
+
 HRESULT FDXDShaderManager::ReloadShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint,
     const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines,
     const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines)
 {
-    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey) || !InputLayouts.Contains(VertexKey))
+    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey)/* || !InputLayouts.Contains(VertexKey)*/)
     {
         UE_LOG(LogLevel::Warning, "Invalid Key : Adding new shaders. This happens when shader compilation at intialization failed.");
     }
@@ -440,7 +527,8 @@ HRESULT FDXDShaderManager::ReloadShaders(const std::wstring& VertexKey, const st
 
 HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines, const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines)
 {
-    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey) || !InputLayouts.Contains(VertexKey))
+    // input layout이 없을수도 있으니까
+    if (!VertexShaders.Contains(VertexKey) || !PixelShaders.Contains(PixelKey)/* || !InputLayouts.Contains(VertexKey)*/)
     {
         UE_LOG(LogLevel::Warning, "Invalid Key : Parameter might be different with parameters at init time.");
         return S_FALSE;
@@ -449,39 +537,42 @@ HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, 
     bool IsModified = false;
     {
         IsModified = CheckShaderModified(VertexKey);
-        // std::filesystem::path filePath = VertexFileName;
-        // auto ModTime = std::filesystem::last_write_time(filePath);
-        //
-        // if (VertexShaderModifiedTime.Contains(VertexShaders[VertexKey]))
-        // {
-        //     auto LastModTime = VertexShaderModifiedTime[VertexShaders[VertexKey]];
-        //     if (ModTime != LastModTime)
-        //     {
-        //         IsModified = true;
-        //         VertexShaderModifiedTime[VertexShaders[VertexKey]] = ModTime;
-        //     }
-        // }
     }
     if(!IsModified)
     {
         IsModified = CheckShaderModified(PixelKey);
-        // std::filesystem::path filePath = PixelFileName;
-        // auto ModTime = std::filesystem::last_write_time(filePath);
-        //
-        // if (PixelShaderModifiedTime.Contains(PixelShaders[PixelKey]))
-        // {
-        //     auto LastModTime = PixelShaderModifiedTime[PixelShaders[PixelKey]];
-        //     if (ModTime != LastModTime)
-        //     {
-        //         IsModified = true;
-        //         PixelShaderModifiedTime[PixelShaders[PixelKey]] = ModTime;
-        //     }
-        // }
     }
     if (IsModified)
     {
         UE_LOG(LogLevel::Display, "Shader file is modified. Recompiling shader.");
         return ReloadShaders(VertexKey, VertexFileName, VertexEntryPoint, Layout, LayoutSize, VertexDefines, PixelKey, PixelFileName, PixelEntryPoint, PixelDefines);
+    }
+    else
+    {
+        return S_FALSE;
+    }
+}
+
+HRESULT FDXDShaderManager::ReloadModifiedComputeShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (!ComputeShaders.Contains(Key))
+    {
+        UE_LOG(LogLevel::Warning, "Invalid Key : Parameter might be different with parameters at init time.");
+        return S_FALSE;
+    }
+    // vertex pixel 모두 다 조사
+    bool IsModified = false;
+    {
+        IsModified = CheckShaderModified(Key);
+    }
+    if (!IsModified)
+    {
+        IsModified = CheckShaderModified(Key);
+    }
+    if (IsModified)
+    {
+        UE_LOG(LogLevel::Display, "Shader file is modified. Recompiling shader.");
+        return ReloadComputeShader(Key, FileName, EntryPoint, Defines);
     }
     else
     {

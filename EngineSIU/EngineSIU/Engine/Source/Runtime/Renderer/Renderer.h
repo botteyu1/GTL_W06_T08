@@ -29,6 +29,7 @@ class FDepthBufferDebugPass;
 class FLineRenderPass;
 class FFogRenderPass;
 class FEditorRenderPass;
+class FLightCullingPass;
 
 class FRenderer
 {
@@ -69,6 +70,7 @@ public:
     FStaticMeshRenderPass* StaticMeshRenderPass = nullptr;
     FBillboardRenderPass* BillboardRenderPass = nullptr;
     FGizmoRenderPass* GizmoRenderPass = nullptr;
+    FLightCullingPass* LightCullingPass = nullptr;
     FUpdateLightBufferPass* UpdateLightBufferPass = nullptr;
     FDepthBufferDebugPass* DepthBufferDebugPass = nullptr;
     FFogRenderPass* FogRenderPass = nullptr;

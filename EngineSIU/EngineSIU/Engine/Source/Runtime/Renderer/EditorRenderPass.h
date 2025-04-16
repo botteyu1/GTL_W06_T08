@@ -2,6 +2,7 @@
 
 #define _TCHAR_DEFINED
 #include <d3d11.h>
+#include "IRenderPass.h"
 #include "Math/Vector.h"
 #include "Math/Vector4.h"
 #include "Math/Matrix.h"
@@ -57,17 +58,17 @@ private:
     void RenderAxis();
 
     // AABB
-    void RenderAABBInstanced();
+    void RenderAABBInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferAABB();
     void UdpateConstantbufferAABBInstanced(TArray<FConstantBufferDebugAABB> Buffer);
 
     // Sphere
-    void RenderPointlightInstanced();
+    void RenderPointlightInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferPointlight();
     void UdpateConstantbufferPointlightInstanced(TArray<FConstantBufferDebugSphere> Buffer);
 
     // Cone
-    void RenderSpotlightInstanced();
+    void RenderSpotlightInstanced(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferSpotlight();
     void UdpateConstantbufferSpotlightInstanced(TArray<FConstantBufferDebugCone> Buffer);
 
@@ -90,7 +91,7 @@ private:
     void UpdateShaders();
 
     const uint32 ConstantBufferSizeAABB = 8;
-    const uint32 ConstantBufferSizeSphere = 1;
+    const uint32 ConstantBufferSizeSphere = 1024;
     const uint32 ConstantBufferSizeCone = 2;
     const uint32 NumSegments = 16; // Shaderconstants.h의 defines[]에서도 수정필요
     FConstantBufferDebugGrid CurrentGridSettings;

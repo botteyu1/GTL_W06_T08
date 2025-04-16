@@ -3,7 +3,10 @@
 #include <cstdio>
 
 #include "UnrealEd/EditorViewportClient.h"
-
+#include "Engine/Engine.h"
+#include "World/World.h"
+#include "Actors/LightActor.h"
+#include "Components/Light/PointLightComponent.h"
 
 void StatOverlay::ToggleStat(const std::string& command)
 {
@@ -252,6 +255,38 @@ void Console::ExecuteCommand(const std::string& command)
     }
     else if (command.starts_with("stat ")) { // stat 명령어 처리
         overlay.ToggleStat(command);
+    }
+    else if (command == "pointlights")
+    {
+        UWorld* World = GEngine->ActiveWorld;
+
+        const int scale = pow(1 << 14, 1 / 2.f);
+        const int spacing = 10;
+        for (int i = 0; i < scale; i++)
+        {
+            for (int j = 0; j < scale; j++)
+            {
+                    FVector Pos = FVector(i, j, 0) * 16 - FVector(scale, scale, 0) * 8;
+                    Pos.Z = 0.5;
+                    APointLight* LightActor = World->SpawnActor<APointLight>();
+                    LightActor->SetActorLocation(Pos);
+
+                    UPointLightComponent* PLComp = Cast<UPointLightComponent>(LightActor->GetRootComponent());
+                    if (!PLComp) continue;
+
+                    PLComp->SetAttenuationRadius(10);
+                    PLComp->SetIntensity(4);
+
+                    // 랜덤 색상 지정
+                    FLinearColor LightColor(1, 1, 1);
+                    PLComp->SetLightColor(LightColor);
+                    PLComp->SetFalloff(1.0f);
+
+                    // 라벨 설정
+                    LightActor->SetActorLabel(TEXT("OBJ_SpotLight"));
+            }
+        }
+
     }
     else {
         AddLog(LogLevel::Error, "Unknown command: %s", command.c_str());

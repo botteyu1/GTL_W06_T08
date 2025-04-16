@@ -3,6 +3,9 @@
 
 #include <filesystem>
 #include "Engine/FLoaderOBJ.h"
+#include <future>
+#include <vector>
+#include <mutex>
 
 bool UAssetManager::IsInitialized()
 {
@@ -65,3 +68,41 @@ void UAssetManager::LoadObjFiles()
         }
     }
 }
+
+
+//void UAssetManager::LoadObjFiles()
+//{
+//    const std::string BasePathName = "Contents/";
+//
+//    std::vector<std::future<void>> Futures;
+//    std::mutex AssetRegistryMutex;
+//
+//    for (const auto& Entry : std::filesystem::recursive_directory_iterator(BasePathName))
+//    {
+//        if (Entry.is_regular_file() && Entry.path().extension() == ".obj")
+//        {
+//            Futures.emplace_back(std::async(std::launch::async, [this, Entry, &AssetRegistryMutex]()
+//                {
+//                    FAssetInfo NewAssetInfo;
+//                    NewAssetInfo.AssetName = FName(Entry.path().filename().string());
+//                    NewAssetInfo.PackagePath = FName(Entry.path().parent_path().string());
+//                    NewAssetInfo.AssetType = EAssetType::StaticMesh;
+//                    NewAssetInfo.Size = static_cast<uint32>(std::filesystem::file_size(Entry.path()));
+//
+//                    {
+//                        std::lock_guard<std::mutex> Lock(AssetRegistryMutex);
+//                        AssetRegistry->PathNameToAssetInfo.Add(NewAssetInfo.AssetName, NewAssetInfo);
+//                    }
+//
+//                    FString MeshName = NewAssetInfo.PackagePath.ToString() + "/" + NewAssetInfo.AssetName.ToString();
+//                    FManagerOBJ::CreateStaticMesh(MeshName);
+//                }));
+//        }
+//    }
+//
+//    // 모든 작업이 끝날 때까지 대기
+//    for (auto& Future : Futures)
+//    {
+//        Future.get();
+//    }
+//}

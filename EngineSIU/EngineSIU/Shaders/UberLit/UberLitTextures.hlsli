@@ -9,5 +9,6 @@ Texture2D EmissiveTexture : register(t4);
 Texture2D RoughnessTexture : register(t5);
 Texture2D NormalTexture : register(t6);
 
+// 16번 register 현재 pointlight로 사용중
 
 SamplerState Sampler : register(s0);

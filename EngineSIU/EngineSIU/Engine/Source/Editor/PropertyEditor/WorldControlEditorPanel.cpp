@@ -1,5 +1,6 @@
 #include "WorldControlEditorPanel.h"
 
+#include <random>
 #include "ImGuiManager.h"
 #include "Actors/AmbientLightActor.h"
 #include "Actors/Cube.h"
@@ -8,6 +9,7 @@
 #include "Actors/HeightFogActor.h"
 #include "Actors/LightActor.h"
 #include "Actors/SpotLightActor.h"
+#include "Components/Light/PointLightComponent.h"
 
 #include "Components/ParticleSubUVComponent.h"
 #include "Components/SphereComp.h"
