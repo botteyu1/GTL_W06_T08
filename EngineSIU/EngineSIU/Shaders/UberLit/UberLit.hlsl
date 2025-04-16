@@ -37,16 +37,10 @@ VS_OUT Uber_VS(VS_IN input)
     
     output.color = input.color;
   
-    output.normal = normalize(mul(input.normal, (float3x3) MInverseTranspose)); // Object Space -> World Space
-
-    float3 BiTangent = cross(input.normal, input.Tangent);
-    matrix<float, 3, 3> TBN =
-    {
-        input.Tangent.x, input.Tangent.y, input.Tangent.z, // column 0
-        BiTangent.x, BiTangent.y, BiTangent.z, // column 1
-        input.normal.x, input.normal.y, input.normal.z // column 2
-    };
-    output.TBN = transpose(TBN);
+    output.Normal = input.Normal;
+    output.Tangent = input.Tangent;
+    // TODO: 순서 이거 맞음?
+    output.BiTangent = cross(input.Tangent, input.Normal);
     
     output.texcoord = input.texcoord;
 
@@ -79,8 +73,10 @@ VS_OUT Uber_VS(VS_IN input)
     {
         MatSpecularColor = Material.SpecularColor.rgb;
     }
+
+    float3 WorldNormal = normalize(mul(input.Normal, (float3x3) MInverseTranspose)); // Object Space -> World Space
     
-    float3 GouraudColor = ComputeGouraudShading(worldPosition.xyz, output.normal, Material.SpecularScalar,
+    float3 GouraudColor = ComputeGouraudShading(worldPosition.xyz, WorldNormal, Material.SpecularScalar,
          MatDiffuseColor, MatSpecularColor,
          AmbientLight, DirectionalLights, PointLights, SpotLights,
          NumDirLights, NumPointLights, NumSpotLights);
@@ -94,15 +90,8 @@ PS_OUT Uber_PS(VS_OUT Input)
 {
     PS_OUT Output;
     Output.UUID = UUID;
-    
-    /** GOURAUD */
-#if LIGHTING_MODEL_GOURAUD
-    Output.color = Input.color;
-    return Output;
-#endif
 
     float3 MatDiffuseColor;
-    float3 Normal = normalize(Input.normal);
     float3 MatAmbientColor = float3(0, 0, 0);
     float3 MatSpecularColor = float3(0, 0, 0);
     float3 MatAlphaColor = float3(0, 0, 0);
@@ -110,6 +99,18 @@ PS_OUT Uber_PS(VS_OUT Input)
     float3 MatRoughnessColor = float3(0, 0, 0);
 
     float2 UV = Input.texcoord + UVOffset;
+
+    float3 Normal = normalize(Input.Normal);
+    float3 Tangent = normalize(Input.Tangent);
+    float3 BiTangent = normalize(Input.BiTangent);
+
+    matrix<float, 3, 3> TBN =
+    {
+        Tangent.x, Tangent.y, Tangent.z, // column 0
+        BiTangent.x, BiTangent.y, BiTangent.z, // column 1
+        Normal.x, Normal.y, Normal.z // column 2
+    };
+    TBN = transpose(TBN);    
     
     // Diffuse
     if (Material.TextureFlag & (1 << 0))
@@ -160,6 +161,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     {
         float3 SampledNormal = NormalTexture.Sample(Sampler, UV).rgb;
         Normal = normalize(2.f * SampledNormal - 1.f);
+        Normal = SampledNormal;
 
         /** Depreacated - processing normals by converting them to world space. */
         // Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
@@ -167,7 +169,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     else
     {
         // If not include bump map, normal transforms tangent space.
-        Normal = normalize(mul(Input.normal, Input.TBN));
+        Normal = normalize(mul(Input.Normal, TBN));
     }
 
     // flag 되어있으면 미리 return
@@ -193,10 +195,18 @@ PS_OUT Uber_PS(VS_OUT Input)
     // normal
     else if (RenderFlag == 4)
     {
-        Normal = normalize(mul(mul(Normal, Input.TBN), (float3x3) MInverseTranspose));
-        Output.color = float4(Normal/2 + 0.5, 1);
+        Normal = normalize(mul(mul(Normal, transpose(TBN)), (float3x3)MInverseTranspose));
+        Output.color = float4((Normal + 1) / 2, 1);
+        
+        //Output.color = float4(Normal, 1);
         return Output;
     }
+
+    /** GOURAUD */
+#if LIGHTING_MODEL_GOURAUD
+    Output.color = Input.color;
+    return Output;
+#endif
     
     float3 TotalColor = float3(0, 0, 0);
     
@@ -218,7 +228,7 @@ PS_OUT Uber_PS(VS_OUT Input)
         CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
 
         // Transform tangent space
-        Direction = mul(Direction, Input.TBN);
+        Direction = mul(Direction, TBN);
         
         ComputeLambert(PointLights[i].Color, Direction, Normal, LightDiffuseColor);
 
@@ -232,7 +242,7 @@ PS_OUT Uber_PS(VS_OUT Input)
             Direction, Attenuation);
 
         // Transform tangent space
-        Direction = mul(Direction, Input.TBN);
+        Direction = mul(Direction, TBN);
         
         ComputeLambert(SpotLights[i].Color, Direction, Normal, LightDiffuseColor);
 
@@ -243,7 +253,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
 
     // Transform tangent space
-    Direction = mul(Direction, Input.TBN);
+    Direction = mul(Direction, TBN);
     
     ComputeLambert(DirectionalLights[0].Color, Direction, Normal, LightDiffuseColor);
 
@@ -258,9 +268,9 @@ PS_OUT Uber_PS(VS_OUT Input)
         CalculatePointLight(PointLights[i].Position, Input.worldPos, PointLights[i].AttenuationRadius, PointLights[i].Falloff, Direction, Attenuation);
 
         // Transform tangent space
-        Direction = mul(Direction, Input.TBN);
+        Direction = mul(Direction, TBN);
         float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
-        ViewDirection = mul(ViewDirection, Input.TBN);
+        ViewDirection = mul(ViewDirection, TBN);
 
         ComputeBlinnPhong(PointLights[i].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, LightDiffuseColor, LightSpecularColor);
 
@@ -275,9 +285,9 @@ PS_OUT Uber_PS(VS_OUT Input)
             Direction, Attenuation);
 
         // Transform tangent space
-        Direction = mul(Direction,Input.TBN);
+        Direction = mul(Direction,TBN);
         float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
-        ViewDirection = mul(ViewDirection, Input.TBN);
+        ViewDirection = mul(ViewDirection, TBN);
         
         ComputeBlinnPhong(SpotLights[i].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, LightDiffuseColor, LightSpecularColor);
 
@@ -289,9 +299,9 @@ PS_OUT Uber_PS(VS_OUT Input)
     CalculateDirectionalLight(DirectionalLights[0].Direction, Direction);
 
     // Transform tangent space
-    Direction = mul(Direction, Input.TBN);
+    Direction = mul(Direction, TBN);
     float3 ViewDirection = normalize(CameraPosition - Input.worldPos);
-    ViewDirection = mul(ViewDirection, Input.TBN);
+    ViewDirection = mul(ViewDirection, TBN);
     
     ComputeBlinnPhong(DirectionalLights[0].Color, Direction, ViewDirection, Normal, Material.SpecularScalar, LightDiffuseColor, LightSpecularColor);
     

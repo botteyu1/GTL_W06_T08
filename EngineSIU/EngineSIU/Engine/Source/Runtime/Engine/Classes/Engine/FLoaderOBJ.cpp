@@ -465,7 +465,7 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         std::string Key = std::to_string(VertexIndex) + "/" + std::to_string(UVIndex) + "/" + std::to_string(NormalIndex);
 
         uint32 FinalIndex;
-        if (IndexMap.Contains(Key) && (OutStaticMesh.Materials.Num() > 0 && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal)) )
+        if (IndexMap.Contains(Key) && (OutStaticMesh.Materials.Num() > MaterialIndex && !(OutStaticMesh.Materials[MaterialIndex].TextureFlag & ETextureFlag::Normal)) )
         {
             FinalIndex = IndexMap[Key];
         }
@@ -559,38 +559,59 @@ void FLoaderOBJ::ComputeBoundingBox(const TArray<FStaticMeshVertex>& InVertices,
 void FLoaderOBJ::CalculateTangent(FStaticMeshVertex& PivotVertex, const FStaticMeshVertex& Vertex1, const FStaticMeshVertex& Vertex2)
 {
     const float s1 = Vertex1.U - PivotVertex.U;
-    const float t1 = Vertex1.V - PivotVertex.V;
-    const float s2 = Vertex2.U - PivotVertex.U;
-    const float t2 = Vertex2.V - PivotVertex.V;
-
-    float denominator = (s1 * t2 - s2 * t1);
-    if (FMath::Abs(denominator) < SMALL_NUMBER)
-    {
-        // 유효하지 않은 경우, 기본값을 사용하거나 생략
-        PivotVertex.TangentX = 1.f;
-        PivotVertex.TangentY = 0.f;
-        PivotVertex.TangentZ = 0.f;
-        return;
-    }
-
-    const float f = 1.f / denominator;
-    
-    const float E1x = Vertex1.X - PivotVertex.X;
-    const float E1y = Vertex1.Y - PivotVertex.Y;
-    const float E1z = Vertex1.Z - PivotVertex.Z;
-    const float E2x = Vertex2.X - PivotVertex.X;
-    const float E2y = Vertex2.Y - PivotVertex.Y;
-    const float E2z = Vertex2.Z - PivotVertex.Z;
-
-    const float Tx = f * (t2 * E1x - t1 * E2x);
-    const float Ty = f * (t2 * E1y - t1 * E2y);
-    const float Tz = f * (t2 * E1z - t1 * E2z);
-
-    FVector Tangent = FVector(Tx, Ty, Tz).GetSafeNormal();
-
-    PivotVertex.TangentX = Tangent.X;
-    PivotVertex.TangentY = Tangent.Y;
-    PivotVertex.TangentZ = Tangent.Z;
+	const float t1 = Vertex1.V - PivotVertex.V;
+	const float s2 = Vertex2.U - PivotVertex.U;
+	const float t2 = Vertex2.V - PivotVertex.V;
+	// UV 좌표 차이가 너무 작은 경우 (거의 0에 가까운 경우) 예외 처리
+	const float det = s1 * t2 - s2 * t1;
+	if (fabs(det) < 1e-6f)
+	{
+		// 기본 탄젠트 설정 - 노말에 수직인 아무 벡터나 사용
+		FVector Normal = FVector(PivotVertex.NormalX, PivotVertex.NormalY, PivotVertex.NormalZ);
+		FVector Tangent;
+		// 노말의 절대값이 가장 작은 축을 찾아 직교하는 벡터 생성
+		if (fabs(Normal.X) < fabs(Normal.Y) && fabs(Normal.X) < fabs(Normal.Z))
+			Tangent = FVector(0.0f, -Normal.Z, Normal.Y);
+		else if (fabs(Normal.Y) < fabs(Normal.Z))
+			Tangent = FVector(-Normal.Z, 0.0f, Normal.X);
+		else
+			Tangent = FVector(-Normal.Y, Normal.X, 0.0f);
+		Tangent.Normalize();
+		PivotVertex.TangentX = Tangent.X;
+		PivotVertex.TangentY = Tangent.Y;
+		PivotVertex.TangentZ = Tangent.Z;
+		return;
+	}
+	const float E1x = Vertex1.X - PivotVertex.X;
+	const float E1y = Vertex1.Y - PivotVertex.Y;
+	const float E1z = Vertex1.Z - PivotVertex.Z;
+	const float E2x = Vertex2.X - PivotVertex.X;
+	const float E2y = Vertex2.Y - PivotVertex.Y;
+	const float E2z = Vertex2.Z - PivotVertex.Z;
+	const float f = 1.f / det;
+	const float Tx = f * (t2 * E1x - t1 * E2x);
+	const float Ty = f * (t2 * E1y - t1 * E2y);
+	const float Tz = f * (t2 * E1z - t1 * E2z);
+	FVector Tangent = FVector(Tx, Ty, Tz);
+	// 계산된 탄젠트의 길이가 너무 작은 경우 처리
+	if (Tangent.LengthSquared() < 1e-6f)
+	{
+		// 위와 동일한 기본 탄젠트 설정 코드
+		FVector Normal = FVector(PivotVertex.NormalX, PivotVertex.NormalY, PivotVertex.NormalZ);
+		if (fabs(Normal.X) < fabs(Normal.Y) && fabs(Normal.X) < fabs(Normal.Z))
+			Tangent = FVector(0.0f, -Normal.Z, Normal.Y);
+		else if (fabs(Normal.Y) < fabs(Normal.Z))
+			Tangent = FVector(-Normal.Z, 0.0f, Normal.X);
+		else
+			Tangent = FVector(-Normal.Y, Normal.X, 0.0f);
+	}
+	Tangent.Normalize();
+	// 노말과 수직하게 만들기 (추가 정밀도를 위해)
+	FVector Normal = FVector(PivotVertex.NormalX, PivotVertex.NormalY, PivotVertex.NormalZ);
+	Tangent = (Tangent - Normal * FVector::DotProduct(Normal, Tangent)).Normalize();
+	PivotVertex.TangentX = Tangent.X;
+	PivotVertex.TangentY = Tangent.Y;
+	PivotVertex.TangentZ = Tangent.Z;
 }
 
 OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& PathFileName)
