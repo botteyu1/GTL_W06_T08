@@ -7,6 +7,7 @@
 #include "LevelEditor/SLevelEditor.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
+#include "Renderer/LightCullingPass.h"
 
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -253,6 +254,11 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
                 FEngineLoop::GraphicDevice.OnResize(hWnd);
                 //UGraphicsDevice 객체의 OnResize 함수 호출
                 LevelEditor->ResizeLevelEditor();
+            }
+            FLightCullingPass* LightCulling = GEngineLoop.Renderer.LightCullingPass;
+            if (LightCulling)
+            {
+                LightCulling->OnResize(hWnd);
             }
         }
         Console::GetInstance().OnResize(hWnd);

@@ -258,6 +258,7 @@ PS_OUT Uber_PS(VS_OUT Input)
     // Ambient Light
     TotalColor += AmbientLight.Color * AmbientLight.Intensity;
 
+    TotalColor *= 5;
     if (RenderFlag == 5)
     {
         Output.color = float4(TotalColor, 1);

@@ -138,6 +138,13 @@ struct FLinearColor
         return FLinearColor(InColor);
     }
 
+
+    FORCEINLINE static FColor ToColor(const FLinearColor& InColor)
+    {
+        return FColor(InColor.R * 255, InColor.G * 255, InColor.B * 255, InColor.A * 255);
+    }
+
+
     // Operators
     FORCEINLINE FLinearColor operator+(const FLinearColor& Other) const
     {
@@ -286,6 +293,10 @@ struct FLinearColor
         return FMath::Min(R, FMath::Min(G, FMath::Min(B, A)));
     }
 
+    FORCEINLINE FVector rgb() const
+    {
+        return FVector(R, G, B);
+    }
     FString ToString() const;
     bool InitFromString(const FString& SourceString);
 };

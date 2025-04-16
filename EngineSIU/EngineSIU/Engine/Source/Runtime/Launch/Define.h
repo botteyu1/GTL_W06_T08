@@ -317,6 +317,7 @@ struct alignas(16) FPointLight
     float AttenuationRadius;
 
     float Falloff;
+    FVector pad;
     // pad 12 byte
 };
 

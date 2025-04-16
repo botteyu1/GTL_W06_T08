@@ -47,39 +47,38 @@ void GetTileFrustumPlanes(
     planes[3] = ComputePlane(world[2], world[3], world[6]); // bottom
     planes[4] = ComputePlane(world[0], world[1], world[2]); // near
     planes[5] = ComputePlane(world[6], world[7], world[5]); // far
-    
-    
-    
-    //// Plane order: left, right, top, bottom, near, far
-    //planes[0] = float3(world[0].x, world[0].y, world[0].x); // left
-    //planes[1] = float3(world[1].x, world[1].y, world[1].x); // right
-    //planes[2] = float3(world[2].x, world[2].y, world[2].x); // top
-    //planes[3] = float3(world[3].x, world[3].y, world[3].x); // bottom
-    //planes[4] = float3(world[4].x, world[4].y, world[4].x); // near
-    //planes[5] = float3(world[5].x, world[5].y, world[5].x); // far
-   
-    
 }
 
-int SphereInFrustum(float3 center, float radius, float4 planes[6])
+bool SphereFrustumPlaneIntersection(float3 center, float radius, float4 planes[6])
 {
-    int numOver = 6;
     for (int i = 0; i < 6; ++i)
     {
         float distance = dot(planes[i].xyz, center) + planes[i].w;
         // distance 음수면 plane의 뒤 
         if (distance < -radius)
         {
-            numOver--;
-            //return false; // 완전히 바깥
+            return false; // 완전히 바깥
         }
     }
-    return numOver;
     return true; // 안에 있거나 걸침
 }
 
+
 bool IntersectRaySphere(float3 rayOrigin, float3 rayDir, float3 sphereCenter, float radius)
 {
+    float3 OriginToCenter = sphereCenter - rayOrigin;
+    
+    if (dot(OriginToCenter, OriginToCenter) < radius * radius)
+    {
+        return true;
+    }
+    
+    if (dot(rayDir, OriginToCenter) < 0)
+    {
+        return false;
+    }
+    
+    
     float3 oc = rayOrigin - sphereCenter;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(oc, rayDir);
@@ -89,39 +88,101 @@ bool IntersectRaySphere(float3 rayOrigin, float3 rayDir, float3 sphereCenter, fl
     return discriminant >= 0.0;
 }
 
-//bool SphereIntersectsAABB(in Sphere sphere, in AABB aabb)
+
+bool IntersectAABBSphere(float3 center, float radius, in float3 corners[8])
+{
+    static const float FLOAT_MAX = 3.402823e+38f;
+    float3 MinCorner = float3(FLOAT_MAX, FLOAT_MAX, FLOAT_MAX);
+    float3 MaxCorner = -float3(FLOAT_MAX, FLOAT_MAX, FLOAT_MAX);
+    
+    for (int i = 0; i < 8; i++)
+    {
+        MinCorner = min(MinCorner, corners[i]);
+        MaxCorner = max(MaxCorner, corners[i]);
+    }
+    
+    float3 BoxCenter = (MinCorner + MaxCorner) / 2.f;
+    float3 BoxExtent = (MaxCorner - MinCorner) / 2.f;
+    
+    float3 Delta = max(0, abs(BoxCenter - center) - BoxExtent);
+    float DistSq = dot(Delta, Delta);
+    
+    return DistSq <= radius * radius;
+    
+    return true;
+}
+
+// RGBA를 하나의 uint로 pack
+uint PackColor8(float4 color)
+{
+    uint r = (uint) (saturate(color.r) * 255.0f);
+    uint g = (uint) (saturate(color.g) * 255.0f);
+    uint b = (uint) (saturate(color.b) * 255.0f);
+    uint a = (uint) (saturate(color.a) * 255.0f);
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+// uint에서 float4(RGBA)로 unpack
+float4 UnpackColor8(uint packed)
+{
+    float b = (float) (packed & 0xFF) / 255.0f;
+    float g = (float) ((packed >> 8) & 0xFF) / 255.0f;
+    float r = (float) ((packed >> 16) & 0xFF) / 255.0f;
+    float a = (float) ((packed >> 24) & 0xFF) / 255.0f;
+    return float4(r, g, b, a);
+}
+
+
+float3 HeatmapColor(float value, float minValue, float maxValue)
+{
+    // 정규화
+    float t = saturate((value - minValue) / (maxValue - minValue));
+
+    // t: 0 ~ 1 사이 값을 기반으로 색상 결정
+    float3 color;
+
+    if (t < 0.25)
+    {
+        // 파랑 → 청록
+        float localT = t / 0.25;
+        color = lerp(float3(0.0, 0.0, 1.0), float3(0.0, 1.0, 1.0), localT);
+    }
+    else if (t < 0.5)
+    {
+        // 청록 → 초록
+        float localT = (t - 0.25) / 0.25;
+        color = lerp(float3(0.0, 1.0, 1.0), float3(0.0, 1.0, 0.0), localT);
+    }
+    else if (t < 0.75)
+    {
+        // 초록 → 노랑
+        float localT = (t - 0.5) / 0.25;
+        color = lerp(float3(0.0, 1.0, 0.0), float3(1.0, 1.0, 0.0), localT);
+    }
+    else
+    {
+        // 노랑 → 빨강
+        float localT = (t - 0.75) / 0.25;
+        color = lerp(float3(1.0, 1.0, 0.0), float3(1.0, 0.0, 0.0), localT);
+    }
+
+    return color;
+}
+
+
+
+
+//bool SphereFrustumCornerIntersection(float3 center, float radius, float3 corners[8])
 //{
-
-//    float3 vDelta = max(0, abs(aabb.center –
-//    sphere.center) –
-//    aabb.extents);
-
-//    float fDistSq = dot(vDelta, vDelta);
-
-//    return fDistSq <= sphere.radius * sphere.radius;
-
-//}
-
-//// Plane의 안쪽을 향하고 있는지 검사하는 함수
-//bool IsTileCenterInsideFrustum(float3 tileCenterWorld, float4 planes[6])
-//{
-//    int a = 6;
-//    bool allInside = true;
-
-//    for (int i = 0; i < 6; ++i)
+//    for (int i = 0; i < 8; ++i)
 //    {
-//        float distance = dot(planes[i].xyz, tileCenterWorld) + planes[i].w;
-
-//        // 디버깅: 거리 값 확인
-//        // [옵션] RWBuffer나 UAV로 거리값 출력 가능
-
-//        if (distance < 0)
+//        float3 delta = center - corners[i];
+//        float distSq = dot(delta, delta);
+//        float radiusSq = radius * radius;
+//        if (distSq < radiusSq)
 //        {
-//            a--;
-//            allInside = false;
-//            // [옵션] 로그 출력 or 시각화용 마킹
+//            return true;
 //        }
 //    }
-//    //return a;
-//    return allInside;
+//    return false;
 //}

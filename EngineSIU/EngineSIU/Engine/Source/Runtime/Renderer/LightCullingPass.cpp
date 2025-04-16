@@ -72,6 +72,12 @@ void FLightCullingPass::ClearRenderArr()
 {
 }
 
+void FLightCullingPass::OnResize(HWND hWnd)
+{
+    ReleaseTileLightList();
+    CreateTileLightList(Graphics);
+}
+
 void FLightCullingPass::PrepareBlendState()
 {
     D3D11_BLEND_DESC blendDesc = {};
@@ -104,7 +110,7 @@ HRESULT FLightCullingPass::CreateShaders()
 {
     const D3D_SHADER_MACRO defines[] =
     {
-        "MAX_NUM_GLOBAL_LIGHT", "256",
+        "MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar,
         NULL, NULL
     };
 
@@ -136,7 +142,7 @@ HRESULT FLightCullingPass::ReloadShaders()
 {
     const D3D_SHADER_MACRO defines[] =
     {
-        "MAX_NUM_GLOBAL_LIGHT", "256",
+        "MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar,
         NULL, NULL
     };
 
@@ -183,6 +189,7 @@ void FLightCullingPass::UpdateScreenInfoBuffer(std::shared_ptr<FEditorViewportCl
     info.ScreenWidth = Viewport->GetViewport()->GetViewport().Width;
     info.ScreenHeight = Viewport->GetViewport()->GetViewport().Height;
     info.ScreenTopPadding = Viewport->GetViewport()->GetViewport().TopLeftY;
+    info.MaxNumPointLight = this->MaxNumPointLight;
     BufferManager->UpdateConstantBuffer("ScreenInfo", info);
     //D3D11_MAPPED_SUBRESOURCE mappedResource;
     //HRESULT hr = DXDeviceContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -200,11 +207,11 @@ void FLightCullingPass::UpdateScreenInfoBuffer(std::shared_ptr<FEditorViewportCl
 HRESULT FLightCullingPass::CreateGlobalLightList()
 {
     D3D11_BUFFER_DESC bufDesc = {};
-    bufDesc.ByteWidth = sizeof(FPointLightData) * MaxNumPointLight;
+    bufDesc.ByteWidth = sizeof(FPointLight) * MaxNumPointLight;
     bufDesc.Usage = D3D11_USAGE_DEFAULT;
     bufDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     bufDesc.CPUAccessFlags = 0;
-    bufDesc.StructureByteStride = sizeof(FPointLightData);
+    bufDesc.StructureByteStride = sizeof(FPointLight);
     bufDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 
     HRESULT hr;
@@ -230,13 +237,16 @@ HRESULT FLightCullingPass::CreateGlobalLightList()
 
 void FLightCullingPass::UpdateLightList()
 {
-    TArray<FPointLightData> PointLightDatas;
+    TArray<FPointLight> PointLightDatas;
     PointLightDatas.Reserve(MaxNumPointLight);
     for (const auto plight : TObjectRange<UPointLightComponent>())
     {
-        FPointLightData data;
+        FPointLight data;
         data.Position = plight->GetWorldLocation();
-        data.Radius = plight->GetAttenuationRadius();
+        data.AttenuationRadius = plight->GetAttenuationRadius();
+        data.Intensity = plight->GetIntensity();
+        data.Color = plight->GetLightColor().rgb();
+        data.Falloff = plight->GetFalloff();
 
         PointLightDatas.Add(data);
         if (PointLightDatas.Num() > MaxNumPointLight)
@@ -310,6 +320,9 @@ HRESULT FLightCullingPass::CreateTileLightList(FGraphicsDevice* Graphics)
 
 void FLightCullingPass::ReleaseTileLightList()
 {
+    BufferManager->SafeRelease(TileLightListUAV);
+    BufferManager->SafeRelease(TileLightListSRV);
+    BufferManager->SafeRelease(TileLightListBuffer);
 }
 
 

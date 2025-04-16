@@ -147,10 +147,14 @@ HRESULT FDXDShaderManager::AddComputeShader(const std::wstring& Key, const std::
 
     ID3DBlob* ComputeShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
-
+    DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+//#ifdef _DEBUG
+    shaderFlags |= D3DCOMPILE_DEBUG;
+    shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+//#endif
     FDXDInclude includeManager(FileName);
 
-    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "cs_5_0", 0, 0, &ComputeShaderCSO, &ErrorBlob);
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &includeManager, EntryPoint.c_str(), "cs_5_0", shaderFlags, 0, &ComputeShaderCSO, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {

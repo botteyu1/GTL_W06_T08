@@ -15,6 +15,7 @@ public:
     virtual void PrepareRender() override;
     virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override;
     virtual void ClearRenderArr() override;
+    void OnResize(HWND hWnd);
 
 private:
     void PrepareBlendState();
@@ -22,12 +23,9 @@ private:
 
     // CPU -> GPU 전달용 scene의 전체 light를 담은 버퍼
     // TODO : 추후에 라이트 개수 늘어나면 어떻게해야할까..
-    const uint32 MaxNumPointLight = 256; // define에서 바꾸기
-    struct FPointLightData
-    {
-        FVector Position;
-        float Radius;
-    };
+    const uint32 MaxNumPointLight = 16384; // define에서 바꾸기
+    const char MaxNumPointLightChar[6] = "16384";
+
 
     // GPU 내부에서 서로 주고받는 용도
     struct FTileLightIndex
@@ -48,7 +46,7 @@ private:
         uint32 ScreenWidth;
         uint32 ScreenHeight;
         uint32 ScreenTopPadding;
-        uint32 pad;
+        uint32 MaxNumPointLight;
         uint32 pad1;
     };
 
