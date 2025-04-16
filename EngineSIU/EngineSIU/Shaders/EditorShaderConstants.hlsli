@@ -55,11 +55,16 @@ cbuffer ConstantBufferDebugGrid : register(b13)
     float3 GridOrigin; // Grid의 중심
     float Padding;
 };
-cbuffer ConstantBufferDebugIcon : register(b13)
+
+struct IconData
 {
     float3 IconPosition;
     float IconScale;
     float4 IconColor;
+};
+cbuffer ConstantBufferDebugIcon : register(b13)
+{
+    IconData IconDatas[1024];
 }
 
 cbuffer ConstantBufferDebugArrow : register(b13)

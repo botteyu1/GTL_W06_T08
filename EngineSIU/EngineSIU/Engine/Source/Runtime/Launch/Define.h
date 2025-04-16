@@ -473,9 +473,9 @@ struct alignas(16) FFogConstants
 
 // Spotlight Light Culling을 위한 값
 // CPU -> GPU 전달용 scene의 전체 light를 담은 버퍼
-constexpr static uint32 MaxNumPointLight = 16384; // define에서 바꾸기
-constexpr char MaxNumPointLightChar[6] = "16384";
+constexpr static uint32 MaxNumPointLight = 32768; // define에서 바꾸기
+constexpr char MaxNumPointLightChar[6] = "32768";
 
 // 64개 - 개수담을 1개
-constexpr static uint32 MaxNumPointLightPerTile = 63;
-constexpr char MaxNumPointLightPerTileChar[3] = "63";
+constexpr static uint32 MaxNumPointLightPerTile = 127;
+constexpr char MaxNumPointLightPerTileChar[4] = "127";

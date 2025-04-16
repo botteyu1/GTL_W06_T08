@@ -291,6 +291,9 @@ void FStaticMeshRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGrap
     ShaderManager = InShaderManager;
 
     CreateShader();
+    UpdateShaders(0, 0, 1, true);
+    bIsUber = true;
+    SetUberShader(true);
 }
 
 void FStaticMeshRenderPass::PrepareRender()

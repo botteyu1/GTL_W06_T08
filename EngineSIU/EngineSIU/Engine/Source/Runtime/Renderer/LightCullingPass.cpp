@@ -42,10 +42,6 @@ void FLightCullingPass::RenderHeatmap(const std::shared_ptr<FEditorViewportClien
     UpdateScreenInfoBuffer(Viewport);
     Graphics->DeviceContext->Draw(4, 0);
 
-
-
-
-    //Graphics->DeviceContext->PSSetShaderResources(16, 1, nullSRV);
 }
 
 void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClient>& Viewport)
@@ -83,7 +79,10 @@ void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClie
     // -> staticMeshRenderPass에서 해줘야함
     Graphics->DeviceContext->PSSetShaderResources(16, 1, &LightListSRV); // t17번 슬롯에 SRV 바인딩
     Graphics->DeviceContext->PSSetShaderResources(17, 1, &TileLightListSRV); // t17번 슬롯에 SRV 바인딩
+    Graphics->DeviceContext->VSSetShaderResources(16, 1, &LightListSRV); // t17번 슬롯에 SRV 바인딩
+    Graphics->DeviceContext->VSSetShaderResources(17, 1, &TileLightListSRV); // t17번 슬롯에 SRV 바인딩
     BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
+    BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Vertex);
 
 }
 

@@ -355,6 +355,7 @@ struct PS_INPUT_ICON
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD;
+    float4 Color : COLOR;
 };
 
 Texture2D gTexture : register(t0);
@@ -373,10 +374,12 @@ const static float2 QuadTexCoord[6] =
 };
 
 
-PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID)
+PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
     PS_INPUT_ICON output;
 
+    float3 IconPosition = IconDatas[instanceID].IconPosition;
+    float IconScale = IconDatas[instanceID].IconScale;
     // 카메라를 향하는 billboard 좌표계 생성
     float3 forward = normalize(CameraPos - IconPosition);
     float3 up = float3(0, 0, 1);
@@ -392,6 +395,7 @@ PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID)
     output.Position = mul(viewPos, ProjMatrix);
 
     output.TexCoord = QuadTexCoord[vertexID];
+    output.Color = IconDatas[instanceID].IconColor;
     return output;
 }
 
@@ -400,7 +404,7 @@ PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID)
 float4 iconPS(PS_INPUT_ICON input) : SV_Target
 {
     float4 iconTexture = gTexture.Sample(gSampler, input.TexCoord);
-    float4 color = IconColor/2;
+    float4 color = input.Color/2;
     color.w = 1.f;
     
     float4 OutColor = iconTexture * color;

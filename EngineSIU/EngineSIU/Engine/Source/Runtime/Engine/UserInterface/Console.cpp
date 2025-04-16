@@ -261,7 +261,7 @@ void Console::ExecuteCommand(const std::string& command)
         UWorld* World = GEngine->ActiveWorld;
 
         const int scale = pow(1 << 14, 1 / 2.f);
-        const int spacing = 10;
+        const int spacing = 3;
         for (int i = 0; i < scale; i++)
         {
             for (int j = 0; j < scale; j++)

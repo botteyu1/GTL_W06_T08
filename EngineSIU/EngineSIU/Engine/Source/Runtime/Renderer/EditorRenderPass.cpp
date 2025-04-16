@@ -541,7 +541,7 @@ void FEditorRenderPass::CreateConstantBuffers()
     Graphics->Device->CreateBuffer(&ConstantBufferDesc, nullptr, &Resources.ConstantBuffers.Grid13);
 
     ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    ConstantBufferDesc.ByteWidth = sizeof(FConstantBufferDebugIcon);
+    ConstantBufferDesc.ByteWidth = sizeof(FConstantBufferDebugIcon) * ConstantBufferSizeIcon;
     Graphics->Device->CreateBuffer(&ConstantBufferDesc, nullptr, &Resources.ConstantBuffers.Icon13);
 
     ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -1187,6 +1187,7 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
         DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
     }
     
+    TArray<FConstantBufferDebugIcon> PointLightBuffers;
     for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
     {
         FConstantBufferDebugIcon b;
@@ -1200,9 +1201,32 @@ void FEditorRenderPass::RenderIcons(std::shared_ptr<FEditorViewportClient> Activ
         {
             b.Color = PointLightComp->GetLightColor();
         }
-        UdpateConstantbufferIcon(b);
-        UpdateTextureIcon(IconType::PointLight);
-        DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
+        PointLightBuffers.Add(b);
+    }
+
+    UpdateTextureIcon(IconType::PointLight);
+    int BufferIndex = 0;
+    for (int i = 0; i < (1 + PointLightBuffers.Num() / ConstantBufferSizeIcon) * ConstantBufferSizeIcon; ++i)
+    {
+        TArray<FConstantBufferDebugIcon> SubBuffer;
+        for (int j = 0; j < ConstantBufferSizeIcon; ++j)
+        {
+            if (BufferIndex < PointLightBuffers.Num())
+            {
+                SubBuffer.Add(PointLightBuffers[BufferIndex]);
+                ++BufferIndex;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (SubBuffer.Num() > 0)
+        {
+            UdpateConstantbufferIconInstanced(SubBuffer);
+            DeviceContext->DrawInstanced(6, SubBuffer.Num(), 0, 0);
+        }
     }
     
     for (USpotLightComponent* SpotLightComp : Resources.Components.SpotLight)
@@ -1254,6 +1278,25 @@ void FEditorRenderPass::UdpateConstantbufferIcon(FConstantBufferDebugIcon Buffer
 
         DeviceContext->Map(Resources.ConstantBuffers.Icon13, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
         memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugIcon)); // TArray이니까 실제 값을 받아와야함
+        DeviceContext->Unmap(Resources.ConstantBuffers.Icon13, 0); // GPU�� �ٽ� ��밡���ϰ� �����
+    }
+}
+
+void FEditorRenderPass::UdpateConstantbufferIconInstanced(TArray<FConstantBufferDebugIcon> Buffers)
+{
+    if (Buffers.Num() > ConstantBufferSizeIcon)
+    {
+        // 최대개수 초과
+        // 코드 잘못짠거 아니면 오면안됨
+        UE_LOG(LogLevel::Error, "Invalid Buffer Num");
+        return;
+    }
+    if (Resources.ConstantBuffers.Icon13)
+    {
+        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
+
+        DeviceContext->Map(Resources.ConstantBuffers.Icon13, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
+        memcpy(ConstantBufferMSR.pData, Buffers.GetData(), sizeof(FConstantBufferDebugIcon) * Buffers.Num()); // TArray이니까 실제 값을 받아와야함
         DeviceContext->Unmap(Resources.ConstantBuffers.Icon13, 0); // GPU�� �ٽ� ��밡���ϰ� �����
     }
 }

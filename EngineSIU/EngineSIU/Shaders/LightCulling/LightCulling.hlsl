@@ -135,7 +135,7 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
         // if문에 넣지말고 밖에서 값 넣기
         bool intersects = false;
         // corner4개에서 나오는 ray와 intersection
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < 5; ++j)
         {
             if (IntersectRaySphere(RayOrigin[j], RayDir[j], PointLightBufferList[LightIndex].Position, PointLightBufferList[LightIndex].AttenuationRadius))
             {

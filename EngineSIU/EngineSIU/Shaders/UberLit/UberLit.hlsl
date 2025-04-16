@@ -21,6 +21,21 @@ float3 LinearToSRGB(float3 color)
     return color;
 }
 
+cbuffer ScreenInfo : register(b10)
+{
+    row_major matrix ProjInv;
+    row_major matrix ViewMatrix;
+    row_major matrix ViewMatrixInv;
+    uint NumTileWidth;
+    uint NumTileHeight;
+    uint TileSize;
+    uint ScreenWidth;
+    uint ScreenHeight;
+    uint ScreenTopPadding;
+    uint MaxNumPointLight;
+    uint ScreenInfoPad;
+};
+
 VS_OUT Uber_VS(VS_IN input)
 {
     VS_OUT output;
@@ -76,10 +91,36 @@ VS_OUT Uber_VS(VS_IN input)
 
     float3 WorldNormal = normalize(mul(input.Normal, (float3x3) MInverseTranspose)); // Object Space -> World Space
     
+    // Light Culling Data 수집
+    
+    float2 NDCCoord = output.position.xy / output.position.w;
+    int2 pixelCoord = (NDCCoord + float2(1.f,1.f)) * float2(ScreenInfo.ScreenWidth, ScreenInfo.ScreenHeight) * float2(0.5, 0.5);
+
+    pixelCoord.x = (NDCCoord.x + 1) * ScreenInfo.ScreenWidth * 0.5;
+    pixelCoord.y = (1- NDCCoord.y) * ScreenInfo.ScreenHeight * 0.5;
+
+    int2 tileCoord = pixelCoord / ScreenInfo.TileSize;
+    uint tileIndex = tileCoord.y * ScreenInfo.NumTileWidth + tileCoord.x;
+
+    FTileLightIndex tileLightInfo = TileLightIndicesList[tileIndex];
+    
+    uint CulledLightNum = tileLightInfo.LightCount;
+    uint CulledLightIndex[MAX_NUM_INDICES_PER_TILE] = tileLightInfo.LightIndices;
+    
+    FPointLight TilePointLights[MAX_NUM_INDICES_PER_TILE];
+    for(int i =0;i<MAX_NUM_INDICES_PER_TILE;++i)
+    {
+        if(i > CulledLightNum)
+        {
+            break;
+        }
+        TilePointLights[i] = PointLightBufferList[CulledLightIndex[i]];
+    }
+    
     float3 GouraudColor = ComputeGouraudShading(worldPosition.xyz, WorldNormal, Material.SpecularScalar,
          MatDiffuseColor, MatSpecularColor,
-         AmbientLight, DirectionalLights, PointLights, SpotLights,
-         NumDirLights, NumPointLights, NumSpotLights);
+         AmbientLight, DirectionalLights, TilePointLights, SpotLights,
+         NumDirLights, CulledLightNum, NumSpotLights);
     
     output.color = float4(GouraudColor, 1);
 #endif
@@ -222,9 +263,6 @@ PS_OUT Uber_PS(VS_OUT Input)
     TotalColor += AmbientLight.Color * AmbientLight.Intensity * MatDiffuseColor;
 
     // Light Culling Data 수집
-    // 화면 좌표 기반 타일 인덱스 계산 예시
-    //float2 NDCCoord = Input.position.xy / Input.position.w;
-    //int2 pixelCoord = (NDCCoord + 1.f) * float2(ScreenInfo.ScreenWidth, ScreenInfo.ScreenHeight) * float2(0.5, -0.5);
     int2 pixelCoord = Input.position;
     int2 tileCoord = pixelCoord / ScreenInfo.TileSize;
     uint tileIndex = tileCoord.y * ScreenInfo.NumTileWidth + tileCoord.x;

@@ -64,7 +64,7 @@ void ComputeBlinnPhong(float3 LightColor, float3 LightDirection, float3 ViewDire
  */
 float3 ComputeGouraudShading(float3 VertexPosition, float3 VertexNormal, float Shininess, float3 MatDiffuseColor, float3 MatSpecularColor,
                              FAmbientLight AmbientLight, FDirectionalLight DirectionalLights[NUM_MAX_DIRLIGHT],
-                             FPointLight PointLights[NUM_MAX_POINTLIGHT], FSpotLight SpotLights[NUM_MAX_SPOTLIGHT],
+                             FPointLight PointLights[MAX_NUM_INDICES_PER_TILE], FSpotLight SpotLights[NUM_MAX_SPOTLIGHT],
                              int NumOfDirLight, int NumOfPointLight, int NumOfSpotLight)
 {
     float3 TotalColor = float3(0, 0, 0);

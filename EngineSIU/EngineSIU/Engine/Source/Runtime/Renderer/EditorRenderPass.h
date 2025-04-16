@@ -81,6 +81,7 @@ private:
     void RenderIcons(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferIcon();
     void UdpateConstantbufferIcon(FConstantBufferDebugIcon Buffer);
+    void UdpateConstantbufferIconInstanced(TArray<FConstantBufferDebugIcon> Buffers);
     void UpdateTextureIcon(IconType type);
 
     // Arrow
@@ -93,6 +94,7 @@ private:
     const uint32 ConstantBufferSizeAABB = 8;
     const uint32 ConstantBufferSizeSphere = 1024;
     const uint32 ConstantBufferSizeCone = 2;
+    const uint32 ConstantBufferSizeIcon = 1024;
     const uint32 NumSegments = 16; // Shaderconstants.h의 defines[]에서도 수정필요
     FConstantBufferDebugGrid CurrentGridSettings;
 
