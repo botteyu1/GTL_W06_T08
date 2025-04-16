@@ -479,3 +479,6 @@ constexpr char MaxNumPointLightChar[6] = "16384";
 // 64개 - 개수담을 1개
 constexpr static uint32 MaxNumPointLightPerTile = 63;
 constexpr char MaxNumPointLightPerTileChar[3] = "63";
+
+constexpr static uint32 LightCullingTileSize = 16;
+constexpr char LightCullingTileSizeChar[3] = "16";

@@ -30,6 +30,7 @@ class FLineRenderPass;
 class FFogRenderPass;
 class FEditorRenderPass;
 class FLightCullingPass;
+class FZPrepassRenderPassStaticMesh;
 
 class FRenderer
 {
@@ -75,7 +76,7 @@ public:
     FDepthBufferDebugPass* DepthBufferDebugPass = nullptr;
     FFogRenderPass* FogRenderPass = nullptr;
     FEditorRenderPass* EditorRenderPass = nullptr;
-
+    FZPrepassRenderPassStaticMesh* ZPrepassRenderPassStaticMesh = nullptr;
     //bool IsSceneDepth = false;
 };
 

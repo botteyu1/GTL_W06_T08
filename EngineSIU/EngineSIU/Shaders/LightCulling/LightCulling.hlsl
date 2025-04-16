@@ -26,34 +26,38 @@ cbuffer ScreenInfo : register(b10)
     row_major matrix ViewMatrixInv;
     uint NumTileWidth;
     uint NumTileHeight;
-    uint TileSize;
+    //uint TileSize;
     uint ScreenWidth;
     uint ScreenHeight;
     uint ScreenTopPadding;
     uint MaxNumPointLight;
-    uint ScreenInfoPad;
+    uint2 ScreenInfoPad;
 };
 
 StructuredBuffer<FPointLight> PointLightBufferList : register(t0);
+Texture2D DepthTexture : register(t1); // Depth 텍스처를 t1에 바인딩
 RWStructuredBuffer<FTileLightIndex> TileLightIndicesListCS : register(u1);
 
 // 32개의 thread가 lockstep으로 계산하므로, 32개로 나눔
 groupshared uint SharedLightIndices[MAX_NUM_INDICES_PER_TILE];
 groupshared uint SharedLightCount;
 
-#define NumThread 64
+groupshared float SharedDepths[TILE_SIZE * TILE_SIZE];
+groupshared float SharedMinDepth;
+groupshared float SharedMaxDepth;
 
-[numthreads(NumThread, 1, 1)]
+
+[numthreads(TILE_SIZE, TILE_SIZE, 1)]
 void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uint3 GroupID : SV_GroupID)
 {
-    uint localThreadID = GTid.x;
+    uint localThreadID = GTid.y * TILE_SIZE + GTid.x;
 
     uint2 tileCoord = GroupID.xy;
     uint tileIndex = tileCoord.y * NumTileWidth + tileCoord.x;
 
-    uint2 TileUpLeft = tileCoord * TileSize;
-    uint Right = clamp(TileUpLeft.x + TileSize, 0, ScreenWidth);
-    uint Bottom = clamp(TileUpLeft.y + TileSize, 0, ScreenHeight);
+    uint2 TileUpLeft = tileCoord * TILE_SIZE;
+    uint Right = clamp(TileUpLeft.x + TILE_SIZE, 0, ScreenWidth);
+    uint Bottom = clamp(TileUpLeft.y + TILE_SIZE, 0, ScreenHeight);
     
     uint2 TileUpRight = TileUpLeft;
     TileUpRight.x = Right;
@@ -83,6 +87,47 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
         1.0f - (float) TileBottomRight.y / screenSize.y * 2.0f
     );
     
+    
+//    // depth 읽기
+//    int2 TargetPixelPerThread = TileUpLeft + localThreadID;
+//    float2 TargetPointPerThread = float2(
+//        (float) TargetPixelPerThread.x / screenSize.x * 2.0f - 1.0f,
+//        1.0f - (float) TargetPixelPerThread.y / screenSize.y * 2.0f
+//    );
+    
+//    float DepthValue = DepthTexture.Load(int3(TargetPixelPerThread, 0)); // depth 값 읽기
+    
+//    // Min Max Depth 구하기
+//    SharedDepths[localThreadID] = DepthValue;
+    
+//    GroupMemoryBarrierWithGroupSync();
+    
+//    // min/max 동시 reduction
+//    for (uint stride = (TILE_SIZE * TILE_SIZE) / 2; stride > 0; stride >>= 1)
+//    {
+//        if (localThreadID < stride)
+//        {
+//            float a = SharedDepths[localThreadID];
+//            float b = SharedDepths[localThreadID + stride];
+//            SharedDepths[localThreadID] = min(a, b); // min 갱신
+//            SharedDepths[localThreadID + TILE_SIZE * TILE_SIZE / 2] = max(a, b); // max도 별도 공간에 저장
+//        }
+//        GroupMemoryBarrierWithGroupSync();
+//    }
+
+//// 결과 저장
+//    if (localThreadID == 0)
+//    {
+//        SharedMinDepth = SharedDepths[0];
+//        SharedMaxDepth = SharedDepths[TILE_SIZE * TILE_SIZE / 2];
+//    }
+    
+//    float4 DepthNDC = float4(TargetPointPerThread.xy, DepthValue, 1);
+//    float4 WorldDepth = mul(DepthNDC, ProjInv);
+//    WorldDepth = mul(WorldDepth, ViewMatrixInv);
+    
+    //float MinDepth = 
+    //InterlockedMin()
 
     float2 NDC[4] = { ndcUL, ndcUR, ndcLL, ndcLR };
     // frustum을 구성하는 여섯개의 평면을 생성
@@ -118,7 +163,7 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
     GroupMemoryBarrierWithGroupSync();
     
     int NumIntersection = 0;
-    for (uint LightIndex = localThreadID; LightIndex < MaxNumPointLight; LightIndex += NumThread)
+    for (uint LightIndex = localThreadID; LightIndex < MaxNumPointLight; LightIndex += TILE_SIZE * TILE_SIZE)
     {
         // 쓰레기값은 버림 (heap에서 넘어와서 다 음수값)
         if (PointLightBufferList[LightIndex].AttenuationRadius <= 0)
@@ -160,11 +205,15 @@ void mainCS(uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID, uin
     if (localThreadID == 0)
     {
         TileLightIndicesListCS[tileIndex].LightCount = min(SharedLightCount, MAX_NUM_INDICES_PER_TILE);
+        //TileLightIndicesListCS[tileIndex].LightCount = depthValue*10000;
         for (uint i = 0; i < min(SharedLightCount, MAX_NUM_INDICES_PER_TILE); ++i)
         {
             TileLightIndicesListCS[tileIndex].LightIndices[i] = SharedLightIndices[i];
         }
     }
+    
+    //TileLightIndicesListCS[tileIndex].LightCount = depthValue * 10;
+
 }
 
 struct PSInput
@@ -209,13 +258,12 @@ float4 mainPS(PSInput input) : SV_Target
     uint2 pixelCoord = uint2(input.pos.xy) - uint2(0, ScreenTopPadding);
 
     // tile 위치 계산
-    uint2 tileCoord = pixelCoord / TileSize;
+    uint2 tileCoord = pixelCoord / TILE_SIZE;
     uint tileIndex = tileCoord.y * NumTileWidth + tileCoord.x;
 
     uint lightCount = TileLightIndicesListPS[tileIndex].LightCount;
 
     // light count를 색상으로 매핑 (예: 최대 32개 기준)
-    float intensity = saturate(lightCount / 31.0f);
     
     return float4(
     HeatmapColor(TileLightIndicesListPS[tileIndex].LightCount, 0, MAX_NUM_INDICES_PER_TILE),

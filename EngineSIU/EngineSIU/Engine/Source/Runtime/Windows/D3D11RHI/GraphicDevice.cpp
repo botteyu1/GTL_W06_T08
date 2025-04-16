@@ -111,6 +111,21 @@ void FGraphicsDevice::CreateDepthStencilBuffer(HWND hWindow)
         MessageBox(hWindow, errorMsg, L"Error", MB_ICONERROR | MB_OK);
         return;
     }
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // Shader에서 사용 가능하도록
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    hr = Device->CreateShaderResourceView(DepthStencilBuffer, &srvDesc, &DepthStencilSRV);
+    if (FAILED(hr))
+    {
+        MessageBox(hWindow, L"Failed to create depth SRV", L"Error", MB_ICONERROR | MB_OK);
+        return;
+    }
+
+
 }
 
 void FGraphicsDevice::CreateDepthStencilState()

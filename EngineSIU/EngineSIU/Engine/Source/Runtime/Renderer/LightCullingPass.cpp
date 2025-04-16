@@ -50,7 +50,7 @@ void FLightCullingPass::RenderHeatmap(const std::shared_ptr<FEditorViewportClien
 
 void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+    ID3D11ShaderResourceView* nullSRV[2] = { nullptr, nullptr };
     ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
 
     ReloadShaders();
@@ -62,8 +62,13 @@ void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClie
     UpdateScreenInfoBuffer(Viewport);
     Graphics->DeviceContext->CSSetShader(ComputeShader, nullptr, 0);
 
-    ID3D11ShaderResourceView* srvs[] = { LightListSRV };
-    Graphics->DeviceContext->CSSetShaderResources(0, 1, srvs);
+
+    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+    //ID3D11ShaderResourceView* srvs[] = { LightListSRV, Graphics->DepthStencilSRV };
+    //Graphics->DeviceContext->CSSetShaderResources(0, 2, srvs);
+    Graphics->DeviceContext->CSSetShaderResources(0, 1 ,&LightListSRV);
+    Graphics->DeviceContext->CSSetShaderResources(1, 1 ,&Graphics->DepthStencilSRV);
 
     UINT clearValue[4] = { 0, 0, 0, 0 };  // 0으로 초기화
     Graphics->DeviceContext->ClearUnorderedAccessViewUint(TileLightListUAV, clearValue);
@@ -77,13 +82,14 @@ void FLightCullingPass::CullPointLight(const std::shared_ptr<FEditorViewportClie
     // 언바인딩
     Graphics->DeviceContext->CSSetUnorderedAccessViews(1, 1, nullUAV, nullptr);
 
-    Graphics->DeviceContext->CSSetShaderResources(0, 1, nullSRV);
+    Graphics->DeviceContext->CSSetShaderResources(0, 2, nullSRV);
 
     // static mesh를 위해서 미리 바인딩
     // -> staticMeshRenderPass에서 해줘야함
     Graphics->DeviceContext->PSSetShaderResources(16, 1, &LightListSRV); // t17번 슬롯에 SRV 바인딩
     Graphics->DeviceContext->PSSetShaderResources(17, 1, &TileLightListSRV); // t17번 슬롯에 SRV 바인딩
     BufferManager->BindConstantBuffer("ScreenInfo", 10, EShaderStage::Pixel);
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, Graphics->DepthStencilView);
 
 }
 
@@ -199,7 +205,7 @@ void FLightCullingPass::UpdateScreenInfoBuffer(std::shared_ptr<FEditorViewportCl
     info.ViewInv = FMatrix::Inverse(info.ViewMatrix);
     info.NumTileWidth = NumTileWidth;
     info.NumTileHeight = NumTileHeight;
-    info.TileSize = TileSize;
+    //info.TileSize = LightCullingTileSize;
     info.ScreenWidth = Viewport->GetViewport()->GetViewport().Width;
     info.ScreenHeight = Viewport->GetViewport()->GetViewport().Height;
     info.ScreenTopPadding = Viewport->GetViewport()->GetViewport().TopLeftY;
@@ -288,8 +294,8 @@ HRESULT FLightCullingPass::CreateTileLightList(FGraphicsDevice* Graphics)
         (FEngineLoop::GraphicDevice.ScreenWidth * AnchorMax.X) - Padding.Right,
         (FEngineLoop::GraphicDevice.ScreenHeight * AnchorMax.Y) - Padding.Bottom);
      
-    NumTileWidth = ceil(Rect.GetWidth() / (float)TileSize);
-    NumTileHeight = ceil(Rect.GetHeight() / (float)TileSize);
+    NumTileWidth = ceil(Rect.GetWidth() / (float)LightCullingTileSize);
+    NumTileHeight = ceil(Rect.GetHeight() / (float)LightCullingTileSize);
     
     uint32 tileCount = NumTileWidth * NumTileHeight;
     D3D11_BUFFER_DESC bufDesc = {};

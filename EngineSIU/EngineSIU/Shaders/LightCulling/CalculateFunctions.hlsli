@@ -169,20 +169,3 @@ float3 HeatmapColor(float value, float minValue, float maxValue)
     return color;
 }
 
-
-
-
-//bool SphereFrustumCornerIntersection(float3 center, float radius, float3 corners[8])
-//{
-//    for (int i = 0; i < 8; ++i)
-//    {
-//        float3 delta = center - corners[i];
-//        float distSq = dot(delta, delta);
-//        float radiusSq = radius * radius;
-//        if (distSq < radiusSq)
-//        {
-//            return true;
-//        }
-//    }
-//    return false;
-//}

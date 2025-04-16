@@ -12,6 +12,7 @@
 #include "UpdateLightBufferPass.h"
 #include "LineRenderPass.h"
 #include "DepthBufferDebugPass.h"
+#include "ZPrepassRenderPass.h"
 #include "FogRenderPass.h"
 #include "EditorRenderPass.h"
 #include <UObject/UObjectIterator.h>
@@ -35,6 +36,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     DepthBufferDebugPass = new FDepthBufferDebugPass();
     FogRenderPass = new FFogRenderPass();
     EditorRenderPass = new FEditorRenderPass();
+    ZPrepassRenderPassStaticMesh = new FZPrepassRenderPassStaticMesh();
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     BillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -44,6 +46,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     DepthBufferDebugPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    ZPrepassRenderPassStaticMesh->Initialize(BufferManager, Graphics, ShaderManager);
 
     CreateConstantBuffers();
 }
@@ -129,6 +132,8 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 
     // ChangeViewMode(Viewport->GetViewMode());
 
+    ZPrepassRenderPassStaticMesh->Render(Viewport);
+
     UpdateLightBufferPass->Render(Viewport);
 
     LightCullingPass->CullPointLight(Viewport);
@@ -149,7 +154,7 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
     //LineRenderPass->Render(ActiveViewport);
     if (GEngine->ActiveWorld->WorldType == EWorldType::Editor)
     {
-        LightCullingPass->CullPointLight(Viewport);
+        LightCullingPass->RenderHeatmap(Viewport);
         EditorRenderPass->Render(Viewport);
         GizmoRenderPass->Render(Viewport);
     }

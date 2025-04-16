@@ -39,6 +39,7 @@ public:
     // Depth-Stencil 관련 변수
     ID3D11Texture2D* DepthStencilBuffer = nullptr;  // 깊이/스텐실 텍스처
     ID3D11DepthStencilView* DepthStencilView = nullptr;  // 깊이/스텐실 뷰
+    ID3D11ShaderResourceView* DepthStencilSRV = nullptr;
     ID3D11DepthStencilState* DepthStencilStateTestWriteEnable = nullptr;
     FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f }; // 화면을 초기화(clear) 할 때 사용할 색상(RGBA)
 

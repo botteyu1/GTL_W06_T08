@@ -470,10 +470,6 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
 
         RenderPrimitive(RenderData, Comp->GetStaticMesh()->GetMaterials(), Comp->GetOverrideMaterials(), Comp->GetselectedSubMeshIndex());
 
-        if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
-        {
-            FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(Comp->GetLocalBoundingBox(), Comp->GetWorldLocation(), Model);
-        }
     }
 }
 

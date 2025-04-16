@@ -525,6 +525,25 @@ HRESULT FDXDShaderManager::ReloadShaders(const std::wstring& VertexKey, const st
 }
 
 
+HRESULT FDXDShaderManager::ReloadModifiedVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    if (!VertexShaders.Contains(Key))
+    {
+        UE_LOG(LogLevel::Warning, "Invalid Key : Parameter might be different with parameters at init time.");
+        return S_FALSE;
+    }
+
+    if (CheckShaderModified(Key))
+    {
+        UE_LOG(LogLevel::Display, "Shader file is modified. Recompiling shader.");
+        return ReloadVertexShader(Key, FileName, EntryPoint, Defines);
+    }
+    else
+    {
+        return S_FALSE;
+    }
+}
+
 HRESULT FDXDShaderManager::ReloadModifiedShaders(const std::wstring& VertexKey, const std::wstring& VertexFileName, const std::string& VertexEntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* VertexDefines, const std::wstring& PixelKey, const std::wstring& PixelFileName, const std::string& PixelEntryPoint, const D3D_SHADER_MACRO* PixelDefines)
 {
     // input layout이 없을수도 있으니까

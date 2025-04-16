@@ -20,10 +20,11 @@ public:
     void CullPointLight(const std::shared_ptr<FEditorViewportClient>& Viewport);
     void OnResize(HWND hWnd);
 
-    const D3D_SHADER_MACRO LightCullingDefines[3] =
+    const D3D_SHADER_MACRO LightCullingDefines[4] =
     {
         "MAX_NUM_GLOBAL_LIGHT", MaxNumPointLightChar,
         "MAX_NUM_INDICES_PER_TILE", MaxNumPointLightPerTileChar,
+        "TILE_SIZE", LightCullingTileSizeChar,
         NULL, NULL,
     };
 private:
@@ -45,12 +46,13 @@ private:
         FMatrix ViewInv;
         uint32 NumTileWidth;
         uint32 NumTileHeight;
-        uint32 TileSize;
+        //uint32 TileSize;
         uint32 ScreenWidth;
         uint32 ScreenHeight;
         uint32 ScreenTopPadding;
         uint32 MaxNumPointLight;
         uint32 pad1;
+        uint32 pad2;
     };
 
     HRESULT CreateShaders();
@@ -64,7 +66,6 @@ private:
     
     void CreateBuffers();
 
-    const uint32 TileSize = 16;
     uint32 NumTileWidth, NumTileHeight;
 
     HRESULT CreateScreebInfoBuffer();
