@@ -244,7 +244,7 @@ PS_OUT Uber_PS(VS_OUT Input)
 
     /** GOURAUD */
 #if LIGHTING_MODEL_GOURAUD
-    Output.color = Input.color;
+    Output.color = Input.color * float4(MatDiffuseColor, 1);
     return Output;
 #endif
     
